@@ -1,0 +1,1 @@
+This is a directory that doesn't contain a git repository.
