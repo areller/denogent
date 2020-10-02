@@ -15,4 +15,4 @@ jobs:
         with:
           deno-version: v1.4.1
       - name: run build
-        run: deno run -A --unstable build/build.ts --ci-runtime github_actions run
+        run: deno run -A -q --unstable build/build.ts --ci-runtime github_actions run

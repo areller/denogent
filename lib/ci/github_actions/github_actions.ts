@@ -126,7 +126,7 @@ export class GitHubActions extends CIIntegration {
                         },
                         {
                             name: 'run build',
-                            run: `deno run -A --unstable ${args.buildFile} --ci-runtime github_actions run`,
+                            run: `deno run -A -q --unstable ${args.buildFile} --ci-runtime github_actions run`,
                             env: runEnv
                         }
                     ]
