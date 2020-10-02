@@ -4,6 +4,7 @@ import type { Task } from "../lib/core/task.ts";
 import type { LoggerFn } from "./logger.ts";
 
 export interface BuildContext {
+    name: string;
     targetTasks: Task[];
     ciIntegrations: CIIntegration[];
 }

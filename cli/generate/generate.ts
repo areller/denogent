@@ -5,11 +5,13 @@ import type { CLIContext } from "../context.ts";
 async function run(context?: CLIContext): Promise<void> {
     const graph = createGraph(context?.buildContext?.targetTasks!);
     const ciName = context?.args.ci.toString();
-    const ci = context?.buildContext?.ciIntegrations[ciName];
+    const ciArray = context?.buildContext?.ciIntegrations.filter(c => c.type == ciName);
 
-    if (ci === undefined) {
+    if (ciArray === undefined || ciArray.length == 0) {
         throw new Error(`unknown CI integration '${ciName}'.`);
     }
+
+    const ci = ciArray[0];
 
     const logger = {
         debug: (msg: string, meta: unknown) => context?.logger('debug', msg, undefined, meta),
@@ -18,8 +20,13 @@ async function run(context?: CLIContext): Promise<void> {
         error: (msg: string | Error, meta?: unknown) => context?.logger('error', msg, undefined, meta)
     };
 
-    await ci.clean(logger);
-    await ci.generate(context?.args.file, graph, logger);
+    await ci.clean({ logger });
+    await ci.generate({
+        name: context?.buildContext?.name!,
+        buildFile: context?.args.file,
+        graph,
+        logger
+    });
 }
 
 export function generateCommandDescription(): CLICommand {

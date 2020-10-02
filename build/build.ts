@@ -1,3 +1,4 @@
+import { createGitHubActions } from "../lib/ci/github_actions/github_actions.ts";
 import { createBuilder } from "../lib/core/builder.ts";
 import { task } from "../lib/core/task.ts";
 import { DenoPermissions } from "../lib/deno/args.ts";
@@ -14,5 +15,8 @@ const test = task('test')
 
 createBuilder({
     name: 'denogent-build',
-    targetTasks: test
+    targetTasks: test,
+    ciIntegrations: [
+        createGitHubActions('ubuntu-latest', ['gh-actions'])
+    ]
 });
