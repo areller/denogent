@@ -77,7 +77,7 @@ function decideLogger(cliArgs: Args, buildContext: BuildContext): LoggerFn | und
 // gets the {path} in `deno run {path}`
 function getMainFilePath() {
     const cwd = Deno.cwd();
-    return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length);
+    return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length + 1);
 }
 
 export async function createCLI(args: CreateCLIArgs): Promise<void> {
