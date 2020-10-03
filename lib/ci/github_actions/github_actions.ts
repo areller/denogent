@@ -32,13 +32,8 @@ export class GitHubActions extends CIIntegration {
                 }
 
                 else if (['finishedSuccessfully', 'failedCondition', 'failed'].indexOf(attrs.type) != -1) {
-                    switch (attrs.type) {
-                        case 'failedCondition':
-                            console.error(`Failed condition '${attrs.condition}'.`);
-                            break;
-                        case 'failed':
-                            console.error(attrs.error);
-                            break;
+                    if (attrs.type == 'failedCondition' || attrs.type == 'failed') {
+                        console.error(message);
                     }
 
                     issue('endgroup');
