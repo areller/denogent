@@ -19,11 +19,13 @@ export class Task {
     private _dependencies: Task[];
     private _dependents: Task[];
     private _conditions: CondFn[];
+    private _propagateExceptions: boolean;
 
     constructor(private _name: string) {
         this._dependencies = [];
         this._dependents = [];
         this._conditions = [];
+        this._propagateExceptions = true;
     }
 
     /**
@@ -83,6 +85,15 @@ export class Task {
     }
 
     /**
+     * Sets whether or not the task should propagate its exception upon failure.
+     * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = false)
+     */
+    breakCircuit(breakCircuit?: boolean): Task {
+        this._propagateExceptions = !(breakCircuit ?? false);
+        return this;
+    }
+
+    /**
      * Gets an array of tasks that the current task depends on.
      */
     get dependencies(): Task[] {
@@ -108,6 +119,13 @@ export class Task {
      */
     get exec(): ExecFn | undefined {
         return this._exec;
+    }
+
+    /**
+     * Gets whether or not the task should propagate its own exception upon failure.
+     */
+    get propagateExceptions(): boolean {
+        return this._propagateExceptions;
     }
 
     /**

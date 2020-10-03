@@ -129,8 +129,12 @@ export class Execution {
             this.finishTask(task, true);
         }
         catch (err) {
-            //this.finishTask(task, false, undefined, err);
-            this.finishWithFailure(err); // TODO: allow for circuit breaking
+            if (task.propagateExceptions) {
+                this.finishWithFailure(err);
+            }
+            else {
+                this.finishTask(task, false, undefined, err);
+            }
         }
     }
 
