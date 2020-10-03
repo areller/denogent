@@ -44,7 +44,7 @@ async function runCLIViaDenoRun(cliArgs: Args): Promise<void> {
     }
 
     const process = await Deno.run({
-        cmd: ['deno', 'run', '-q', '-A', cliArgs.file, ...Deno.args],
+        cmd: ['deno', 'run', '-q', '-A', '--unstable', cliArgs.file, ...Deno.args],
         stdout: 'inherit',
         stderr: 'inherit'
     });
@@ -53,12 +53,22 @@ async function runCLIViaDenoRun(cliArgs: Args): Promise<void> {
     Deno.exit(status.code);
 }
 
-function decideLogger(cliArgs: Args): LoggerFn {
+function decideLogger(cliArgs: Args, buildContext: BuildContext): LoggerFn | undefined {
     if (cliArgs['json-stream']) {
         return jsonStreamLog;
     }
     else if (cliArgs['json']) {
         return jsonLog;
+    }
+    else if (cliArgs['ci-runtime']) {
+        const ciArray = buildContext.ciIntegrations.filter(c => c.type == cliArgs['ci-runtime']);
+        if (ciArray === undefined || ciArray.length == 0) {
+            return undefined;
+        }
+
+        const ci = ciArray[0];
+
+        return ci.logFn;
     }
 
     return simpleLog;
@@ -67,7 +77,7 @@ function decideLogger(cliArgs: Args): LoggerFn {
 // gets the {path} in `deno run {path}`
 function getMainFilePath() {
     const cwd = Deno.cwd();
-    return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length);
+    return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length + 1);
 }
 
 export async function createCLI(args: CreateCLIArgs): Promise<void> {
@@ -80,7 +90,7 @@ export async function createCLI(args: CreateCLIArgs): Promise<void> {
 
     const cmd = getCommand(cliArgs._[0].toString());
     if (cmd === undefined) {
-        return console.error(`Command '${cliArgs._[0]}' was not found.`);
+        return simpleLog('error', `Command '${cliArgs._[0]}' was not found.`);
     }
 
     if (cmd.options.filter(opt => opt == fileOption).length > 0) {
@@ -92,7 +102,11 @@ export async function createCLI(args: CreateCLIArgs): Promise<void> {
         }
     }
 
-    const logger = decideLogger(cliArgs);
+    const logger = decideLogger(cliArgs, args.context!);
+    if (logger === undefined) {
+        return simpleLog('error', 'Unable to choose a logger');
+    }
+
     try {
         await cmd.fn({
             buildContext: args.context,
@@ -102,7 +116,9 @@ export async function createCLI(args: CreateCLIArgs): Promise<void> {
     }
     catch (err) {
         logger('error', err);
+        Deno.exit(1);
     }
-
-    jsonLogCleanBuffer();
+    finally {
+        jsonLogCleanBuffer();
+    }
 }

@@ -20,6 +20,9 @@ export function simpleLog(level: LogLevel, message: string | Error, task?: strin
             break;
         case 'error':
             console.error(Colors.red(`[ERR] ${prefix}${message}${suffix}`));
+            if (message instanceof Error) {
+                console.error(Colors.red(message.stack?.toString() ?? ''));
+            }
             break;
     }
 }

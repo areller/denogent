@@ -18,6 +18,7 @@ export class Execution {
 
     private _endPromise: Promise<ExecutionResult>;
     private _resolve?: (res: ExecutionResult) => void;
+    private _reject?: (reason?: Error) => void;
 
     private _tasksTracker: { [name: string]: TaskTracker };
     private _runningTasks: { [name: string]: Promise<void> };
@@ -27,8 +28,9 @@ export class Execution {
     private _events: EventEmitter;
 
     constructor(private _graph: Graph) {
-        this._endPromise = new Promise((resolve, _) => {
+        this._endPromise = new Promise((resolve, reject) => {
             this._resolve = resolve;
+            this._reject = reject;
         });
 
         this._tasksTracker = {};
@@ -127,7 +129,12 @@ export class Execution {
             this.finishTask(task, true);
         }
         catch (err) {
-            this.finishTask(task, false, undefined, err);
+            if (task.propagateExceptions) {
+                this.finishWithFailure(err);
+            }
+            else {
+                this.finishTask(task, false, undefined, err);
+            }
         }
     }
 
@@ -197,6 +204,15 @@ export class Execution {
                 this._resolve({
                     tasks
                 });
+            }
+        }
+    }
+
+    private finishWithFailure(err?: Error): void {
+        if (!this._alreadyFinished) {
+            this._alreadyFinished = true;
+            if (this._reject !== undefined) {
+                this._reject(err);
             }
         }
     }

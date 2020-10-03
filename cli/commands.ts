@@ -1,4 +1,5 @@
 import type { CLICommand } from "./cli.ts";
+import { generateCommandDescription } from "./generate/generate.ts";
 import { runCommandDescription } from "./run/run.ts";
 import { tasksCommandDescription } from "./tasks/targets.ts";
 
@@ -10,6 +11,7 @@ function addCommand(command: CLICommand) {
 
 export function initializeCommands() {
     addCommand(runCommandDescription());
+    addCommand(generateCommandDescription());
     addCommand(tasksCommandDescription());
 }
 

@@ -26,4 +26,24 @@ describe('task.test.ts', t => {
         assertEquals(taskB.dependents, []);
         assertEquals(taskB.dependencies, [taskA]);
     });
+
+    t.test('propagateExceptions should be true by default', () => {
+        let taskA = task('taskA');
+        assertEquals(taskA.propagateExceptions, true);
+    });
+
+    [false, true, undefined].forEach(breakCircuit => {
+        const breakCircuitStr = breakCircuit === undefined ? 'default' : (breakCircuit ? 'true' : 'false');
+        t.test(`breakCircuit = ${breakCircuitStr} should set propagateExceptions accordingly`, () => {
+            let taskA = task('A');
+            if (breakCircuit === undefined) {
+                taskA.breakCircuit();
+                assertEquals(taskA.propagateExceptions, false);
+            }
+            else {
+                taskA.breakCircuit(breakCircuit);
+                assertEquals(taskA.propagateExceptions, !breakCircuit);
+            }
+        });
+    });
 });

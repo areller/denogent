@@ -10,6 +10,7 @@ export interface Task {
     conditions: CondFn[];
     dependencies: string[];
     dependents: string[];
+    propagateExceptions: boolean;
 }
 
 /**
@@ -58,7 +59,8 @@ export class Graph {
                 exec: task.exec,
                 conditions: task.conditions,
                 dependencies: [],
-                dependents: []
+                dependents: [],
+                propagateExceptions: task.propagateExceptions
             };
 
             if (lastTask !== undefined) {
@@ -95,7 +97,8 @@ export class Graph {
                 exec: task.exec,
                 conditions: task.conditions,
                 dependencies: [],
-                dependents: []
+                dependents: [],
+                propagateExceptions: task.propagateExceptions
             };
 
             newTasks[task.name] = detachedTask;
@@ -214,7 +217,8 @@ export function createGraph(targetTasks: TaskDef[]) {
             exec: t.exec,
             conditions: t.conditions,
             dependencies: t.dependencies.map(d => d.name),
-            dependents: t.dependents.map(d => d.name)
+            dependents: t.dependents.map(d => d.name),
+            propagateExceptions: t.propagateExceptions
         };
 
         tasks[t.name] = task;
