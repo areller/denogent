@@ -22,53 +22,45 @@ export class GitHubActions extends CIIntegration {
 
     get logFn(): LoggerFn {
         return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
-            /*
-            const prefix = task !== undefined ? `[${task}] ` : '';
+
+            if (meta !== undefined) {
+                // deno-lint-ignore no-explicit-any
+                const attrs = meta as any;
+                if (attrs.type == 'started') {
+                    issue('group', task);
+                    return;
+                }
+
+                else if (['finishedSuccessfully', 'failedCondition', 'failed'].indexOf(attrs.type) != -1) {
+                    switch (attrs.type) {
+                        case 'failedCondition':
+                            console.error(`Failed condition '${attrs.condition}'.`);
+                            break;
+                        case 'failed':
+                            console.error(attrs.error);
+                            break;
+                    }
+
+                    issue('endgroup');
+                    return;
+                }
+            }
+
             // deno-lint-ignore no-explicit-any
             const suffix = meta !== undefined ? ' {' + Object.entries(meta as any).map(x => ` ${x[0]} = ${x[1]}`) + ' }' : '';
 
             switch (level) {
                 case 'debug':
-                    console.log(`[DBG] ${prefix}${message}${suffix}`);
+                    console.log(`[DBG] ${message}${suffix}`);
                     break;
                 case 'info':
-                    console.log(`[INFO] ${prefix}${message}${suffix}`);
+                    console.log(`[INFO] ${message}${suffix}`);
                     break;
                 case 'warn':
-                    console.log(`[WARN] ${prefix}${message}${suffix}`);
+                    console.log(`[WARN] ${message}${suffix}`);
                     break;
                 case 'error':
-                    console.error(`[ERR] ${prefix}${message}${suffix}`);
-                    break;
-            }*/
-
-            // deno-lint-ignore no-explicit-any
-            if (meta !== undefined && (meta as any).type == 'started') {
-                issue('group', task);
-                return;
-            }
-            // deno-lint-ignore no-explicit-any
-            else if (meta !== undefined && (meta as any).type == 'finishedSuccessfully') {
-                issue('endgroup');
-                return;
-            }
-
-            const prefix = task !== undefined ? `[${task}] ` : '';
-            // deno-lint-ignore no-explicit-any
-            const suffix = meta !== undefined ? ' {' + Object.entries(meta as any).map(x => ` ${x[0]} = ${x[1]}`) + ' }' : '';
-
-            switch (level) {
-                case 'debug':
-                    console.log(`[DBG] ${prefix}${message}${suffix}`);
-                    break;
-                case 'info':
-                    console.log(`[INFO] ${prefix}${message}${suffix}`);
-                    break;
-                case 'warn':
-                    console.log(`[WARN] ${prefix}${message}${suffix}`);
-                    break;
-                case 'error':
-                    console.error(`[ERR] ${prefix}${message}${suffix}`);
+                    console.error(`[ERR] ${message}${suffix}`);
                     break;
             }
         };
@@ -156,7 +148,7 @@ export class GitHubActions extends CIIntegration {
                         },
                         {
                             name: 'run build',
-                            run: `deno run -A -q --unstable ${args.buildFile} --ci-runtime github_actions run`, // currently relies on unstable API
+                            run: `deno run -A -q --unstable ${args.buildFile} --ci-runtime github_actions --serial run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
                             env: runEnv
                         }
                     ]

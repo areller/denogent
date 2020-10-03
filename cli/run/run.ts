@@ -10,6 +10,11 @@ async function run(context?: CLIContext): Promise<void> {
     if (context?.args.only) {
         graph = graph.createSerialGraphFrom([context.args.only.toString()]);
     }
+    else if (context?.args.serial) {
+        if (typeof context?.args.serial == 'boolean') {
+            graph = graph.createSerialGraph();
+        }
+    }
 
     const execution = executor.fromGraph(graph);
 
