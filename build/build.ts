@@ -12,8 +12,7 @@ const test = task('test')
             permissions: DenoPermissions.All,
             flags: ['--unstable']
         });
-    })
-    .breakCircuit();
+    });
 
 createBuilder({
     name: 'denogent-build',
