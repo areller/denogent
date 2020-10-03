@@ -14,7 +14,7 @@ describe('git.test.ts', t => {
                 logger: false
             });
 
-            assertEquals(isRepo, false);
+            assertEquals(isRepo, true);
         });
     });
 });
