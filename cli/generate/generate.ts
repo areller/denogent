@@ -21,12 +21,15 @@ async function run(context?: CLIContext): Promise<void> {
     };
 
     await ci.clean({ logger });
-    await ci.generate({
-        name: context?.buildContext?.name!,
-        buildFile: context?.args.file,
-        graph,
-        logger
-    });
+
+    if (!context?.args.clean) {
+        await ci.generate({
+            name: context?.buildContext?.name!,
+            buildFile: context?.args.file,
+            graph,
+            logger
+        });
+    } 
 }
 
 export function generateCommandDescription(): CLICommand {
@@ -40,6 +43,12 @@ export function generateCommandDescription(): CLICommand {
                 description: `The name of the CI integration (e.g. 'github_actions')`,
                 dataType: CLICommandOptionDataType.String,
                 required: true
+            },
+            {
+                name: 'clean',
+                description: 'Only perform a clean',
+                dataType: CLICommandOptionDataType.Boolean,
+                required: false
             }
         ],
         fn: run
