@@ -42,8 +42,15 @@ export class GitHubActions extends CIIntegration {
                     break;
             }*/
 
-            if (task !== undefined) {
+            // deno-lint-ignore no-explicit-any
+            if (meta !== undefined && (meta as any).type == 'started') {
                 issue('group', task);
+                return;
+            }
+            // deno-lint-ignore no-explicit-any
+            else if (meta !== undefined && (meta as any).type == 'finishedSuccessfully') {
+                issue('endgroup');
+                return;
             }
 
             const prefix = task !== undefined ? `[${task}] ` : '';
@@ -63,10 +70,6 @@ export class GitHubActions extends CIIntegration {
                 case 'error':
                     console.error(`[ERR] ${prefix}${message}${suffix}`);
                     break;
-            }
-
-            if (task !== undefined) {
-                issue('endgroup');
             }
         };
     }
