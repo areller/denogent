@@ -116,7 +116,9 @@ export async function createCLI(args: CreateCLIArgs): Promise<void> {
     }
     catch (err) {
         logger('error', err);
+        Deno.exit(1);
     }
-
-    jsonLogCleanBuffer();
+    finally {
+        jsonLogCleanBuffer();
+    }
 }
