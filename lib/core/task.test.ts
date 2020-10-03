@@ -32,11 +32,18 @@ describe('task.test.ts', t => {
         assertEquals(taskA.propagateExceptions, true);
     });
 
-    ['false', 'true'].forEach(breakCircuit => {
-        t.test(`breakCircuit = ${breakCircuit} should set propagateExceptions accordingly`, () => {
+    [false, true, undefined].forEach(breakCircuit => {
+        const breakCircuitStr = breakCircuit === undefined ? 'default' : (breakCircuit ? 'true' : 'false');
+        t.test(`breakCircuit = ${breakCircuitStr} should set propagateExceptions accordingly`, () => {
             let taskA = task('A');
-            taskA.breakCircuit(breakCircuit == 'true');
-            assertEquals(taskA.propagateExceptions, !(breakCircuit == 'true'));
+            if (breakCircuit === undefined) {
+                taskA.breakCircuit();
+                assertEquals(taskA.propagateExceptions, false);
+            }
+            else {
+                taskA.breakCircuit(breakCircuit);
+                assertEquals(taskA.propagateExceptions, !breakCircuit);
+            }
         });
     });
 });

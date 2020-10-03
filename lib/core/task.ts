@@ -86,10 +86,10 @@ export class Task {
 
     /**
      * Sets whether or not the task should propagate its exception upon failure.
-     * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = false)
+     * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = true)
      */
     breakCircuit(breakCircuit?: boolean): Task {
-        this._propagateExceptions = !(breakCircuit ?? false);
+        this._propagateExceptions = !(breakCircuit ?? true);
         return this;
     }
 
