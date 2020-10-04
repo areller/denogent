@@ -10,7 +10,7 @@ export interface Task {
     conditions: CondFn[];
     dependencies: string[];
     dependents: string[];
-    tags: { [name: string]: string };
+    tags: { [name: string]: string[] };
     propagateExceptions: boolean;
 }
 
