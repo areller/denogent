@@ -1,4 +1,5 @@
-import { copy } from "https://deno.land/std/fs/mod.ts";
+import { copy, exists, move } from "https://deno.land/std/fs/mod.ts";
+import { join } from "https://deno.land/std/path/mod.ts";
 
 export async function copyDirToTemp(path: string, fn: (tempPath: string) => Promise<void>): Promise<void> {
     const dir = await Deno.makeTempDir();
@@ -8,6 +9,10 @@ export async function copyDirToTemp(path: string, fn: (tempPath: string) => Prom
     });
 
     try {
+        if (await exists(join(dir, '._git'))) {
+            await move(join(dir, '._git'), join(dir, '.git'));
+        }
+
         await fn(dir);
     }
     finally {
