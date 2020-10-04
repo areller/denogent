@@ -15,6 +15,7 @@ async function run(context?: CLIContext): Promise<void> {
         await Deno.remove(filePath);
     }
 
+    await fs.ensureFile(filePath);
     await Deno.writeFile(filePath, new TextEncoder().encode(
 `import { createBuilder } from "https://deno.land/x/denogent/lib/core/builder.ts";
 import { task } from "https://deno.land/x/denogent/lib/core/task.ts";
