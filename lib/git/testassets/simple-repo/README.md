@@ -1,0 +1,1 @@
+This is a directory that contains a simple git repository (single branch, no tags).
