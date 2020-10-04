@@ -4,6 +4,12 @@ import type { CLIContext } from "../context.ts";
 
 async function run(context?: CLIContext): Promise<void> {
     const graph = createGraph(context?.buildContext?.targetTasks!);
+    for (const name of graph.taskNames) {
+        const task = graph.getTask(name)!;
+        context?.logger('info', task.name, undefined, {
+            task
+        });
+    }
 }
 
 export function tasksCommandDescription(): CLICommand {
@@ -13,6 +19,7 @@ export function tasksCommandDescription(): CLICommand {
         options: [
             fileOption
         ],
+        requireBuildContext: true,
         fn: run
     }
 }

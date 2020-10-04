@@ -17,6 +17,13 @@ export const fileOption: CLICommandOption = {
     required: true
 };
 
+export const optionalFileOption: CLICommandOption = {
+    name: 'file',
+    description: 'The path to the build file',
+    dataType: CLICommandOptionDataType.String,
+    required: false
+};
+
 export interface CLICommandOption {
     name: string;
     description: string;
@@ -28,6 +35,7 @@ export interface CLICommand {
     name: string;
     description: string;
     options: CLICommandOption[];
+    requireBuildContext: boolean;
     fn: (context: CLIContext) => Promise<void>
 }
 
@@ -93,7 +101,7 @@ export async function createCLI(args: CreateCLIArgs): Promise<void> {
         return simpleLog('error', `Command '${cliArgs._[0]}' was not found.`);
     }
 
-    if (cmd.options.filter(opt => opt == fileOption).length > 0) {
+    if (cmd.requireBuildContext && cmd.options.filter(opt => opt == fileOption).length > 0) {
         if (args.context === undefined) {
             return await runCLIViaDenoRun(cliArgs);
         }
