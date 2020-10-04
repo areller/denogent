@@ -33,7 +33,7 @@ export async function runCommand(args: RunCommandArgs): Promise<[boolean, string
         stderr: 'piped'
     });
 
-    await readLines([process.stdout, process.stderr], line => {
+    await readLines([process.stdout, process.stderr], false, line => {
         if (args.logger) {
             args.logger.debug(line);
         }
@@ -41,6 +41,7 @@ export async function runCommand(args: RunCommandArgs): Promise<[boolean, string
 
     const status = await process.status();
     const output = await process.output();
+    await process.stderrOutput();
 
     if (!status.success && (args.throwOnFailure ?? true)) {
         throw new Error(`Command '${args.cmd.join(' ')}' has failed.`);

@@ -59,6 +59,8 @@ export class DockerClient {
         });
 
         const status = await process.status();
+        const output = await process.output();
+        await process.stderrOutput();
 
         if (!status.success) {
             if (throwOnFailure ?? true) {
@@ -69,7 +71,7 @@ export class DockerClient {
         }
 
         await process.stderrOutput();
-        return [true, new TextDecoder().decode(await process.output())];
+        return [true, new TextDecoder().decode(output)];
     }
 
     private async detectDocker(): Promise<void> {
