@@ -12,6 +12,9 @@ jobs:
   ubuntu-latest:
     name: ubuntu-latest
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
     steps:
       - name: checkout
         uses: "actions/checkout@v2"

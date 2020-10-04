@@ -5,8 +5,14 @@ export interface DockerClientArgs {
     logger: Logger | undefined | false;
 }
 
-export interface DockerBuildArgs extends DockerClientArgs {
+export interface DockerClientBuildArgs extends DockerClientArgs {
     dockerFile?: string;
     buildArgs?: { [name: string]: string };
     tag?: string;
+}
+
+export interface DockerServiceArgs {
+    name: string;
+    image: string;
+    ports?: string[];
 }

@@ -11,6 +11,7 @@ export interface Task {
     dependencies: string[];
     dependents: string[];
     tags: { [name: string]: string[] };
+    properties: { [name: string]: unknown };
     propagateExceptions: boolean;
 }
 
@@ -62,6 +63,7 @@ export class Graph {
                 dependencies: [],
                 dependents: [],
                 tags: task.tags,
+                properties: task.properties,
                 propagateExceptions: task.propagateExceptions
             };
 
@@ -101,6 +103,7 @@ export class Graph {
                 dependencies: [],
                 dependents: [],
                 tags: task.tags,
+                properties: task.properties,
                 propagateExceptions: task.propagateExceptions
             };
 
@@ -222,6 +225,7 @@ export function createGraph(targetTasks: TaskDef[]) {
             dependencies: t.dependencies.map(d => d.name),
             dependents: t.dependents.map(d => d.name),
             tags: t.tags,
+            properties: t.properties,
             propagateExceptions: t.propagateExceptions
         };
 

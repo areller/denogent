@@ -1,6 +1,7 @@
-import type { DockerBuildArgs, DockerClientArgs } from "./args.ts";
+import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs } from "./args.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { readLines } from "../../internal/helpers/reading.ts";
+import type { Extension } from "../core/extension.ts";
 
 export class DockerClient {
 
@@ -27,7 +28,7 @@ export class DockerClient {
         });
     }
 
-    async build(args: DockerBuildArgs): Promise<void> {
+    async build(args: DockerClientBuildArgs): Promise<void> {
         let runArgs = ['build'];
         if (args.dockerFile) {
             runArgs.push('-f', args.dockerFile);
@@ -94,6 +95,28 @@ export class DockerClient {
 class Docker {
 
     private _client?: DockerClient;
+    private _num: number;
+
+    constructor() {
+        this._num = 0;
+    }
+
+    service(args: DockerServiceArgs): Extension {
+        return {
+            name: 'docker-service',
+            key: `dokcer-service_${args.name}`,
+            enrich: t => {
+                const propertyName = `docker-service-prop-${this._num++}`;
+                t.property(propertyName, {
+                    type: 'docker-service',
+                    name: args.name,
+                    image: args.image,
+                    ports: args.ports ?? []
+                });
+                t.tag('docker-services', propertyName);
+            }
+        };
+    }
 
     get client(): DockerClient {
         if (!this._client) {

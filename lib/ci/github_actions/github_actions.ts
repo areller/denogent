@@ -4,6 +4,7 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import * as fs from "https://deno.land/std/fs/mod.ts";
 import { json2yaml } from 'https://deno.land/x/json2yaml/mod.ts';
 import { issue } from "./commands.ts";
+import type { Graph } from "../../../internal/graph/graph.ts";
 
 export class GitHubActions implements CIIntegration {
     constructor(
@@ -128,6 +129,7 @@ export class GitHubActions implements CIIntegration {
                 [this.image]: {
                     name: this.image,
                     'runs-on': this.image,
+                    services: undefined,
                     steps: [
                         {
                             name: 'checkout',
@@ -149,6 +151,8 @@ export class GitHubActions implements CIIntegration {
                 }
             } 
         };
+        
+        this.addServices(workflow.jobs[this.image], args.graph);
 
         let workflowFilePath = path.join(workflowsPath, `${args.name}.yml`);
         await fs.ensureFile(workflowFilePath);
@@ -157,6 +161,28 @@ export class GitHubActions implements CIIntegration {
         await Deno.writeFile(workflowFilePath, new TextEncoder().encode(contents), { create: true });
 
         args.logger.debug(`created '${workflowFilePath}'.`);
+    }
+
+    private addServices(workflowJob: { services: { [name: string]: { image: string, ports: string[] | undefined } } | undefined }, graph: Graph) {
+        let services: { [name: string]: { image: string, ports: string[] | undefined } } | undefined = {};
+        for (const taskName of graph.taskNames) {
+            const task = graph.getTask(taskName)!;
+            const dockerServices = task.tags['docker-services'];
+
+            if (dockerServices !== undefined) {
+                for (const dockerServiceRef of dockerServices) {
+                    const dockerService = task.properties[dockerServiceRef]! as { name: string, image: string, ports: string[] };
+                    services[dockerService.name] = {
+                        image: dockerService.image,
+                        ports: dockerService.ports.length > 0 ? dockerService.ports : undefined
+                    };
+                }
+            }
+        }
+
+        if (Object.keys(services).length > 0) {
+            workflowJob.services = services;
+        }
     }
 }
 
