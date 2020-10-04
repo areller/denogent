@@ -1,7 +1,8 @@
 import type { CLICommand } from "./cli.ts";
+import { createCommandDescription } from "./create/create.ts";
 import { generateCommandDescription } from "./generate/generate.ts";
 import { runCommandDescription } from "./run/run.ts";
-import { tasksCommandDescription } from "./tasks/targets.ts";
+import { tasksCommandDescription } from "./tasks/tasks.ts";
 
 let commands: CLICommand[] = [];
 
@@ -10,6 +11,7 @@ function addCommand(command: CLICommand) {
 }
 
 export function initializeCommands() {
+    addCommand(createCommandDescription());
     addCommand(runCommandDescription());
     addCommand(generateCommandDescription());
     addCommand(tasksCommandDescription());

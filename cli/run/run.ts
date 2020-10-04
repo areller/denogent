@@ -66,6 +66,7 @@ export function runCommandDescription(): CLICommand {
                 required: false
             }
         ],
+        requireBuildContext: true,
         fn: run
     };
 }
