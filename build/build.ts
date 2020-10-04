@@ -18,6 +18,9 @@ createBuilder({
     name: 'denogent-build',
     targetTasks: test,
     ciIntegrations: [
-        createGitHubActions('ubuntu-latest', ['gh-actions'])
+        createGitHubActions({
+            image: 'ubuntu-latest',
+            onPRBranches: ['master']
+        })
     ]
 });

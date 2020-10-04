@@ -161,20 +161,33 @@ export class GitHubActions extends CIIntegration {
     }
 }
 
+export interface CreateGitHubActionsArgs {
+    /**
+     * the image name of the CI virtual machine (e.g. 'windows-latest')
+     */
+    image: string;
+    /**
+     * 
+     */
+    onPushBranches?: string[],
+    /**
+     * 
+     */
+    onPRBranches?: string[];
+    /**
+     * 
+     */
+    onPushTags?: string[];
+    /**
+     * 
+     */
+    secrets?: string[]
+}
+
 /**
  * Creates a GitHub Actions CI integration.
- * @param image the image name of the CI virtual machine (e.g. 'windows-latest')
- * @param onPushBranches 
- * @param onPRBranches 
- * @param onPushTags 
- * @param secrets 
+ * @param args arguments for GitHub Actions
  */
-export function createGitHubActions(
-    image: string,
-    onPushBranches?: string[],
-    onPRBranches?: string[],
-    onPushTags?: string[],
-    secrets?: string[]
-) {
-    return new GitHubActions(image, onPushBranches, onPRBranches, onPushTags, secrets);
+export function createGitHubActions(args: CreateGitHubActionsArgs) {
+    return new GitHubActions(args.image, args.onPushBranches, args.onPRBranches, args.onPushTags, args.secrets);
 }
