@@ -28,19 +28,19 @@ export interface GenerateArgs {
     logger: Logger;
 }
 
-export abstract class CIIntegration {
-    abstract get type(): string;
-    abstract get logFn(): LoggerFn;
+export interface CIIntegration {
+    type: string;
+    logFn: LoggerFn;
 
     /**
      * Cleans the files of the CI integration.
      * @param args clean arguments
      */
-    abstract clean(args: CleanArgs): Promise<void>;
+    clean(args: CleanArgs): Promise<void>;
 
     /**
      * Generates files for the CI integration.
      * @param args generate arguments
      */
-    abstract generate(args: GenerateArgs): Promise<void>;
+    generate(args: GenerateArgs): Promise<void>;
 }
