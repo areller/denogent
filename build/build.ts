@@ -3,6 +3,7 @@ import { createBuilder } from "../lib/core/builder.ts";
 import { task } from "../lib/core/task.ts";
 import { DenoPermissions } from "../lib/deno/args.ts";
 import deno from "../lib/deno/deno.ts";
+import docker from "../lib/docker/docker.ts";
 import { delay } from 'https://deno.land/std/async/delay.ts';
 
 const test = task('test')
@@ -14,9 +15,18 @@ const test = task('test')
         });
     });
 
+const build = task('build')
+    .dependsOn(test)
+    .does(async ctx => {
+        await docker.client.build({
+            logger: ctx?.logger,
+            tag: 'test:0.1'
+        });
+    });
+
 createBuilder({
     name: 'denogent-build',
-    targetTasks: test,
+    targetTasks: build,
     ciIntegrations: [
         createGitHubActions({
             image: 'ubuntu-latest',

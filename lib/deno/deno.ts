@@ -35,7 +35,7 @@ class DenoTools {
             stderr: 'piped'
         });
 
-        await readLines([testProcess.stdout, testProcess.stderr], line => {
+        await readLines([testProcess.stdout, testProcess.stderr], true, line => {
             if (args.logger) {
                 args.logger.debug(line.trim());
             }

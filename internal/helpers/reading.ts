@@ -1,9 +1,10 @@
 /**
  * Reads lines from an array of buffers.
  * @param readers an array of reads
+ * @param closeAfterUse if true, the readers will be closed after use.
  * @param fn a callback for receiving the lines
  */
-export async function readLines(readers: (Deno.Reader & Deno.Closer)[], fn: (line: string) => void) {
+export async function readLines(readers: (Deno.Reader & Deno.Closer)[], closeAfterUse: boolean, fn: (line: string) => void) {
     readers = [...readers];
     let lineBuffer = '';
 
@@ -33,7 +34,11 @@ export async function readLines(readers: (Deno.Reader & Deno.Closer)[], fn: (lin
             }
 
             readers = readers.filter(r => r != reader);
-            reader.close();
+            
+            if (closeAfterUse) {
+                reader.close();
+            }
+            
             if (readers.length == 0) {
                 return;
             }

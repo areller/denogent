@@ -31,7 +31,7 @@ class Git {
      * @param args command arguments
      */
     async isGitRepository(args: GitCommandArgs): Promise<boolean> {
-        let [success, _] = await this.runGit(args, ['status']);
+        let [success, _] = await this.runGit(args, ['status'], false);
         return success;
     }
 
@@ -49,11 +49,7 @@ class Git {
      * @param args command arguments
      */
     async getHeadCommit(args: GitCommandArgs): Promise<string> {
-        let [success, output] = await this.runGit(args, ['rev-parse', 'HEAD']);
-        if (!success) {
-            this.throwOnUnsuccessful(['rev-parse', 'HEAD']);
-        }
-
+        let [_, output] = await this.runGit(args, ['rev-parse', 'HEAD']);
         return output.trim();
     }
 
@@ -62,11 +58,7 @@ class Git {
      * @param args command arguments
      */
     async getBranch(args: GitCommandArgs): Promise<string> {
-        let [success, output] = await this.runGit(args, ['rev-parse', '--abbrev-ref', 'HEAD']);
-        if (!success) {
-            this.throwOnUnsuccessful(['rev-parse', '--abbrev-ref', 'HEAD']);
-        }
-
+        let [_, output] = await this.runGit(args, ['rev-parse', '--abbrev-ref', 'HEAD']);
         return output.trim();
     }
 
@@ -75,19 +67,15 @@ class Git {
      * @param args command arguments
      */
     async describe(args: GitCommandArgs): Promise<string | undefined> {
-        let [success, output] = await this.runGit(args, ['describe', '--tags']);
+        let [success, output] = await this.runGit(args, ['describe', '--tags'], false);
         if (!success) {
             return undefined;
         }
-
+        
         return output.trim();
     }
 
-    private async throwOnUnsuccessful(cmd: string[]) {
-        throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
-    }
-
-    private async runGit(args: GitCommandArgs, cmd: string[]): Promise<[boolean, string]> {
+    private async runGit(args: GitCommandArgs, cmd: string[], throwOnFailure?: boolean): Promise<[boolean, string]> {
         await this.detectGit();
         const path = this.getCwd(args?.path);
 
@@ -95,6 +83,10 @@ class Git {
         const status = await process.status();
 
         if (!status.success) {
+            if (throwOnFailure ?? true) {
+                throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
+            }
+
             return [false, ''];
         }
 
