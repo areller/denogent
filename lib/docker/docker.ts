@@ -71,7 +71,6 @@ export class DockerClient {
             return [false, ''];
         }
 
-        await process.stderrOutput();
         return [true, new TextDecoder().decode(output)];
     }
 
