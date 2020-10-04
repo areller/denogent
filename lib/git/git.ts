@@ -31,13 +31,8 @@ class Git {
      * @param args command arguments
      */
     async isGitRepository(args: GitCommandArgs): Promise<boolean> {
-        await this.detectGit();
-        const path = this.getCwd(args?.path);
-
-        const process = Deno.run({ cmd: ['git', 'status'], cwd: path, stdout: 'null', stderr: 'null' });
-        const status = await process.status();
-
-        return status.success;
+        let [success, _] = await this.runGit(args, ['status']);
+        return success;
     }
 
     /**
@@ -47,6 +42,63 @@ class Git {
     async isTagged(args: GitCommandArgs): Promise<boolean> {
         await this.detectGit();
         return false;
+    }
+
+    /**
+     * Returns the HEAD commit.
+     * @param args command arguments
+     */
+    async getHeadCommit(args: GitCommandArgs): Promise<string> {
+        let [success, output] = await this.runGit(args, ['rev-parse', 'HEAD']);
+        if (!success) {
+            this.throwOnUnsuccessful(['rev-parse', 'HEAD']);
+        }
+
+        return output.trim();
+    }
+
+    /**
+     * Returns the name of the current branch.
+     * @param args command arguments
+     */
+    async getBranch(args: GitCommandArgs): Promise<string> {
+        let [success, output] = await this.runGit(args, ['rev-parse', '--abbrev-ref', 'HEAD']);
+        if (!success) {
+            this.throwOnUnsuccessful(['rev-parse', '--abbrev-ref', 'HEAD']);
+        }
+
+        return output.trim();
+    }
+
+    /**
+     * If the current commit is tagged, returns the name of the tag. Otherwise, returns `{closest tag}-{distance from that tag}`, or undefined if there is not tag in current tree.
+     * @param args command arguments
+     */
+    async describe(args: GitCommandArgs): Promise<string | undefined> {
+        let [success, output] = await this.runGit(args, ['describe', '--tags']);
+        if (!success) {
+            return undefined;
+        }
+
+        return output.trim();
+    }
+
+    private async throwOnUnsuccessful(cmd: string[]) {
+        throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
+    }
+
+    private async runGit(args: GitCommandArgs, cmd: string[]): Promise<[boolean, string]> {
+        await this.detectGit();
+        const path = this.getCwd(args?.path);
+
+        const process = Deno.run({ cmd: ['git', ...cmd], cwd: path, stdout: 'piped' });
+        const status = await process.status();
+
+        if (!status.success) {
+            return [false, ''];
+        }
+
+        return [true, new TextDecoder().decode(await process.output())];
     }
 
     private async detectGit(): Promise<void> {
