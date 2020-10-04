@@ -1,11 +1,11 @@
 import type { LogLevel, LoggerFn } from "../../../cli/logger.ts";
-import { CIIntegration, CleanArgs, GenerateArgs } from "../ci_integration.ts";
+import type { CIIntegration, CleanArgs, GenerateArgs } from "../ci_integration.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as fs from "https://deno.land/std/fs/mod.ts";
 import { json2yaml } from 'https://deno.land/x/json2yaml/mod.ts';
 import { issue } from "./commands.ts";
 
-export class GitHubActions extends CIIntegration {
+export class GitHubActions implements CIIntegration {
     constructor(
         private image: string,
         private onPushBranches?: string[],
@@ -13,7 +13,6 @@ export class GitHubActions extends CIIntegration {
         private onPushTags?: string[],
         private secrets?: string[]
     ) {
-        super();
     }
 
     get type(): string {

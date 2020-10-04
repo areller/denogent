@@ -16,8 +16,8 @@ async function run(context?: CLIContext): Promise<void> {
     }
 
     await Deno.writeFile(filePath, new TextEncoder().encode(
-`import { createBuilder } from "https://raw.githubusercontent.com/areller/denogent/master/lib/core/builder.ts";
-import { task } from "https://raw.githubusercontent.com/areller/denogent/master/lib/core/task.ts";
+`import { createBuilder } from "https://deno.land/x/denogent/lib/core/builder.ts";
+import { task } from "https://deno.land/x/denogent/lib/core/task.ts";
 
 const someTask = task('some task')
     .does(async ctx => {

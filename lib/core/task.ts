@@ -1,3 +1,4 @@
+import type { Extension } from "./extension.ts";
 import type { Logger } from "./logger.ts";
 
 export type ExecFn = (context?: Context) => Promise<void> | void;
@@ -19,29 +20,40 @@ export class Task {
     private _dependencies: Task[];
     private _dependents: Task[];
     private _conditions: CondFn[];
+    private _tags: { [name: string]: string[] };
+    private _extensions: { [name: string]: Extension };
     private _propagateExceptions: boolean;
 
     constructor(private _name: string) {
         this._dependencies = [];
         this._dependents = [];
         this._conditions = [];
+        this._tags = {};
+        this._extensions = {};
         this._propagateExceptions = true;
     }
 
     /**
-     * Defines a task or an array of task, that the current task depends on.
-     * @param tasks a single task or an array of tasks
+     * Defines a dependency or an array of dependencies, that the current task depends on.
+     * @param dependencies a single dependency or an array or dependencies. (a dependency can either be another task or an extension)
      */
-    dependsOn(tasks: Task | Task[]): Task {
-        if (tasks instanceof Array) {
-            for (let task of tasks) {
-                task._dependents.push(this);
-                this._dependencies.push(task);
+    dependsOn(dependencies: Task | Task[] | Extension | Extension[]): Task {
+        if (dependencies instanceof Array) {
+            for (const dependency of dependencies) {
+                this.dependsOn(dependency);
             }
         }
-        else {
-            tasks._dependents.push(this);
-            this._dependencies.push(tasks);
+        else if (dependencies instanceof Task) {
+            dependencies._dependents.push(this);
+            this._dependencies.push(dependencies);
+        }
+        else if ((dependencies as Extension).enrich !== undefined) {
+            if (this._extensions[dependencies.name] !== undefined) {
+                throw new Error(`Task '${this.name}' already depends on extension '${dependencies.name}'.`);
+            }
+
+            dependencies.enrich(this);
+            this._extensions[dependencies.name] = dependencies;
         }
 
         return this;
@@ -81,6 +93,26 @@ export class Task {
      */
     does(exec: ExecFn): Task {
         this._exec = exec;
+        return this;
+    }
+
+    /**
+     * Adds a tag to the current task.
+     * @param name the name of the tag
+     * @param value the value of the tag
+     */
+    tag(name: string, value: string | string[]): Task {
+        if (!this._tags[name]) {
+            this._tags[name] = value instanceof Array ? value : [value];
+        }
+        else {
+            if (value instanceof Array) {
+                this._tags[name].push(...value);
+            }
+            else {
+                this._tags[name].push(value);
+            }
+        }
         return this;
     }
 
@@ -133,6 +165,20 @@ export class Task {
      */
     get name(): string {
         return this._name;
+    }
+
+    /**
+     * Gets the tags of the current task.
+     */
+    get tags(): { [name: string]: string[] } {
+        return this._tags;
+    }
+
+    /**
+     * Gets an array of extensions that the current task depends on.
+     */
+    get extensions(): Extension[] {
+        return Object.values(this._extensions);
     }
 }
 

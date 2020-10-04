@@ -1,4 +1,4 @@
-import { task } from "./task.ts";
+import { Task, task } from "./task.ts";
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { describe } from "../../internal/testing/test.ts";
 
@@ -25,6 +25,35 @@ describe('task.test.ts', t => {
         assertEquals(taskA.dependents, [taskB]);
         assertEquals(taskB.dependents, []);
         assertEquals(taskB.dependencies, [taskA]);
+    });
+
+    t.test('tag should add a tag', () => {
+        let taskA = task('taskA');
+        taskA
+            .tag('tagA', 'valueA')
+            .tag('tagB', 'valueB')
+            .tag('tagB', 'valueC');
+
+        assertEquals(taskA.tags, {
+            ['tagA']: ['valueA'],
+            ['tagB']: ['valueB', 'valueC']
+        });
+    });
+
+    t.test('dependsOn extension should call enrich and add extension', () => {
+        let taskA = task('taskA');
+        const ext = {
+            name: 'ext1',
+            enrich: (t: Task) => {
+                t.tag('tagA', 'ext1');
+            }
+        };
+        taskA.dependsOn(ext);
+
+        assertEquals(taskA.tags, {
+            ['tagA']: ['ext1']
+        });
+        assertEquals(taskA.extensions, [ext]);
     });
 
     t.test('propagateExceptions should be true by default', () => {
