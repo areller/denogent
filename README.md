@@ -11,7 +11,7 @@
 To install the latest version of the `denogent` CLI tool, run
 
 ```
-deno install -A --unstable https://raw.githubusercontent.com/areller/denogent/master/denogent.ts
+deno install -A --unstable https://deno.land/x/denogent/denogent.ts
 ```
 
 ## The Build File
@@ -31,8 +31,8 @@ denogent create --file path/to/buid/file.ts
 Once you open the newly created build file, you'll see  
 
 ```typescript
-import { createBuilder } from "https://raw.githubusercontent.com/areller/denogent/master/lib/core/builder.ts";
-import { task } from "https://raw.githubusercontent.com/areller/denogent/master/lib/core/task.ts";
+import { createBuilder } from "https://deno.land/x/denogent/lib/core/builder.ts";
+import { task } from "https://deno.land/x/denogent/lib/core/task.ts";
 
 const someTask = task('some task')
     .does(async ctx => {
@@ -87,7 +87,7 @@ In this scenario, task `compile` will run at the beginning and then will trigger
 Tasks can define conditions for their run. For example,  
 
 ```typescript
-import git from "https://raw.githubusercontent.com/areller/denogent/master/lib/git/git.ts";
+import git from "https://deno.land/x/denogent/lib/git/git.ts";
 
 ...
 
@@ -129,7 +129,7 @@ Here's an example of integrating with GitHub Actions.
 In `build.ts`  
 
 ```typescript
-import { createGitHubActions } from "https://raw.githubusercontent.com/areller/denogent/master/lib/ci/github_actions/github_actions.ts";
+import { createGitHubActions } from "https://deno.land/x/denogent/lib/ci/github_actions/github_actions.ts";
 
 ...
 
