@@ -19,12 +19,14 @@ export class Task {
     private _dependencies: Task[];
     private _dependents: Task[];
     private _conditions: CondFn[];
+    private _tags: { [name: string]: string };
     private _propagateExceptions: boolean;
 
     constructor(private _name: string) {
         this._dependencies = [];
         this._dependents = [];
         this._conditions = [];
+        this._tags = {};
         this._propagateExceptions = true;
     }
 
@@ -85,6 +87,16 @@ export class Task {
     }
 
     /**
+     * Adds a tag to the current task.
+     * @param name the name of the tag
+     * @param value the value of the tag
+     */
+    tag(name: string, value: string): Task {
+        this._tags[name] = value;
+        return this;
+    }
+
+    /**
      * Sets whether or not the task should propagate its exception upon failure.
      * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = true)
      */
@@ -133,6 +145,13 @@ export class Task {
      */
     get name(): string {
         return this._name;
+    }
+
+    /**
+     * Gets the tags of the current task.
+     */
+    get tags(): { [name: string]: string } {
+        return this._tags;
     }
 }
 

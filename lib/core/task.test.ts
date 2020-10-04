@@ -27,6 +27,18 @@ describe('task.test.ts', t => {
         assertEquals(taskB.dependencies, [taskA]);
     });
 
+    t.test('tag should add a tag', () => {
+        let taskA = task('taskA');
+        taskA
+            .tag('tagA', 'valueA')
+            .tag('tagB', 'valueB');
+
+        assertEquals(taskA.tags, {
+            ['tagA']: 'valueA',
+            ['tagB']: 'valueB'
+        });
+    });
+
     t.test('propagateExceptions should be true by default', () => {
         let taskA = task('taskA');
         assertEquals(taskA.propagateExceptions, true);
