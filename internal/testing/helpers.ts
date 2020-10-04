@@ -16,3 +16,16 @@ export async function copyDirToTemp(path: string, fn: (tempPath: string) => Prom
         });
     }
 }
+
+export async function emptyTempDir(fn: (tempPath: string) => Promise<void>): Promise<void> {
+    const dir = await Deno.makeTempDir();
+
+    try {
+        await fn(dir);
+    }
+    finally {
+        /*await Deno.remove(dir, {
+            recursive: true
+        });*/
+    }
+}
