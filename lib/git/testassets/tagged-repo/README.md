@@ -1,0 +1,1 @@
+This is a directory that contains a git repository with a tag.
