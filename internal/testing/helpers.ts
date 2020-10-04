@@ -29,8 +29,8 @@ export async function emptyTempDir(fn: (tempPath: string) => Promise<void>): Pro
         await fn(dir);
     }
     finally {
-        /*await Deno.remove(dir, {
+        await Deno.remove(dir, {
             recursive: true
-        });*/
+        });
     }
 }
