@@ -12,10 +12,11 @@ jobs:
   ubuntu-latest:
     name: ubuntu-latest
     runs-on: ubuntu-latest
-    container: 'ubuntu:latest'
     services:
       redis:
         image: redis
+        ports:
+          - '6379:6379'
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -28,6 +29,6 @@ jobs:
           deno run -A -q --unstable build/build.ts --serial --ci-runtime
           github_actions run
         env:
-          REDIS_HOST: redis
+          REDIS_HOST: localhost
           REDIS_PORT: '6379'
           REDIS_PORTS: '6379'

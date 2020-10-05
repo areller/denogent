@@ -228,7 +228,7 @@ export interface CreateGitHubActionsArgs {
     /**
      * if defined, GitHub Actions will run the pipeline from within a given docker image
      */
-    dockerImage?: string;
+    //dockerImage?: string;
     /**
      * 
      */
@@ -252,5 +252,5 @@ export interface CreateGitHubActionsArgs {
  * @param args arguments for GitHub Actions
  */
 export function createGitHubActions(args: CreateGitHubActionsArgs) {
-    return new GitHubActions(args.image, args.dockerImage, args.onPushBranches, args.onPRBranches, args.onPushTags, args.secrets);
+    return new GitHubActions(args.image, undefined, args.onPushBranches, args.onPRBranches, args.onPushTags, args.secrets);
 }
