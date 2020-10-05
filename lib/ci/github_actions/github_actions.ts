@@ -2,13 +2,18 @@ import type { LogLevel, LoggerFn } from "../../../cli/logger.ts";
 import type { CIIntegration, CleanArgs, GenerateArgs } from "../ci_integration.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import * as fs from "https://deno.land/std/fs/mod.ts";
-import { json2yaml } from 'https://deno.land/x/json2yaml/mod.ts';
+import { stringify } from "https://deno.land/std/encoding/yaml.ts";
 import { issue } from "./commands.ts";
 import type { Graph } from "../../../internal/graph/graph.ts";
+
+type Triggers = { push?: { branches?: string[], tags?: string[] }, pull_request?: { branches?: string[] } };
+type GHAService = { image: string, ports: string[] };
+type Service = { name: string, image: string, ports: number[] };
 
 export class GitHubActions implements CIIntegration {
     constructor(
         private image: string,
+        private dockerImage?: string,
         private onPushBranches?: string[],
         private onPRBranches?: string[],
         private onPushTags?: string[],
@@ -24,8 +29,7 @@ export class GitHubActions implements CIIntegration {
         return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
 
             if (meta !== undefined) {
-                // deno-lint-ignore no-explicit-any
-                const attrs = meta as any;
+                const attrs = meta as { type: string };
                 if (attrs.type == 'started') {
                     issue('group', task);
                     return;
@@ -41,21 +45,18 @@ export class GitHubActions implements CIIntegration {
                 }
             }
 
-            // deno-lint-ignore no-explicit-any
-            const suffix = meta !== undefined ? ' {' + Object.entries(meta as any).map(x => ` ${x[0]} = ${x[1]}`) + ' }' : '';
-
             switch (level) {
                 case 'debug':
-                    console.log(`[DBG] ${message}${suffix}`);
+                    console.log(message);
                     break;
                 case 'info':
-                    console.log(`[INFO] ${message}${suffix}`);
+                    console.log(message);
                     break;
                 case 'warn':
-                    console.log(`[WARN] ${message}${suffix}`);
+                    console.warn(message);
                     break;
                 case 'error':
-                    console.error(`[ERR] ${message}${suffix}`);
+                    console.error(message);
                     break;
             }
         };
@@ -77,59 +78,24 @@ export class GitHubActions implements CIIntegration {
 
     async generate(args: GenerateArgs): Promise<void> {
         const workflowsPath = path.join('.github', 'workflows');
-
         if (await fs.exists(workflowsPath)) {
             throw new Error(`Folder '.github/workflows' already exists.`);
         }
 
-        fs.ensureDir(workflowsPath);
+        await fs.ensureDir(workflowsPath);
         args.logger.debug(`created directory '${workflowsPath}'.`);
 
-        // deno-lint-ignore no-explicit-any
-        let runEnv: { [name: string]: any } | undefined = undefined;
-        // deno-lint-ignore no-explicit-any
-        let triggers: { [name: string]: any } = { };
-
-        const onPushBranches = this.onPushBranches ?? ['master'];
-        if (onPushBranches.length > 0) {
-            if (!triggers['push']) {
-                triggers['push'] = {};
-            }
-
-            triggers['push']['branches'] = onPushBranches;
-        }
-
-        if (this.onPushTags !== undefined && this.onPushTags.length > 0) {
-            if (!triggers['push']) {
-                triggers['push'] = {};
-            }
-
-            triggers['push']['tags'] = this.onPushTags;
-        }
-
-        if (this.onPRBranches !== undefined && this.onPRBranches.length > 0) {
-            if (!triggers['pull_request']) {
-                triggers['pull_request'] = {};
-            }
-
-            triggers['pull_request']['branches'] = this.onPRBranches;
-        }
-
-        if (this.secrets !== undefined && this.secrets.length > 0) {
-            runEnv = {};
-            for (const secret of this.secrets) {
-                runEnv[secret] = '${{ secrets.' + secret + ' }}';
-            }
-        }
+        let runEnv: { [name: string]: string } = {};
 
         let workflow = {
             name: args.name,
-            on: triggers,
+            on: this.buildTriggers(args),
             jobs: {
                 [this.image]: {
                     name: this.image,
                     'runs-on': this.image,
-                    services: undefined,
+                    container: this.dockerImage,
+                    services: this.buildServices(args, runEnv),
                     steps: [
                         {
                             name: 'checkout',
@@ -149,40 +115,108 @@ export class GitHubActions implements CIIntegration {
                         }
                     ]
                 }
-            } 
+            }
         };
-        
-        this.addServices(workflow.jobs[this.image], args.graph);
 
-        let workflowFilePath = path.join(workflowsPath, `${args.name}.yml`);
+        const workflowFilePath = path.join(workflowsPath, `${args.name}.yml`);
         await fs.ensureFile(workflowFilePath);
 
-        const contents = '# automatically generated by denogent\n\n' + json2yaml(JSON.stringify(workflow));
+        const contents = '# automatically generated by denogent\n\n' + this.createYaml(workflow);
         await Deno.writeFile(workflowFilePath, new TextEncoder().encode(contents), { create: true });
 
         args.logger.debug(`created '${workflowFilePath}'.`);
     }
 
-    private addServices(workflowJob: { services: { [name: string]: { image: string, ports: string[] | undefined } } | undefined }, graph: Graph) {
-        let services: { [name: string]: { image: string, ports: string[] | undefined } } | undefined = {};
-        for (const taskName of graph.taskNames) {
-            const task = graph.getTask(taskName)!;
+    private buildTriggers(args: GenerateArgs): Triggers {
+        let triggers: Triggers = {};
+        
+        const onPushBranches = this.onPushBranches ?? ['master'];
+        if (onPushBranches.length > 0) {
+            if (!triggers.push) {
+                triggers.push = {};
+            }
+
+            triggers.push.branches = onPushBranches;
+        }
+
+        if (this.onPushTags !== undefined && this.onPushTags.length > 0) {
+            if (!triggers.push) {
+                triggers.push = {};
+            }
+
+            triggers.push.tags = this.onPushTags;
+        }
+
+        if (this.onPRBranches !== undefined && this.onPRBranches.length > 0) {
+            if (!triggers.pull_request) {
+                triggers.pull_request = {};
+            }
+
+            triggers.pull_request.branches = this.onPRBranches;
+        }
+
+        return triggers;
+    }
+
+    private buildServices(args: GenerateArgs, runEnv: { [name: string]: string }) {
+        let services: { [name: string]: GHAService } = {};
+        for (const taskName of args.graph.taskNames) {
+            const task = args.graph.getTask(taskName)!;
             const dockerServices = task.tags['docker-services'];
 
             if (dockerServices !== undefined) {
                 for (const dockerServiceRef of dockerServices) {
-                    const dockerService = task.properties[dockerServiceRef]! as { name: string, image: string, ports: string[] };
+                    const dockerService = task.properties[dockerServiceRef]! as Service;
                     services[dockerService.name] = {
                         image: dockerService.image,
-                        ports: dockerService.ports.length > 0 ? dockerService.ports : undefined
+                        ports: this.dockerImage === undefined ? dockerService.ports.map(p => `${p}:${p}`) : []
                     };
+
+                    runEnv[`${dockerService.name.toUpperCase()}_HOST`] = this.dockerImage === undefined ? 'localhost' : dockerService.name;
+                    if (dockerService.ports.length > 0) {
+                        runEnv[`${dockerService.name.toUpperCase()}_PORT`] = dockerService.ports[0].toString();
+                        runEnv[`${dockerService.name.toUpperCase()}_PORTS`] = dockerService.ports.join(';');
+                    }
                 }
             }
         }
 
-        if (Object.keys(services).length > 0) {
-            workflowJob.services = services;
+        return services;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    private createYaml(obj: any): string {
+        const sanitized = this.sanitizeEmptyFields(obj);
+        return stringify(sanitized);
+    }
+
+    // deno-lint-ignore no-explicit-any
+    private sanitizeEmptyFields(obj: any): any {
+        if (obj instanceof Array) {
+            if (obj.length == 0) {
+                return undefined;
+            }
+
+            return obj.map(elem => this.sanitizeEmptyFields(elem));
         }
+        else if (obj instanceof Object) {
+            if (Object.keys(obj).length == 0) {
+                return undefined;
+            }
+
+            // deno-lint-ignore no-explicit-any
+            let newObj: any = {};
+            for (const entry of Object.entries(obj)) {
+                const value = this.sanitizeEmptyFields(entry[1]);
+                if (value !== undefined) {
+                    newObj[entry[0]] = value;
+                }
+            }
+
+            return newObj;
+        }
+
+        return obj;
     }
 }
 
@@ -191,6 +225,10 @@ export interface CreateGitHubActionsArgs {
      * the image name of the CI virtual machine (e.g. 'windows-latest')
      */
     image: string;
+    /**
+     * if defined, GitHub Actions will run the pipeline from within a given docker image
+     */
+    dockerImage?: string;
     /**
      * 
      */
@@ -214,5 +252,5 @@ export interface CreateGitHubActionsArgs {
  * @param args arguments for GitHub Actions
  */
 export function createGitHubActions(args: CreateGitHubActionsArgs) {
-    return new GitHubActions(args.image, args.onPushBranches, args.onPRBranches, args.onPushTags, args.secrets);
+    return new GitHubActions(args.image, args.dockerImage, args.onPushBranches, args.onPRBranches, args.onPushTags, args.secrets);
 }

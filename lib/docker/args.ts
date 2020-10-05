@@ -14,5 +14,5 @@ export interface DockerClientBuildArgs extends DockerClientArgs {
 export interface DockerServiceArgs {
     name: string;
     image: string;
-    ports?: string[];
+    ports?: number[];
 }

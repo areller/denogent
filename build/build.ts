@@ -7,7 +7,7 @@ import docker from "../lib/docker/docker.ts";
 import { delay } from 'https://deno.land/std/async/delay.ts';
 
 const test = task('test')
-    .dependsOn(docker.service({ name: 'redis', image: 'redis', ports: ['6379:6379'] }))
+    .dependsOn(docker.service({ name: 'redis', image: 'redis', ports: [6379] }))
     .does(async ctx => {
         await deno.test({
             logger: ctx?.logger,
