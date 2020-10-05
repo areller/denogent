@@ -113,7 +113,7 @@ export class GitHubActions implements CIIntegration {
                         },
                         {
                             name: 'run build',
-                            run: `deno run -A -q --unstable ${args.buildFile} --serial --ci-runtime github_actions run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
+                            run: `deno run -A -q --unstable ${args.buildFile} --serial --skip-services --ci-runtime github_actions run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
                             env: runEnv
                         }
                     ]

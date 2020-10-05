@@ -1,4 +1,5 @@
 import { readLines } from "../../internal/helpers/reading.ts";
+import { runCommand as runCommandInternal } from "../../internal/helpers/cmd.ts";
 import type { Logger } from "./logger.ts";
 
 export interface RunCommandArgs {
@@ -26,26 +27,11 @@ export interface RunCommandArgs {
  * @param args run arguments
  */
 export async function runCommand(args: RunCommandArgs): Promise<[boolean, string]> {
-    const process = Deno.run({
-        cmd: args.cmd,
-        cwd: args.path ?? Deno.cwd(),
-        stdout: 'piped',
-        stderr: 'piped'
-    });
-
-    await readLines([process.stdout, process.stderr], false, line => {
+    const res = await runCommandInternal(args.cmd, line => {
         if (args.logger) {
             args.logger.debug(line);
         }
-    });
+    }, args.path, args.throwOnFailure ?? true) as [boolean, string];
 
-    const status = await process.status();
-    const output = await process.output();
-    await process.stderrOutput();
-
-    if (!status.success && (args.throwOnFailure ?? true)) {
-        throw new Error(`Command '${args.cmd.join(' ')}' has failed.`);
-    }
-
-    return [status.success, new TextDecoder().decode(output)];
+    return res;
 }
