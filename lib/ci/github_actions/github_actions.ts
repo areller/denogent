@@ -86,6 +86,9 @@ export class GitHubActions implements CIIntegration {
         args.logger.debug(`created directory '${workflowsPath}'.`);
 
         let runEnv: { [name: string]: string } = {};
+        for (const secret of this.secrets ?? []) {
+            runEnv[secret] = '${{ secrets.' + secret + ' }}';
+        }
 
         let workflow = {
             name: args.name,
