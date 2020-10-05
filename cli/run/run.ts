@@ -45,7 +45,6 @@ async function run(context?: CLIContext): Promise<void> {
 
     let containerNames: string[] = [];
     try {
-        console.log(context?.args);
         if (!context?.args['skip-services']) {
             await launchDockerServices(context!, graph, containerNames);
         }
