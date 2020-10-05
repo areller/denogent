@@ -26,8 +26,8 @@ jobs:
           deno-version: v1.4.1
       - name: run build
         run: >-
-          deno run -A -q --unstable build/build.ts --serial --ci-runtime
-          github_actions run
+          deno run -A -q --unstable build/build.ts --serial --skip-services
+          --ci-runtime github_actions run
         env:
           REDIS_HOST: localhost
           REDIS_PORT: '6379'
