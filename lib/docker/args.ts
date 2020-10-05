@@ -16,3 +16,7 @@ export interface DockerServiceArgs {
     image: string;
     ports?: number[];
 }
+
+export interface DockerContainerArgs {
+    image: string;
+}

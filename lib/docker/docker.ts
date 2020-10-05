@@ -1,7 +1,9 @@
-import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs } from "./args.ts";
+import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs, DockerContainerArgs } from "./args.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import { readLines } from "../../internal/helpers/reading.ts";
 import type { Extension } from "../core/extension.ts";
+
+export type Service = { name: string, image: string, ports: number[] };
 
 export class DockerClient {
 
@@ -105,14 +107,35 @@ class Docker {
             name: 'docker-service',
             key: `dokcer-service_${args.name}`,
             enrich: t => {
-                const propertyName = `docker-service-prop-${this._num++}`;
-                t.property(propertyName, {
-                    type: 'docker-service',
+                let services = t.properties['docker-services'] as { [name: string]: Service };
+                if (services === undefined) {
+                    services = {};
+                    t.properties['docker-services'] = services;
+                }
+
+                if (services[args.name]) {
+                    throw new Error(`Task '${t.name}' already has a service '${args.name}' in the 'docker-services' property.`);
+                }
+
+                services[args.name] = {
                     name: args.name,
                     image: args.image,
                     ports: args.ports ?? []
-                });
-                t.tag('docker-services', propertyName);
+                };
+            }
+        };
+    }
+
+    container(args: DockerContainerArgs): Extension {
+        return {
+            name: 'docker-container',
+            key: `docker-container_${args.image}`,
+            enrich: t => {
+                if (t.properties['docker-image']) {
+                    throw new Error(`Task '${t.name}' already has a 'docker-image' property.`);
+                }
+
+                t.properties['docker-image'] = args.image;
             }
         };
     }

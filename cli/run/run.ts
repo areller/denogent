@@ -3,10 +3,8 @@ import { createGraph, Graph } from "../../internal/graph/graph.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
 import { CLICommand, CLICommandOptionDataType, fileOption } from "../cli.ts";
 import type { CLIContext } from "../context.ts";
-import { v4 } from "https://deno.land/std/uuid/mod.ts";
-import { createCommandDescription } from "../create/create.ts";
-
-type Service = { name: string, image: string, ports: number[] };
+import { v4 as uuidv4 } from "https://deno.land/std/uuid/mod.ts";
+import type { Service } from "../../lib/docker/docker.ts";
 
 async function run(context?: CLIContext): Promise<void> {
     let graph = createGraph(context?.buildContext?.targetTasks!);
@@ -60,11 +58,10 @@ async function launchDockerServices(context: CLIContext, graph: Graph, container
     let services: { [name: string]: Service } = {};
     for (const taskName of graph.taskNames) {
         const task = graph.getTask(taskName)!;
-        const dockerServices = task.tags['docker-services'];
+        const dockerServices = task.properties['docker-services'] as { [name: string]: Service } | undefined;
 
         if (dockerServices !== undefined) {
-            for (const dockerServiceRef of dockerServices) {
-                const dockerService = task.properties[dockerServiceRef]! as Service;
+            for (const dockerService of Object.values(dockerServices)) {
                 services[dockerService.name] = dockerService;
             }
         }
@@ -79,7 +76,7 @@ async function launchDockerServices(context: CLIContext, graph: Graph, container
     }
 
     for (const service of Object.values(services)) {
-        const id = v4.generate().replaceAll('-', '');
+        const id = uuidv4.generate().replaceAll('-', '');
         let cmd = ['docker', 'run', '--rm', '--name', id, '-idt'];
         for (const port of service.ports) {
             cmd.push('-p', `${port}:${port}`);

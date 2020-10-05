@@ -4,11 +4,10 @@ import * as path from "https://deno.land/std/path/mod.ts";
 import * as fs from "https://deno.land/std/fs/mod.ts";
 import { stringify } from "https://deno.land/std/encoding/yaml.ts";
 import { issue } from "./commands.ts";
-import type { Graph } from "../../../internal/graph/graph.ts";
+import type { Service } from "../../docker/docker.ts";
 
 type Triggers = { push?: { branches?: string[], tags?: string[] }, pull_request?: { branches?: string[] } };
 type GHAService = { image: string, ports: string[] };
-type Service = { name: string, image: string, ports: number[] };
 
 export class GitHubActions implements CIIntegration {
     constructor(
@@ -165,11 +164,10 @@ export class GitHubActions implements CIIntegration {
         let services: { [name: string]: GHAService } = {};
         for (const taskName of args.graph.taskNames) {
             const task = args.graph.getTask(taskName)!;
-            const dockerServices = task.tags['docker-services'];
+            const dockerServices = task.properties['docker-services'] as { [name: string]: Service } | undefined;
 
             if (dockerServices !== undefined) {
-                for (const dockerServiceRef of dockerServices) {
-                    const dockerService = task.properties[dockerServiceRef]! as Service;
+                for (const dockerService of Object.values(dockerServices)) {
                     services[dockerService.name] = {
                         image: dockerService.image,
                         ports: this.dockerImage === undefined ? dockerService.ports.map(p => `${p}:${p}`) : []
