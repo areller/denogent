@@ -31,6 +31,7 @@ createBuilder({
     ciIntegrations: [
         createGitHubActions({
             image: 'ubuntu-latest',
+            dockerImage: 'ubuntu:latest',
             onPRBranches: ['master']
         })
     ]
