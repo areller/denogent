@@ -11,8 +11,8 @@ class NodeJS {
      * Declares a dependency on NodeJS
      * @param version NodeJS version
      */
-    setup(version: NodeJSVersion): Extension {
-        const dockerTag = version == 'latest' ? 'alpine' : version + '-alpine';
+    setup(version?: NodeJSVersion): Extension {
+        const dockerTag = !version || version == 'latest' ? 'alpine' : version + '-alpine';
         return {
             name: 'build-kits-nodejs',
             key: `build-kits-nodejs_${version}`,
@@ -23,7 +23,7 @@ class NodeJS {
         }
     }
 
-    private githubActionsInject(task: Task, version: string): void {
+    private githubActionsInject(task: Task, version?: string): void {
         let uses = task.properties['gh-actions-uses'] as GHAUsesCollection;
         if (uses === undefined) {
             uses = {};
@@ -37,7 +37,7 @@ class NodeJS {
             uses: 'actions/setup-node@v1'
         };
 
-        if (version !== 'latest') {
+        if (version !== undefined && version !== 'latest') {
             uses[key].with = {
                 'node-version': version
             };

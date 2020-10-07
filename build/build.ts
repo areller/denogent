@@ -4,9 +4,16 @@ import { task } from "../lib/core/task.ts";
 import { DenoPermissions } from "../lib/deno/args.ts";
 import deno from "../lib/deno/deno.ts";
 import nodejs from "../lib/build-kits/nodejs/nodejs.ts";
+import runtime from "../lib/runtime/runtime.ts";
+
+const install = task('install')
+    .dependsOn(nodejs.setup('latest'))
+    .does(async ctx => {
+        await runtime.command({ cmd: ['npm', 'install', 'express'], logger: ctx?.logger });
+    });
 
 const test = task('test')
-    .dependsOn(nodejs.setup('12.18.1'))
+    .dependsOn(install)
     .does(async ctx => {
         await deno.test({
             logger: ctx?.logger,
