@@ -35,7 +35,6 @@ export class GitHubActions implements CIIntegration {
                     issue('group', task);
                     return;
                 }
-
                 else if (['finishedSuccessfully', 'failedCondition', 'failed'].indexOf(attrs.type) != -1) {
                     if (attrs.type == 'failedCondition' || attrs.type == 'failed') {
                         console.error(message);
