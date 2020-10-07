@@ -15,8 +15,7 @@ export class GitHubActions implements CIIntegration {
         private dockerImage?: string,
         private onPushBranches?: string[],
         private onPRBranches?: string[],
-        private onPushTags?: string[],
-        private secrets?: string[]
+        private onPushTags?: string[]
     ) {
     }
 
@@ -249,25 +248,17 @@ export interface CreateGitHubActionsArgs {
      */
     image: string;
     /**
-     * if defined, GitHub Actions will run the pipeline from within a given docker image
-     */
-    //dockerImage?: string;
-    /**
-     * 
+     * defines which branches will trigger a build upon push
      */
     onPushBranches?: string[],
     /**
-     * 
+     * defines which base branches will trigger a build upon a PR to those branches
      */
     onPRBranches?: string[];
     /**
-     * 
+     * defines which tags will trigger a build upon push
      */
     onPushTags?: string[];
-    /**
-     * 
-     */
-    secrets?: string[]
 }
 
 /**
@@ -275,5 +266,5 @@ export interface CreateGitHubActionsArgs {
  * @param args arguments for GitHub Actions
  */
 export function createGitHubActions(args: CreateGitHubActionsArgs) {
-    return new GitHubActions(args.image, undefined, args.onPushBranches, args.onPRBranches, args.onPushTags, args.secrets);
+    return new GitHubActions(args.image, undefined, args.onPushBranches, args.onPRBranches, args.onPushTags);
 }
