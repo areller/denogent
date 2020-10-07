@@ -1,7 +1,10 @@
 import { createExecutor } from "../../internal/executor/executor.ts";
 import { createGraph, Graph } from "../../internal/graph/graph.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
 import { CLICommand, CLICommandOptionDataType, fileOption } from "../cli.ts";
 import type { CLIContext } from "../context.ts";
+import { v4 as uuidv4 } from "https://deno.land/std/uuid/mod.ts";
+import type { Service } from "../../lib/docker/docker.ts";
 
 async function run(context?: CLIContext): Promise<void> {
     let graph = createGraph(context?.buildContext?.targetTasks!);
@@ -38,7 +41,71 @@ async function run(context?: CLIContext): Promise<void> {
         }
     });
 
-    await execution.execute();
+    let containerNames: string[] = [];
+    try {
+        if (!context?.args['skip-services']) {
+            await launchDockerServices(context!, graph, containerNames);
+        }
+
+        await execution.execute();
+    }
+    finally {
+        await removeDockerServices(containerNames);
+    }
+}
+
+async function launchDockerServices(context: CLIContext, graph: Graph, containerNames: string[]): Promise<void> {
+    let services: { [name: string]: Service } = {};
+    for (const taskName of graph.taskNames) {
+        const task = graph.getTask(taskName)!;
+        const dockerServices = task.properties['docker-services'] as { [name: string]: Service } | undefined;
+
+        if (dockerServices !== undefined) {
+            for (const dockerService of Object.values(dockerServices)) {
+                services[dockerService.name] = dockerService;
+            }
+        }
+    }
+
+    if (Object.keys(services).length == 0) {
+        return;
+    }
+
+    if (!(await runCommand(['docker', '--version'], undefined, undefined, false))[0]) {
+        throw new Error(`Docker is not installed.`);
+    }
+
+    for (const service of Object.values(services)) {
+        const id = uuidv4.generate().replaceAll('-', '');
+        let cmd = ['docker', 'run', '--rm', '--name', id, '-idt'];
+        for (const port of service.ports) {
+            cmd.push('-p', `${port}:${port}`);
+        }
+
+        cmd.push(service.image);
+
+        await runCommand(cmd, line => {
+            context.logger('debug', line);
+        });
+
+        containerNames.push(id);
+
+        Deno.env.set(`${service.name.toUpperCase()}_HOST`, 'localhost');
+        if (service.ports.length > 0) {
+            Deno.env.set(`${service.name.toUpperCase()}_PORT`, service.ports[0].toString());
+            Deno.env.set(`${service.name.toUpperCase()}_PORTS`, service.ports.join(';'));
+        }
+    }
+}
+
+async function removeDockerServices(containerNames: string[]): Promise<void> {
+    if (containerNames.length == 0) {
+        return;
+    }
+
+    for (const name of containerNames) {
+        await runCommand(['docker', 'rm', '-f', name]);
+    }
 }
 
 export function runCommandDescription(): CLICommand {
@@ -63,6 +130,12 @@ export function runCommandDescription(): CLICommand {
                 name: 'only',
                 description: 'Run a single task',
                 dataType: CLICommandOptionDataType.String,
+                required: false
+            },
+            {
+                name: 'skip-services',
+                description: 'Do not run dependent services',
+                dataType: CLICommandOptionDataType.Boolean,
                 required: false
             }
         ],

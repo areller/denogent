@@ -68,8 +68,8 @@ function decideLogger(cliArgs: Args, buildContext: BuildContext): LoggerFn | und
     else if (cliArgs['json']) {
         return jsonLog;
     }
-    else if (cliArgs['ci-runtime']) {
-        const ciArray = buildContext.ciIntegrations.filter(c => c.type == cliArgs['ci-runtime']);
+    else if (cliArgs['runtime']) {
+        const ciArray = buildContext.ciIntegrations.filter(c => c.type == cliArgs['runtime']);
         if (ciArray === undefined || ciArray.length == 0) {
             return undefined;
         }

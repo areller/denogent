@@ -1,5 +1,6 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import type { GitCommandArgs } from "./args.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
+import type { GitCommandArgs, GitSubCommandArgs } from "./args.ts";
 
 class Git {
 
@@ -31,7 +32,7 @@ class Git {
      * @param args command arguments
      */
     async isGitRepository(args: GitCommandArgs): Promise<boolean> {
-        let [success, _] = await this.runGit(args, ['status']);
+        let [success, _] = await this.runGit(args, ['status'], false);
         return success;
     }
 
@@ -49,11 +50,7 @@ class Git {
      * @param args command arguments
      */
     async getHeadCommit(args: GitCommandArgs): Promise<string> {
-        let [success, output] = await this.runGit(args, ['rev-parse', 'HEAD']);
-        if (!success) {
-            this.throwOnUnsuccessful(['rev-parse', 'HEAD']);
-        }
-
+        let [_, output] = await this.runGit(args, ['rev-parse', 'HEAD']);
         return output.trim();
     }
 
@@ -62,11 +59,7 @@ class Git {
      * @param args command arguments
      */
     async getBranch(args: GitCommandArgs): Promise<string> {
-        let [success, output] = await this.runGit(args, ['rev-parse', '--abbrev-ref', 'HEAD']);
-        if (!success) {
-            this.throwOnUnsuccessful(['rev-parse', '--abbrev-ref', 'HEAD']);
-        }
-
+        let [_, output] = await this.runGit(args, ['rev-parse', '--abbrev-ref', 'HEAD']);
         return output.trim();
     }
 
@@ -75,7 +68,7 @@ class Git {
      * @param args command arguments
      */
     async describe(args: GitCommandArgs): Promise<string | undefined> {
-        let [success, output] = await this.runGit(args, ['describe', '--tags']);
+        let [success, output] = await this.runGit(args, ['describe', '--tags'], false);
         if (!success) {
             return undefined;
         }
@@ -83,22 +76,25 @@ class Git {
         return output.trim();
     }
 
-    private async throwOnUnsuccessful(cmd: string[]) {
-        throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
+    /**
+     * Runs a git sub command.
+     * @param args sub command arguments
+     */
+    async subcmd(args: GitSubCommandArgs): Promise<string> {
+        let [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(' '), true);
+        return output.trim();
     }
 
-    private async runGit(args: GitCommandArgs, cmd: string[]): Promise<[boolean, string]> {
+    private async runGit(args: GitCommandArgs, cmd: string[], throwOnFailure?: boolean): Promise<[boolean, string]> {
         await this.detectGit();
         const path = this.getCwd(args?.path);
-
-        const process = Deno.run({ cmd: ['git', ...cmd], cwd: path, stdout: 'piped' });
-        const status = await process.status();
-
-        if (!status.success) {
-            return [false, ''];
+        
+        const [status, output] = await runCommand(['git', ...cmd], undefined, path, false);
+        if (!status && (throwOnFailure ?? true)) {
+            throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
         }
 
-        return [true, new TextDecoder().decode(await process.output())];
+        return [status, output];
     }
 
     private async detectGit(): Promise<void> {

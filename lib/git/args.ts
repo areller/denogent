@@ -15,3 +15,13 @@ export interface GitCommandArgs {
      */
     logger: Logger | undefined | false;
 }
+
+/**
+ * Command arguments for git subcommand
+ */
+export interface GitSubCommandArgs extends GitCommandArgs {
+    /**
+     * The subcommand to run
+     */
+    cmd: string | string[];
+}

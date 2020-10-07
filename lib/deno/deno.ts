@@ -1,5 +1,5 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import { readLines } from "../../internal/helpers/reading.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
 import { DenoPermissions, DenoTestArgs } from "./args.ts";
 
 class DenoTools {
@@ -29,25 +29,18 @@ class DenoTools {
             cmd.push(`--filter "${args.filter}"`);
         }
 
-        const testProcess = Deno.run({
-            cmd: cmd,
-            stdout: 'piped',
-            stderr: 'piped'
-        });
+        const path = this.getCwd(args.path);
 
-        await readLines([testProcess.stdout, testProcess.stderr], line => {
+        const [status, _] = await runCommand(cmd, line => {
             if (args.logger) {
                 args.logger.debug(line.trim());
             }
-        });
-
-        const status = await testProcess.status();
-        if (!status.success && (args.throwOnFailure ?? true)) {
+        }, path, false);
+        if (!status && (args.throwOnFailure ?? true)) {
             throw new Error('tests have failed');
         }
-        else {
-            return status.success;
-        }
+
+        return status;
     }
 
     private insertPermissions(cmd: string[], permissions: DenoPermissions) {

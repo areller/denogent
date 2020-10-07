@@ -40,10 +40,27 @@ describe('task.test.ts', t => {
         });
     });
 
+    t.test('property should add a property', () => {
+        let taskA = task('taskA');
+        taskA
+            .property('propA', {
+                valA: 'valueA',
+                valB: 'valueB'
+            });
+
+        assertEquals(taskA.properties, {
+            ['propA']: {
+                valA: 'valueA',
+                valB: 'valueB'
+            }
+        });
+    });
+
     t.test('dependsOn extension should call enrich and add extension', () => {
         let taskA = task('taskA');
         const ext = {
             name: 'ext1',
+            key: 'ext1_1',
             enrich: (t: Task) => {
                 t.tag('tagA', 'ext1');
             }
