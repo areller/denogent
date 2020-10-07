@@ -1,5 +1,6 @@
 import { copy, exists, move } from "https://deno.land/std/fs/mod.ts";
 import { join } from "https://deno.land/std/path/mod.ts";
+import type { Logger } from "../../lib/core/logger.ts";
 
 export async function copyDirToTemp(path: string, fn: (tempPath: string) => Promise<void>): Promise<void> {
     const dir = await Deno.makeTempDir();
@@ -33,4 +34,13 @@ export async function emptyTempDir(fn: (tempPath: string) => Promise<void>): Pro
             recursive: true
         });
     }
+}
+
+export function mockDebugLogger(onLog: (log: string) => void): Logger {
+    return {
+        debug: log => onLog(log),
+        info: _ => {},
+        warn: _ => {},
+        error: (_: string | Error) => {}
+    };
 }
