@@ -22,7 +22,7 @@ jobs:
       - name: run build
         run: >-
           deno run -A -q --unstable build/build.ts --serial --skip-services
-          --runtime github_actions run
+          --runtime gh-actions run
         env:
           docker_username: '${{ secrets.docker_username }}'
           docker_password: '${{ secrets.docker_password }}'

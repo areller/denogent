@@ -17,7 +17,6 @@ const test = task('test')
 
 const build = task('build')
     .dependsOn(test)
-    .when(_ => false)
     .does(async ctx => {
         await docker.client.build({
             logger: ctx?.logger,
