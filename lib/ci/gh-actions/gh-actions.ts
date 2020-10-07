@@ -21,7 +21,7 @@ export class GitHubActions implements CIIntegration {
     }
 
     get type(): string {
-        return 'github_actions';
+        return 'gh-actions';
     }
 
     get logFn(): LoggerFn {

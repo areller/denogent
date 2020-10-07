@@ -129,7 +129,7 @@ Here's an example of integrating with GitHub Actions.
 In `build.ts`  
 
 ```typescript
-import { createGitHubActions } from "https://deno.land/x/denogent/lib/ci/github_actions/github_actions.ts";
+import { createGitHubActions } from "https://deno.land/x/denogent/lib/ci/gh-actions/gh-actions.ts";
 
 ...
 
@@ -146,5 +146,5 @@ createBuilder({
 ```
 
 ```
-denogent generate --file build/build.ts --ci github_actions
+denogent generate --file build/build.ts --ci gh-actions
 ```
