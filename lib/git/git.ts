@@ -41,8 +41,8 @@ class Git {
      * @param args command arguments
      */
     async isTagged(args: GitCommandArgs): Promise<boolean> {
-        await this.detectGit();
-        return false;
+        let [success, _] = await this.runGit(args, ['describe', '--exact-match', '--tags', 'HEAD'], false);
+        return success;
     }
 
     /**

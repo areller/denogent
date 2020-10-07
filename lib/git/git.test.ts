@@ -3,6 +3,7 @@ import { describe } from "../../internal/testing/test.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import git from "./git.ts";
 import { assertEquals } from "https://deno.land/std@0.71.0/testing/asserts.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
 
 const assetsPath = path.join(path.dirname(import.meta.url), 'testassets').substr('file:'.length);
 
@@ -60,6 +61,29 @@ describe('git.test.ts', t => {
                 });
 
                 assertEquals(describe, 'v0.1-1-g38c9f89');
+            });
+        });
+
+        t.test('isTagged should return false', async () => {
+            await copyDirToTemp(path.join(assetsPath, 'tagged-repo'), async temp => {
+                const isTagged = await git.isTagged({
+                    path: temp,
+                    logger: false
+                });
+
+                assertEquals(isTagged, false);
+            });
+        });
+
+        t.test('isTagged should return true', async () => {
+            await copyDirToTemp(path.join(assetsPath, 'tagged-repo'), async temp => {
+                await runCommand(['git', 'checkout', 'v0.1'], undefined, temp, true);
+                const isTagged = await git.isTagged({
+                    path: temp,
+                    logger: false
+                });
+
+                assertEquals(isTagged, true);
             });
         });
     });
