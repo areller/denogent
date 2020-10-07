@@ -1,5 +1,6 @@
 import * as path from "https://deno.land/std/path/mod.ts";
-import type { GitCommandArgs } from "./args.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
+import type { GitCommandArgs, GitSubCommandArgs } from "./args.ts";
 
 class Git {
 
@@ -71,26 +72,29 @@ class Git {
         if (!success) {
             return undefined;
         }
-        
+
+        return output.trim();
+    }
+
+    /**
+     * Runs a git sub command.
+     * @param args sub command arguments
+     */
+    async subcmd(args: GitSubCommandArgs): Promise<string> {
+        let [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(' '), true);
         return output.trim();
     }
 
     private async runGit(args: GitCommandArgs, cmd: string[], throwOnFailure?: boolean): Promise<[boolean, string]> {
         await this.detectGit();
         const path = this.getCwd(args?.path);
-
-        const process = Deno.run({ cmd: ['git', ...cmd], cwd: path, stdout: 'piped' });
-        const status = await process.status();
-
-        if (!status.success) {
-            if (throwOnFailure ?? true) {
-                throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
-            }
-
-            return [false, ''];
+        
+        const [status, output] = await runCommand(['git', ...cmd], undefined, path, false);
+        if (!status && (throwOnFailure ?? true)) {
+            throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
         }
 
-        return [true, new TextDecoder().decode(await process.output())];
+        return [status, output];
     }
 
     private async detectGit(): Promise<void> {

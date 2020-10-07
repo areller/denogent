@@ -1,7 +1,7 @@
 import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs, DockerContainerArgs } from "./args.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
-import { readLines } from "../../internal/helpers/reading.ts";
 import type { Extension } from "../core/extension.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
 
 export type Service = { name: string, image: string, ports: number[] };
 
@@ -51,29 +51,18 @@ export class DockerClient {
 
     private async runDocker(args: DockerClientArgs, cmd: string[], throwOnFailure?: boolean): Promise<[boolean, string]> {
         await this.detectDocker();
-        const path = this.getCwd(args?.path);
+        const path = this.getCwd(args.path);
 
-        const process = Deno.run({ cmd: ['docker', ...cmd], cwd: path, stdout: 'piped', stderr: 'piped' });
-        
-        await readLines([process.stdout, process.stderr], false, line => {
+        const [status, output] = await runCommand(['docker', ...cmd], line => {
             if (args.logger) {
                 args.logger.debug(line);
             }
-        });
-
-        const status = await process.status();
-        const output = await process.output();
-        await process.stderrOutput();
-
-        if (!status.success) {
-            if (throwOnFailure ?? true) {
-                throw new Error(`Unsuccessful response for 'docker ${cmd.join(' ')}'.`);
-            }
-
-            return [false, ''];
+        }, path, false);
+        if (!status && (throwOnFailure ?? true)) {
+            throw new Error(`Unsuccessful response for 'docker ${cmd.join(' ')}'.`);
         }
 
-        return [true, new TextDecoder().decode(output)];
+        return [status, output];
     }
 
     private async detectDocker(): Promise<void> {

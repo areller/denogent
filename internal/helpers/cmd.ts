@@ -7,27 +7,29 @@ import { readLines } from "./reading.ts";
  * @param path the absolute or relative path to the working directory
  * @param throwOnFailure determines whether an exceptions should be thrown upon failure. (Default: true)
  */
-export async function runCommand(cmd: string[], onLine?: (line: string) => void, path?: string, throwOnFailure?: boolean) {
+export async function runCommand(cmd: string[], onLine?: (line: string) => void, path?: string, throwOnFailure?: boolean): Promise<[boolean, string]> {
     const process = Deno.run({
         cmd: cmd,
         cwd: path ?? Deno.cwd(),
         stdout: 'piped',
-        stderr: 'piped'
+        stderr: 'piped',
     });
 
-    await readLines([process.stdout, process.stderr], false, line => {
-        if (onLine) {
-            onLine(line);
+    let output = '';
+
+    await readLines([process.stdout, process.stderr], true, token => {
+        if (onLine && token != '\n') {
+            onLine(token);
         }
+
+        output += token;
     });
 
     const status = await process.status();
-    const output = await process.output();
-    await process.stderrOutput();
 
     if (!status.success && (throwOnFailure ?? true)) {
         throw new Error(`Command '${cmd.join(' ')}' has failed.`);
     }
 
-    return [status.success, new TextDecoder().decode(output)];
+    return [status.success, output];
 }

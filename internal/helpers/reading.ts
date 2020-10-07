@@ -2,45 +2,44 @@
  * Reads lines from an array of buffers.
  * @param readers an array of reads
  * @param closeAfterUse if true, the readers will be closed after use.
- * @param fn a callback for receiving the lines
+ * @param fn a callback for receiving the tokens (token = either a line or '\n')
  */
-export async function readLines(readers: (Deno.Reader & Deno.Closer)[], closeAfterUse: boolean, fn: (line: string) => void) {
+export async function readLines(readers: (Deno.Reader & Deno.Closer)[], closeAfterUse: boolean, fn: (token: string) => void) {
     readers = [...readers];
     let lineBuffer = '';
 
     const buf = new Uint8Array(1024);
 
-    while (true) {
+    while (readers.length > 0) {
         const [n, reader] = await Promise.race(readers.map(r => r.read(buf).then(n => [n, r] as [number, Deno.Reader & Deno.Closer])));
 
-        if (n != null && n > 0) {
-            const readStr = new TextDecoder().decode(buf.subarray(0, n));
-            const lineBreak = readStr.indexOf('\n');
+        if (n !== null && n > 0) {
+            let readStr = new TextDecoder().decode(buf.subarray(0, n));
+            let lineBreak = readStr.indexOf('\n', 0);
 
-            if (lineBreak != -1) {
+            while (lineBreak != -1) {
                 lineBuffer += readStr.substr(0, lineBreak);
                 if (lineBuffer.length > 0) {
                     fn(lineBuffer);
                 }
-                lineBuffer = readStr.substr(lineBreak + 1);
+                fn('\n');
+                lineBuffer = '';
+                readStr = readStr.substr(lineBreak + 1);
+                lineBreak = readStr.indexOf('\n', 0);
             }
-            else {
+
+            if (readStr.length > 0) {
                 lineBuffer += readStr;
             }
         }
-        else if (n == null) {
+        else if (n === null) {
             if (lineBuffer.length > 0) {
                 fn(lineBuffer);
             }
 
-            readers = readers.filter(r => r != reader);
-            
+            readers = readers.filter(r => r !== reader);
             if (closeAfterUse) {
                 reader.close();
-            }
-            
-            if (readers.length == 0) {
-                return;
             }
         }
     }
