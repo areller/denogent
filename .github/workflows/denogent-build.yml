@@ -19,8 +19,6 @@ jobs:
         uses: denolib/setup-deno@v2
         with:
           deno-version: v1.4.1
-      - name: Install NodeJS latest
-        uses: actions/setup-node@v1
       - name: run build
         run: >-
           deno run -A -q --unstable build/build.ts --serial --skip-services
