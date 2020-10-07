@@ -1,4 +1,4 @@
-import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs, DockerContainerArgs } from "./args.ts";
+import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs, DockerContainerArgs, DockerClientSubCommandArgs, DockerClientPushArgs } from "./args.ts";
 import * as path from "https://deno.land/std/path/mod.ts";
 import type { Extension } from "../core/extension.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
@@ -41,7 +41,9 @@ export class DockerClient {
             }
         }
         if (args.tag) {
-            runArgs.push('-t', args.tag);
+            for (const tag of args.tag instanceof Array ? args.tag : [args.tag]) {
+                runArgs.push('-t', tag);
+            }
         }
 
         runArgs.push(args.path ?? '.');
@@ -49,7 +51,30 @@ export class DockerClient {
         await this.runDocker(args, runArgs);
     }
 
-    private async runDocker(args: DockerClientArgs, cmd: string[], throwOnFailure?: boolean): Promise<[boolean, string]> {
+    async push(args: DockerClientPushArgs): Promise<void> {
+        if (args.credentials !== undefined) {
+            let cmd = ['login', '-u', args.credentials.username, '-p', args.credentials.password];
+            if (args.credentials.registry !== undefined) {
+                cmd.push(args.credentials.registry);
+            }
+            await this.runDocker(args, cmd, true, true);
+        }
+
+        for (const tag of args.tag instanceof Array ? args.tag : [args.tag]) {
+            await this.runDocker(args, ['push', tag]);
+        }
+    }
+
+    /**
+     * Runs a docker sub command.
+     * @param args sub command arguments
+     */
+    async subcmd(args: DockerClientSubCommandArgs) {
+        let [_, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(' '), true);
+        return output.trim();
+    }
+
+    private async runDocker(args: DockerClientArgs, cmd: string[], throwOnFailure?: boolean, secretArguments?: boolean): Promise<[boolean, string]> {
         await this.detectDocker();
         const path = this.getCwd(args.path);
 
@@ -59,6 +84,7 @@ export class DockerClient {
             }
         }, path, false);
         if (!status && (throwOnFailure ?? true)) {
+            cmd = (secretArguments ?? false) ? [cmd[0]] : cmd;
             throw new Error(`Unsuccessful response for 'docker ${cmd.join(' ')}'.`);
         }
 

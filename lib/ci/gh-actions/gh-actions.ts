@@ -85,9 +85,6 @@ export class GitHubActions implements CIIntegration {
         args.logger.debug(`created directory '${workflowsPath}'.`);
 
         let runEnv: { [name: string]: string } = {};
-        for (const secret of this.secrets ?? []) {
-            runEnv[secret] = '${{ secrets.' + secret + ' }}';
-        }
 
         let workflow = {
             name: args.name,
@@ -113,7 +110,10 @@ export class GitHubActions implements CIIntegration {
                         {
                             name: 'run build',
                             run: `deno run -A -q --unstable ${args.buildFile} --serial --skip-services --runtime github_actions run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
-                            env: runEnv
+                            env: {
+                                ...runEnv,
+                                ...this.buildSecrets(args)
+                            }
                         }
                     ]
                 }
@@ -183,6 +183,28 @@ export class GitHubActions implements CIIntegration {
         }
 
         return services;
+    }
+
+    private buildSecrets(args: GenerateArgs): { [name: string]: string } {
+        let env: { [name: string]: string } = {};
+
+        let allSecrets = [];
+        for (const taskName of args.graph.taskNames) {
+            const task = args.graph.getTask(taskName)!;
+            const secrets = task.properties['secrets'] as string[];
+
+            if (secrets !== undefined) {
+                allSecrets.push(...secrets);
+            }
+        }
+
+        const secretsSet = new Set(allSecrets);
+        
+        for (const secret of secretsSet.values()) {
+            env[secret] = '${{ secrets.' + secret + ' }}';
+        }
+
+        return env;
     }
 
     // deno-lint-ignore no-explicit-any

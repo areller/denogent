@@ -42,10 +42,23 @@ class Runtime {
     }
 
     /**
+     * Gets the value of an argument or throws an error.
+     * @param name the name of the argument
+     */
+    argValue(name: string): string {
+        const value = this.argValueOrDefault(name);
+        if (value === undefined) {
+            throw new Error(`Expected argument '${name}' to have a value.`);
+        }
+
+        return value;
+    }
+
+    /**
      * Gets the value of an argument.
      * @param name the name of the argument
      */
-    argValue(name: string): string | undefined {
+    argValueOrDefault(name: string): string | undefined {
         const values = this.argValues(name);
         if (values.length == 0) {
             return undefined;
