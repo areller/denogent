@@ -75,12 +75,30 @@ export interface DockerClientSubCommandArgs extends DockerClientArgs {
     cmd: string | string[];
 }
 
+/**
+ * Arguments for the docker service dependency
+ */
 export interface DockerServiceArgs {
+    /**
+     * Name of the dependency container
+     */
     name: string;
+    /**
+     * Image of the dependency container
+     */
     image: string;
+    /**
+     * Ports to expose from the dependency container
+     */
     ports?: number[];
 }
 
+/**
+ * Arguments for the docker container dependency
+ */
 export interface DockerContainerArgs {
+    /**
+     * Image of the dependency container
+     */
     image: string;
 }

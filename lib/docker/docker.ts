@@ -30,6 +30,10 @@ export class DockerClient {
         });
     }
 
+    /**
+     * Builds a docker image from a given Dockerfile.
+     * @param args docker build arguments
+     */
     async build(args: DockerClientBuildArgs): Promise<void> {
         let runArgs = ['build'];
         if (args.dockerFile) {
@@ -51,6 +55,10 @@ export class DockerClient {
         await this.runDocker(args, runArgs);
     }
 
+    /**
+     * Pushes a given docker image to a given registry.
+     * @param args docker push arguments
+     */
     async push(args: DockerClientPushArgs): Promise<void> {
         if (args.credentials !== undefined) {
             let cmd = ['login', '-u', args.credentials.username, '-p', args.credentials.password];
@@ -117,6 +125,10 @@ class Docker {
         this._num = 0;
     }
 
+    /**
+     * Declares a dependency on a docker service. (the dependant task should be able to access that service)
+     * @param args service dependency arguments
+     */
     service(args: DockerServiceArgs): Extension {
         return {
             name: 'docker-service',
@@ -141,6 +153,10 @@ class Docker {
         };
     }
 
+    /**
+     * Declares a dependency on a container image. (the dependant task should run within that container)
+     * @param args container dependency arguments
+     */
     container(args: DockerContainerArgs): Extension {
         return {
             name: 'docker-container',
@@ -155,6 +171,9 @@ class Docker {
         };
     }
 
+    /**
+     * Gets the docker client
+     */
     get client(): DockerClient {
         if (!this._client) {
             this._client = new DockerClient();

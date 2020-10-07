@@ -23,6 +23,3 @@ jobs:
         run: >-
           deno run -A -q --unstable build/build.ts --serial --skip-services
           --runtime gh-actions run
-        env:
-          docker_username: '${{ secrets.docker_username }}'
-          docker_password: '${{ secrets.docker_password }}'
