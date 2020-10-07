@@ -148,3 +148,25 @@ createBuilder({
 ```
 denogent generate --file build/build.ts --ci gh-actions
 ```
+
+## Task Extensions
+
+Task extensions allow you to declare dependency on certain environmental components.
+
+### `docker.service` extension
+
+You can use the `docker.service` extension to declare dependency on a service that needs to run alongside your task.  
+
+For example, if you have a task that runs integration tests which depend on Redis, you can use `docker.service` do declare a dependency on Redis.
+
+```
+import docker from "https://deno.land/x/denogent/lib/docker/docker.ts";
+
+...
+
+const test = task('test')
+    .dependsOn(docker.service({ name: 'redis', image: 'redis', ports: [6379] }))
+    .does(async ctx => {
+        // run tests...
+    });
+```
