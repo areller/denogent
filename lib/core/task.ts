@@ -22,7 +22,7 @@ export class Task {
     private _conditions: CondFn[];
     private _tags: { [name: string]: string[] };
     private _properties: { [name: string]: unknown };
-    private _extensions: { [name: string]: Extension };
+    private _extensions: { [key: string]: Extension };
     private _propagateExceptions: boolean;
 
     constructor(private _name: string) {
@@ -50,12 +50,12 @@ export class Task {
             this._dependencies.push(dependencies);
         }
         else if ((dependencies as Extension).enrich !== undefined) {
-            if (this._extensions[dependencies.name] !== undefined) {
-                throw new Error(`Task '${this.name}' already depends on extension '${dependencies.name}'.`);
+            if (this._extensions[dependencies.key] !== undefined) {
+                throw new Error(`Task '${this.name}' already depends on extension with key '${dependencies.key}'.`);
             }
 
             dependencies.enrich(this);
-            this._extensions[dependencies.name] = dependencies;
+            this._extensions[dependencies.key] = dependencies;
         }
 
         return this;
