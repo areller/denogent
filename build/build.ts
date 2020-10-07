@@ -4,6 +4,7 @@ import { task } from "../lib/core/task.ts";
 import { DenoPermissions } from "../lib/deno/args.ts";
 import deno from "../lib/deno/deno.ts";
 import docker from "../lib/docker/docker.ts";
+import git from "../lib/git/git.ts";
 import runtime from "../lib/runtime/runtime.ts";
 
 const test = task('test')
@@ -20,7 +21,7 @@ const build = task('build')
     .does(async ctx => {
         await docker.client.build({
             logger: ctx?.logger,
-            tag: 'arellerdh/test:0.1'
+            tag: ['arellerdh/test:0.2', `arellerdh/test:${await git.getHeadCommit({ logger: false })}`]
         });
     });
 
@@ -30,7 +31,7 @@ const push = task('push')
     .does(async ctx => {
         await docker.client.push({
             logger: ctx?.logger,
-            tag: 'arellerdh/test:0.1',
+            tag: ['arellerdh/test:0.2', `arellerdh/test:${await git.getHeadCommit({ logger: false })}`],
             credentials: {
                 username: runtime.argValue('docker_username'),
                 password: runtime.argValue('docker_password')
