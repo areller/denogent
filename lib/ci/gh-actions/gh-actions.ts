@@ -9,6 +9,9 @@ import type { Service } from "../../docker/docker.ts";
 type Triggers = { push?: { branches?: string[], tags?: string[] }, pull_request?: { branches?: string[] } };
 type GHAService = { image: string, ports: string[] };
 
+export type GHAUses = { name?: string, uses: string, with?: { [name: string]: string } };
+export type GHAUsesCollection = { [name: string]: GHAUses };
+
 export class GitHubActions implements CIIntegration {
     constructor(
         private image: string,
@@ -106,6 +109,7 @@ export class GitHubActions implements CIIntegration {
                                 'deno-version': `v${Deno.version.deno}`
                             }
                         },
+                        ...this.buildUses(args),
                         {
                             name: 'run build',
                             run: `deno run -A -q --unstable ${args.buildFile} --serial --skip-services --runtime gh-actions run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
@@ -126,6 +130,21 @@ export class GitHubActions implements CIIntegration {
         await Deno.writeFile(workflowFilePath, new TextEncoder().encode(contents), { create: true });
 
         args.logger.debug(`created '${workflowFilePath}'.`);
+    }
+
+    private buildUses(args: GenerateArgs): GHAUses[] {
+        let uses: GHAUsesCollection = {};
+
+        for (const taskName of args.graph.taskNames) {
+            const task = args.graph.getTask(taskName)!;
+            const ghaUses = task.properties['gh-actions-uses'] as GHAUsesCollection;
+
+            if (ghaUses !== undefined) {
+                uses = { ...uses, ...ghaUses };
+            }
+        }
+
+        return Object.values(uses);
     }
 
     private buildTriggers(args: GenerateArgs): Triggers {
