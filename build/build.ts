@@ -4,10 +4,8 @@ import { task } from "../lib/core/task.ts";
 import { DenoPermissions } from "../lib/deno/args.ts";
 import deno from "../lib/deno/deno.ts";
 import docker from "../lib/docker/docker.ts";
-import { delay } from 'https://deno.land/std/async/delay.ts';
 
 const test = task('test')
-    .dependsOn(docker.service({ name: 'redis', image: 'redis', ports: [6379] }))
     .does(async ctx => {
         await deno.test({
             logger: ctx?.logger,
@@ -18,6 +16,7 @@ const test = task('test')
 
 const build = task('build')
     .dependsOn(test)
+    .when(_ => false)
     .does(async ctx => {
         await docker.client.build({
             logger: ctx?.logger,
