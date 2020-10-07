@@ -20,7 +20,7 @@ const build = task('build')
     .does(async ctx => {
         await docker.client.build({
             logger: ctx?.logger,
-            tag: 'test:0.1'
+            tag: 'arellerdh/test:0.1'
         });
     });
 
@@ -30,7 +30,7 @@ const push = task('push')
     .does(async ctx => {
         await docker.client.push({
             logger: ctx?.logger,
-            tag: 'test:0.1',
+            tag: 'arellerdh/test:0.1',
             credentials: {
                 username: runtime.argValue('docker_username'),
                 password: runtime.argValue('docker_password')
