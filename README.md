@@ -159,7 +159,7 @@ You can use the `docker.service` extension to declare dependency on a service th
 
 For example, if you have a task that runs integration tests which depend on Redis, you can use `docker.service` do declare a dependency on Redis.
 
-```
+```typescript
 import docker from "https://deno.land/x/denogent/lib/docker/docker.ts";
 
 ...
