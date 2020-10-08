@@ -1,4 +1,4 @@
-import * as path from "https://deno.land/std/path/mod.ts";
+import { stdPath } from "../../deps.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
 import type { GitCommandArgs, GitSubCommandArgs } from "./args.ts";
 
@@ -106,11 +106,11 @@ class Git {
             return Deno.cwd();
         }
 
-        if (path.isAbsolute(cwd)) {
+        if (stdPath.isAbsolute(cwd)) {
             return cwd;
         }
 
-        return path.join(Deno.cwd(), cwd);
+        return stdPath.join(Deno.cwd(), cwd);
     }
 }
 

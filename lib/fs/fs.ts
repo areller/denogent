@@ -1,13 +1,11 @@
-import * as exPath from "https://deno.land/std/path/mod.ts";
-import * as exFs from "https://deno.land/std/fs/mod.ts";
-import type { WalkOptions } from "https://deno.land/std/fs/mod.ts";
+import { stdFs, stdPath } from "../../deps.ts";
 
 export class File {
 
     private _name: string;
 
     constructor(private _path: string) {
-        this._name = exPath.parse(_path).name;
+        this._name = stdPath.parse(_path).name;
     }
 
     /**
@@ -68,7 +66,7 @@ export class Folder {
     private _name: string;
 
     constructor(private _path: string) {
-        this._name = exPath.parse(_path).name;
+        this._name = stdPath.parse(_path).name;
     }
 
     /**
@@ -76,9 +74,9 @@ export class Folder {
      */
     async listFiles(): Promise<File[]> {
         var files: File[] = [];
-        for await (const entry of exFs.walk(this._path, { maxDepth: 1, includeFiles: true, includeDirs: false })) {
+        for await (const entry of stdFs.walk(this._path, { maxDepth: 1, includeFiles: true, includeDirs: false })) {
             if (entry.isFile) {
-                files.push(new File(exPath.join(this._path, entry.name)));
+                files.push(new File(stdPath.join(this._path, entry.name)));
             }
         }
 
@@ -90,9 +88,9 @@ export class Folder {
      */
     async listFolders(): Promise<Folder[]> {
         var folders: Folder[] = [];
-        for await (const entry of exFs.walk(this._path, { maxDepth: 1, includeFiles: false, includeDirs: true })) {
-            if (entry.isDirectory && exPath.normalize(entry.path) != exPath.normalize(this._path)) {
-                folders.push(new Folder(exPath.join(this._path, entry.name)));
+        for await (const entry of stdFs.walk(this._path, { maxDepth: 1, includeFiles: false, includeDirs: true })) {
+            if (entry.isDirectory && stdPath.normalize(entry.path) != stdPath.normalize(this._path)) {
+                folders.push(new Folder(stdPath.join(this._path, entry.name)));
             }
         }
 
@@ -103,8 +101,8 @@ export class Folder {
      * Walk the file tree starting the current folder.
      * @param options walk options
      */
-    walk(options: WalkOptions): AsyncIterableIterator<exFs.WalkEntry> {
-        return exFs.walk(this._path, options);
+    walk(options: stdFs.WalkOptions): AsyncIterableIterator<stdFs.WalkEntry> {
+        return stdFs.walk(this._path, options);
     }
 
     /**
@@ -112,8 +110,8 @@ export class Folder {
      * @param path the path to the folder.
      */
     async getFolder(path: string | string[]): Promise<Folder | undefined> {
-        const folderPath = exPath.join(this._path, path instanceof Array ? exPath.join(...path) : path);
-        if (!(await exFs.exists(folderPath))) {
+        const folderPath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
+        if (!(await stdFs.exists(folderPath))) {
             return undefined;
         }
 
@@ -125,8 +123,8 @@ export class Folder {
      * @param path the path to the file.
      */
     async getFile(path: string | string[]): Promise<File | undefined> {
-        const filePath = exPath.join(this._path, path instanceof Array ? exPath.join(...path) : path);
-        if (!(await exFs.exists(filePath))) {
+        const filePath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
+        if (!(await stdFs.exists(filePath))) {
             return undefined;
         }
 
@@ -138,12 +136,12 @@ export class Folder {
      * @param path the path to the folder.
      */
     async createFolder(path: string | string[]): Promise<boolean> {
-        const folderPath = exPath.join(this._path, path instanceof Array ? exPath.join(...path) : path);
-        if (await exFs.exists(folderPath)) {
+        const folderPath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
+        if (await stdFs.exists(folderPath)) {
             return false;
         }
 
-        await exFs.ensureDir(folderPath);
+        await stdFs.ensureDir(folderPath);
         return true;
     }
 
@@ -153,12 +151,12 @@ export class Folder {
      * @param data optional contents for the new file.
      */
     async createFile(path: string | string[], data: Uint8Array | string | undefined): Promise<File | undefined> {
-        const filePath = exPath.join(this._path, path instanceof Array ? exPath.join(...path) : path);
-        if (await exFs.exists(filePath)) {
+        const filePath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
+        if (await stdFs.exists(filePath)) {
             return undefined;
         }
 
-        await exFs.ensureFile(filePath);
+        await stdFs.ensureFile(filePath);
         if (data !== undefined) {
             await Deno.writeFile(filePath, data instanceof Uint8Array ? data : new TextEncoder().encode(data));
         }

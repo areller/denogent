@@ -1,4 +1,4 @@
-import * as Colors from 'https://deno.land/std@0.71.0/fmt/colors.ts';
+import { Colors } from "../deps.ts";
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type LoggerFn = (level: LogLevel, message: string | Error, task?: string, meta?: unknown) => void;

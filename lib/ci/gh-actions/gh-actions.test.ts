@@ -1,27 +1,25 @@
-import * as path from "https://deno.land/std/path/mod.ts";
 import { emptyTempDir, mockDebugLogger } from "../../../internal/testing/helpers.ts";
 import { describe } from "../../../internal/testing/test.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
 import { GitHubActions } from "./gh-actions.ts";
-import { assertEquals } from "https://deno.land/std@0.72.0/testing/asserts.ts";
 import { createGraph, Graph } from "../../../internal/graph/graph.ts";
 import { task } from "../../core/task.ts";
-import { parse } from "https://deno.land/std/encoding/yaml.ts";
+import { parseYaml, stdFs, stdPath } from "../../../deps.ts";
+import { assertEquals } from "../../../tests_deps.ts";
 
 describe('gh-actions.test.ts', t => {
     t.test('clean should clean workflow file', async () => {
         await emptyTempDir(async temp => {
-            const workflowsPath = path.join(temp, '.github', 'workflows');
-            await fs.ensureDir(workflowsPath);
-            const workflowFile = path.join(workflowsPath, 'workflow.yaml');
-            await fs.ensureFile(workflowFile);
+            const workflowsPath = stdPath.join(temp, '.github', 'workflows');
+            await stdFs.ensureDir(workflowsPath);
+            const workflowFile = stdPath.join(workflowsPath, 'workflow.yaml');
+            await stdFs.ensureFile(workflowFile);
 
-            assertEquals(await fs.exists(workflowFile), true);
+            assertEquals(await stdFs.exists(workflowFile), true);
 
             const ghActions = new GitHubActions('some-image');
             await ghActions.clean({ path: temp, logger: mockDebugLogger() });
 
-            assertEquals(await fs.exists(workflowFile), false);
+            assertEquals(await stdFs.exists(workflowFile), false);
         });
     });
 
@@ -209,14 +207,14 @@ async function workflowAssertTest(ghActions: GitHubActions, graph: Graph, image:
     await emptyTempDir(async temp => {
         await ghActions.generate({
             name: 'build',
-            buildFile: path.join('build', 'some-build.ts'),
+            buildFile: stdPath.join('build', 'some-build.ts'),
             graph: graph,
             logger: mockDebugLogger(),
             path: temp
         });
 
-        const workflowFile = path.join(temp, '.github', 'workflows', 'build.yml');
-        assertEquals(await fs.exists(workflowFile), true);
+        const workflowFile = stdPath.join(temp, '.github', 'workflows', 'build.yml');
+        assertEquals(await stdFs.exists(workflowFile), true);
 
         let runStep = {
             name: 'run build',
@@ -267,5 +265,5 @@ async function workflowAssertTest(ghActions: GitHubActions, graph: Graph, image:
 
 async function readWorkflowFile(file: string): Promise<unknown> {
     const contents = new TextDecoder().decode(await Deno.readFile(file));
-    return parse(contents);
+    return parseYaml(contents);
 }

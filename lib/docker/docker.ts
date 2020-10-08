@@ -1,7 +1,7 @@
 import type { DockerClientBuildArgs, DockerClientArgs, DockerServiceArgs, DockerContainerArgs, DockerClientSubCommandArgs, DockerClientPushArgs } from "./args.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
 import type { Extension } from "../core/extension.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
+import { stdPath } from "../../deps.ts";
 
 export type Service = { name: string, image: string, ports: number[] };
 
@@ -108,11 +108,11 @@ export class DockerClient {
             return Deno.cwd();
         }
 
-        if (path.isAbsolute(cwd)) {
+        if (stdPath.isAbsolute(cwd)) {
             return cwd;
         }
 
-        return path.join(Deno.cwd(), cwd);
+        return stdPath.join(Deno.cwd(), cwd);
     }
 }
 

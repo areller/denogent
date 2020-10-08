@@ -1,11 +1,11 @@
-import { assertEquals, fail } from "https://deno.land/std@0.72.0/testing/asserts.ts";
 import { copyDirToTemp, emptyTempDir, mockDebugLogger } from "../../internal/testing/helpers.ts";
 import { describe } from "../../internal/testing/test.ts";
 import runtime from "./runtime.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
 import { task } from "../core/task.ts";
+import { assertEquals, fail } from "../../tests_deps.ts";
+import { stdPath } from "../../deps.ts";
 
-const assetsPath = path.join(path.dirname(import.meta.url), 'testassets').substr('file:'.length);
+const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), 'testassets').substr('file:'.length);
 
 describe('runtime.test.ts', t => {
     t.test('command should run a command', async () => {

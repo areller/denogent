@@ -1,15 +1,15 @@
 import { runCommand as runCommandInternal } from "../../internal/helpers/cmd.ts";
-import { config } from 'https://deno.land/x/dotenv/mod.ts';
 import { Args, parse } from "https://deno.land/std/flags/mod.ts";
 import type { CommandArgs } from "./args.ts";
 import type { Extension } from "../core/extension.ts";
+import { dotenv } from "../../deps.ts";
 
 class Runtime {
 
     private _args: Args;
 
     constructor() {
-        config();
+        dotenv();
         this._args = parse(Deno.args);
     }
 

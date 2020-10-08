@@ -3,8 +3,8 @@ import { createGraph, Graph } from "../../internal/graph/graph.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
 import { CLICommand, CLICommandOptionDataType, fileOption } from "../cli.ts";
 import type { CLIContext } from "../context.ts";
-import { v4 as uuidv4 } from "https://deno.land/std/uuid/mod.ts";
 import type { Service } from "../../lib/docker/docker.ts";
+import { uuidv4 } from "../../deps.ts";
 
 async function run(context?: CLIContext): Promise<void> {
     let graph = createGraph(context?.buildContext?.targetTasks!);

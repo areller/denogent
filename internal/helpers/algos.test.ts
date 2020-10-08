@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.71.0/testing/asserts.ts";
 import { task } from "../../lib/core/task.ts";
+import { assertEquals } from "../../tests_deps.ts";
 import { describe } from "../testing/test.ts";
 import { breadthFirst, breadthFirstWithDepth } from "./algos.ts";
 

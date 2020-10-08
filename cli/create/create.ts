@@ -1,13 +1,12 @@
+import { stdFs, stdPath } from "../../deps.ts";
 import { CLICommand, CLICommandOptionDataType, optionalFileOption } from "../cli.ts";
 import type { CLIContext } from "../context.ts";
-import * as path from "https://deno.land/std/path/mod.ts";
-import * as fs from "https://deno.land/std/fs/mod.ts";
 
 async function run(context?: CLIContext): Promise<void> {
-    const filePath = path.join('.', context?.args.file ?? path.join('build', 'build.ts'));
+    const filePath = stdPath.join('.', context?.args.file ?? stdPath.join('build', 'build.ts'));
     const override = context?.args.override ?? false;
 
-    if (await fs.exists(filePath)) {
+    if (await stdFs.exists(filePath)) {
         if (!override) {
             throw new Error(`Build file already exists at '${filePath}'.`);
         }
@@ -15,7 +14,7 @@ async function run(context?: CLIContext): Promise<void> {
         await Deno.remove(filePath);
     }
 
-    await fs.ensureFile(filePath);
+    await stdFs.ensureFile(filePath);
     await Deno.writeFile(filePath, new TextEncoder().encode(
 `import { createBuilder } from "https://deno.land/x/denogent/lib/core/builder.ts";
 import { task } from "https://deno.land/x/denogent/lib/core/task.ts";

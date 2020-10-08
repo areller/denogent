@@ -1,6 +1,6 @@
+import { EventEmitter } from "../../deps.ts";
 import type { Context } from "../../lib/core/task.ts";
 import type { Graph, Task } from "../graph/graph.ts";
-import EventEmitter from "https://deno.land/x/events/mod.ts";
 import type { LogLevel, TaskLogEvent, TaskEvent } from "./events.ts";
 
 interface TaskTracker {

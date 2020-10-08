@@ -1,7 +1,7 @@
-import { Args, parse } from "https://deno.land/std@0.70.0/flags/mod.ts";
 import { getCommand, initializeCommands, showHelp } from "./commands.ts";
 import type { BuildContext, CLIContext } from "./context.ts";
 import { jsonLog, jsonLogCleanBuffer, jsonStreamLog, LoggerFn, simpleLog } from "./logger.ts";
+import { Args, parseArgs } from "../deps.ts";
 
 export enum CLICommandOptionDataType {
     Boolean = 0,
@@ -91,7 +91,7 @@ function getMainFilePath() {
 export async function createCLI(args: CreateCLIArgs): Promise<void> {
     initializeCommands();
 
-    const cliArgs = parse(Deno.args);
+    const cliArgs = parseArgs(Deno.args);
     if (cliArgs._.length == 0) {
         return showHelp();
     }

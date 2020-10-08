@@ -1,6 +1,6 @@
 import { Task, task } from "./task.ts";
-import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { describe } from "../../internal/testing/test.ts";
+import { assertEquals } from "../../tests_deps.ts";
 
 describe('task.test.ts', t => {
     t.test('dependsOn should create dependency', () => {
