@@ -36,9 +36,9 @@ export async function emptyTempDir(fn: (tempPath: string) => Promise<void>): Pro
     }
 }
 
-export function mockDebugLogger(onLog: (log: string) => void): Logger {
+export function mockDebugLogger(onLog?: (log: string) => void): Logger {
     return {
-        debug: log => onLog(log),
+        debug: log => onLog !== undefined ? onLog(log) : {},
         info: _ => {},
         warn: _ => {},
         error: (_: string | Error) => {}

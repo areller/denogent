@@ -7,6 +7,11 @@ export interface CleanArgs {
      * an instance of a logger
      */
     logger: Logger;
+    /**
+     * The absolute or relative path to the project directory. 
+     * If undefined, defaults to working directory.
+     */
+    path?: string;
 }
 
 export interface GenerateArgs {
@@ -26,6 +31,11 @@ export interface GenerateArgs {
      * an instance of a logger
      */
     logger: Logger;
+    /**
+     * The absolute or relative path to the project directory. 
+     * If undefined, defaults to working directory.
+     */
+    path?: string;
 }
 
 export interface CIIntegration {

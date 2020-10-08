@@ -63,7 +63,7 @@ export class GitHubActions implements CIIntegration {
     }
 
     async clean(args: CleanArgs): Promise<void> {
-        const workflowsPath = path.join('.github', 'workflows');
+        const workflowsPath = args.path === undefined ? path.join('.github', 'workflows') : path.join(args.path, '.github', 'workflows');
 
         if (!(await fs.exists(workflowsPath))) {
             return;
@@ -77,7 +77,7 @@ export class GitHubActions implements CIIntegration {
     }
 
     async generate(args: GenerateArgs): Promise<void> {
-        const workflowsPath = path.join('.github', 'workflows');
+        const workflowsPath = args.path === undefined ? path.join('.github', 'workflows') : path.join(args.path, '.github', 'workflows');
         if (await fs.exists(workflowsPath)) {
             throw new Error(`Folder '.github/workflows' already exists.`);
         }
