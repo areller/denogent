@@ -27,6 +27,9 @@ export class Execution {
 
     private _events: EventEmitter;
 
+    private _beforeTaskFn?: (task: Task) => Promise<void>;
+    private _afterTaskFn?: (task: Task, error?: Error) => Promise<void>;
+
     constructor(private _graph: Graph) {
         this._endPromise = new Promise((resolve, reject) => {
             this._resolve = resolve;
@@ -61,6 +64,14 @@ export class Execution {
         this._events.addListener('_', (ev: unknown) => {
             fn(ev as TaskEvent);
         });
+    }
+
+    beforeTask(fn: (task: Task) => Promise<void>) {
+        this._beforeTaskFn = fn;
+    }
+
+    afterTask(fn: (task: Task, error?: Error) => Promise<void>) {
+        this._afterTaskFn = fn;
     }
 
     private spawnCollectionOfTasks(tasks: string[], conditionFn?: (task: Task) => boolean): void {
@@ -119,10 +130,29 @@ export class Execution {
                 }
             }
 
-            // running task
-            const execTask = task.exec !== undefined ? task.exec(taskContext) : Promise.resolve();
-            if (execTask instanceof Promise) {
-                await execTask;
+            // running pre-task hook
+            if (this._beforeTaskFn !== undefined) {
+                await this._beforeTaskFn(task);
+            }
+
+            let error: Error | undefined;
+
+            try {
+                // running task
+                const execTask = task.exec !== undefined ? task.exec(taskContext) : Promise.resolve();
+                if (execTask instanceof Promise) {
+                    await execTask;
+                }
+            }
+            catch (err) {
+                error = err;
+                throw err;
+            }
+            finally {
+                // running after-task hook
+                if (this._afterTaskFn !== undefined) {
+                    await this._afterTaskFn(task, error);
+                }
             }
 
             // notifying that task has finished successfully
