@@ -1,3 +1,3 @@
 export function getCLIVersion() {
-    return '{{VERSION}}';
+  return "{{VERSION}}";
 }
