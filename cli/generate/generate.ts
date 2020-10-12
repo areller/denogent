@@ -10,6 +10,9 @@ export function getGenerateCommand(): { cmd: Command, buildContextRequired: bool
             .option('--clean [:boolean]', 'Only perform a clean.', { default: false }),
         buildContextRequired: true,
         action: async (context: CLIContext) => {
+            if (context.buildFile === undefined) {
+                throw new Error('Build file is unavailable.');
+            }
             if (context.buildContext === undefined) {
                 throw new Error('Build context is unavailable.');
             }
@@ -32,7 +35,7 @@ export function getGenerateCommand(): { cmd: Command, buildContextRequired: bool
             if (!context.args['clean']) {
                 await ci.generate({
                     name: context.buildContext.name,
-                    buildFile: context.args['file'],
+                    buildFile: context.buildFile,
                     graph: context.graph,
                     logger
                 });
