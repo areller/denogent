@@ -11,3 +11,4 @@ export { stringify as stringifyYaml, parse as parseYaml } from "https://deno.lan
 export { Colors };
 export { EventEmitter };
 export { config as dotenv } from 'https://deno.land/x/dotenv@v0.5.0/mod.ts';
+export { Command } from "https://deno.land/x/cliffy@v0.14.2/command/mod.ts";

@@ -1,8 +1,9 @@
-import type { LogLevel, LoggerFn } from "../../../cli/logger.ts";
-import type { CIIntegration, CleanArgs, GenerateArgs } from "../ci_integration.ts";
+import type { CIIntegration, CleanArgs, CreateRuntimeArgs, GenerateArgs } from "../ci_integration.ts";
 import { issue } from "./commands.ts";
 import type { Service } from "../../docker/docker.ts";
 import { stdFs, stdPath, stringifyYaml } from "../../../deps.ts";
+import type { Runtime } from "../../../internal/runtime.ts";
+import type { LoggerFn, LogLevel } from "../../core/logger.ts";
 
 type Triggers = { push?: { branches?: string[], tags?: string[] }, pull_request?: { branches?: string[] } };
 type GHAService = { image: string, ports: string[] };
@@ -10,21 +11,8 @@ type GHAService = { image: string, ports: string[] };
 export type GHAUses = { name?: string, uses: string, with?: { [name: string]: string } };
 export type GHAUsesCollection = { [name: string]: GHAUses };
 
-export class GitHubActions implements CIIntegration {
-    constructor(
-        private image: string,
-        private dockerImage?: string,
-        private onPushBranches?: string[],
-        private onPRBranches?: string[],
-        private onPushTags?: string[]
-    ) {
-    }
-
-    get type(): string {
-        return 'gh-actions';
-    }
-
-    get logFn(): LoggerFn {
+class GitHubActionsRuntime implements Runtime {
+    get loggerFn(): LoggerFn {
         return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
 
             if (meta !== undefined) {
@@ -58,6 +46,25 @@ export class GitHubActions implements CIIntegration {
                     break;
             }
         };
+    }
+}
+
+export class GitHubActions implements CIIntegration {
+    constructor(
+        private image: string,
+        private dockerImage?: string,
+        private onPushBranches?: string[],
+        private onPRBranches?: string[],
+        private onPushTags?: string[]
+    ) {
+    }
+
+    get type(): string {
+        return 'gh-actions';
+    }
+
+    async createRuntime(args: CreateRuntimeArgs): Promise<Runtime> {
+        return new GitHubActionsRuntime();
     }
 
     async clean(args: CleanArgs): Promise<void> {
@@ -109,7 +116,7 @@ export class GitHubActions implements CIIntegration {
                         ...this.buildUses(args),
                         {
                             name: 'run build',
-                            run: `deno run -A -q --unstable ${args.buildFile} --serial --skip-services --runtime gh-actions run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
+                            run: `deno run -A -q --unstable ${args.buildFile} run --serial --runtime gh-actions`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
                             env: {
                                 ...runEnv,
                                 ...this.buildSecrets(args)
