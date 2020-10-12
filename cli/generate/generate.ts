@@ -1,57 +1,42 @@
-import { createGraph } from "../../internal/graph/graph.ts";
-import { CLICommand, CLICommandOptionDataType, fileOption } from "../cli.ts";
+import { Command } from "../../deps.ts";
+import { createLoggerFromFn } from "../../lib/core/logger.ts";
 import type { CLIContext } from "../context.ts";
 
-async function run(context?: CLIContext): Promise<void> {
-    const graph = createGraph(context?.buildContext?.targetTasks!);
-    const ciName = context?.args.ci.toString();
-    const ciArray = context?.buildContext?.ciIntegrations.filter(c => c.type == ciName);
-
-    if (ciArray === undefined || ciArray.length == 0) {
-        throw new Error(`unknown CI integration '${ciName}'.`);
-    }
-
-    const ci = ciArray[0];
-
-    const logger = {
-        debug: (msg: string, meta: unknown) => context?.logger('debug', msg, undefined, meta),
-        info: (msg: string, meta: unknown) => context?.logger('info', msg, undefined, meta),
-        warn: (msg: string, meta: unknown) => context?.logger('warn', msg, undefined, meta),
-        error: (msg: string | Error, meta?: unknown) => context?.logger('error', msg, undefined, meta)
-    };
-
-    await ci.clean({ logger });
-
-    if (!context?.args.clean) {
-        await ci.generate({
-            name: context?.buildContext?.name!,
-            buildFile: context?.args.file,
-            graph,
-            logger
-        });
-    } 
-}
-
-export function generateCommandDescription(): CLICommand {
+export function getGenerateCommand(): { cmd: Command, buildContextRequired: boolean, action: (context: CLIContext) => Promise<void> } {
     return {
-        name: 'generate',
-        description: 'Generate files for a CI integration',
-        options: [
-            fileOption,
-            {
-                name: 'ci',
-                description: `The name of the CI integration (e.g. 'github_actions')`,
-                dataType: CLICommandOptionDataType.String,
-                required: true
-            },
-            {
-                name: 'clean',
-                description: 'Only perform a clean',
-                dataType: CLICommandOptionDataType.Boolean,
-                required: false
+        cmd: new Command()
+            .description('Generate files for a CI integration.')
+            .option('--ci <type:string>', `The name of the CI integration (e.g. 'gh-actions').`, { required: true })
+            .option('--clean [:boolean]', 'Only perform a clean.', { default: false }),
+        buildContextRequired: true,
+        action: async (context: CLIContext) => {
+            if (context.buildContext === undefined) {
+                throw new Error('Build context is unavailable.');
             }
-        ],
-        requireBuildContext: true,
-        fn: run
+            if (context.graph === undefined) {
+                throw new Error('Graph is unavailable.');
+            }
+
+            const ciName = context.args['ci'].toString();
+            const ciArray = context.buildContext.ciIntegrations.filter(c => c.type == ciName);
+
+            if (ciArray === undefined || ciArray.length == 0) {
+                throw new Error(`Unknown CI integration '${ciName}'.`);
+            }
+
+            const ci = ciArray[0];
+            const logger = createLoggerFromFn(context.runtime.loggerFn);
+
+            await ci.clean({ logger });
+
+            if (!context.args['clean']) {
+                await ci.generate({
+                    name: context.buildContext.name,
+                    buildFile: context.args['file'],
+                    graph: context.graph,
+                    logger
+                });
+            }
+        }
     };
 }

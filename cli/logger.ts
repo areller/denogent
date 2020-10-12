@@ -1,7 +1,5 @@
 import { Colors } from "../deps.ts";
-
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
-export type LoggerFn = (level: LogLevel, message: string | Error, task?: string, meta?: unknown) => void;
+import type { LogLevel } from "../lib/core/logger.ts";
 
 export function simpleLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown) {
     const prefix = task !== undefined ? `[${task}] ` : '';
@@ -10,16 +8,16 @@ export function simpleLog(level: LogLevel, message: string | Error, task?: strin
 
     switch (level) {
         case 'debug':
-            console.log(Colors.gray(`[DBG] ${prefix}${message}${suffix}`));
+            console.log(Colors.gray(`${prefix}${message}${suffix}`));
             break;
         case 'info':
-            console.log(Colors.white(`[INFO] ${prefix}${message}${suffix}`));
+            console.log(Colors.white(`${prefix}${message}${suffix}`));
             break;
         case 'warn':
-            console.log(Colors.yellow(`[WARN] ${prefix}${message}${suffix}`));
+            console.log(Colors.yellow(`${prefix}${message}${suffix}`));
             break;
         case 'error':
-            console.error(Colors.red(`[ERR] ${prefix}${message}${suffix}`));
+            console.error(Colors.red(`${prefix}${message}${suffix}`));
             if (message instanceof Error) {
                 console.error(Colors.red(message.stack?.toString() ?? ''));
             }
@@ -42,20 +40,4 @@ function createJSON(level: LogLevel, message: string | Error, task?: string, met
 
 export function jsonStreamLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown) {
     console.log(JSON.stringify(createJSON(level, message, task, meta)));
-}
-
-let buffer: unknown[] | undefined = undefined;
-
-export function jsonLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown) {
-    if (buffer === undefined) {
-        buffer = [];
-    }
-
-    buffer.push(createJSON(level, message, task, meta));
-}
-
-export function jsonLogCleanBuffer() {
-    if (buffer !== undefined) {
-        console.log(JSON.stringify(buffer));
-    }
 }

@@ -1,145 +1,75 @@
+import { Command } from "../../deps.ts";
 import { createExecutor } from "../../internal/executor/executor.ts";
-import { createGraph, Graph } from "../../internal/graph/graph.ts";
-import { runCommand } from "../../internal/helpers/cmd.ts";
-import { CLICommand, CLICommandOptionDataType, fileOption } from "../cli.ts";
 import type { CLIContext } from "../context.ts";
-import type { Service } from "../../lib/docker/docker.ts";
-import { uuidv4 } from "../../deps.ts";
 
-async function run(context?: CLIContext): Promise<void> {
-    let graph = createGraph(context?.buildContext?.targetTasks!);
-    const executor = createExecutor();
-
-    if (context?.args.only) {
-        graph = graph.createSerialGraphFrom([context.args.only.toString()]);
-    }
-    else if (context?.args.serial) {
-        if (typeof context?.args.serial == 'boolean') {
-            graph = graph.createSerialGraph();
-        }
-    }
-
-    const execution = executor.fromGraph(graph);
-
-    execution.subscribe(ev => {
-        switch (ev.type) {
-            case 'started':
-                context?.logger('info', `=== STARTED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
-                break;
-            case 'log':
-                context?.logger(ev.level, ev.message, ev.task, { type: ev.type, task: ev.task });
-                break;
-            case 'finishedSuccessfully':
-                context?.logger('info', `=== FINISHED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
-                break;
-            case 'failedCondition':
-                context?.logger('warn', `Failed condition (${ev.condition})`, ev.task, { type: ev.type, task: ev.task, conditionId: ev.conditionId, condition: ev.condition });
-                break;
-            case 'failed':
-                context?.logger('error', ev.error || 'Failed', ev.task, { type: ev.type, task: ev.task });
-                break;
-        }
-    });
-
-    let containerNames: string[] = [];
-    try {
-        if (!context?.args['skip-services']) {
-            await launchDockerServices(context!, graph, containerNames);
-        }
-
-        await execution.execute();
-    }
-    finally {
-        await removeDockerServices(containerNames);
-    }
-}
-
-async function launchDockerServices(context: CLIContext, graph: Graph, containerNames: string[]): Promise<void> {
-    let services: { [name: string]: Service } = {};
-    for (const taskName of graph.taskNames) {
-        const task = graph.getTask(taskName)!;
-        const dockerServices = task.properties['docker-services'] as { [name: string]: Service } | undefined;
-
-        if (dockerServices !== undefined) {
-            for (const dockerService of Object.values(dockerServices)) {
-                services[dockerService.name] = dockerService;
-            }
-        }
-    }
-
-    if (Object.keys(services).length == 0) {
-        return;
-    }
-
-    if (!(await runCommand(['docker', '--version'], undefined, undefined, false))[0]) {
-        throw new Error(`Docker is not installed.`);
-    }
-
-    for (const service of Object.values(services)) {
-        const id = uuidv4.generate().replaceAll('-', '');
-        let cmd = ['docker', 'run', '--rm', '--name', id, '-idt'];
-        for (const port of service.ports) {
-            cmd.push('-p', `${port}:${port}`);
-        }
-
-        cmd.push(service.image);
-
-        await runCommand(cmd, line => {
-            context.logger('debug', line);
-        });
-
-        containerNames.push(id);
-
-        Deno.env.set(`${service.name.toUpperCase()}_HOST`, 'localhost');
-        if (service.ports.length > 0) {
-            Deno.env.set(`${service.name.toUpperCase()}_PORT`, service.ports[0].toString());
-            Deno.env.set(`${service.name.toUpperCase()}_PORTS`, service.ports.join(';'));
-        }
-    }
-}
-
-async function removeDockerServices(containerNames: string[]): Promise<void> {
-    if (containerNames.length == 0) {
-        return;
-    }
-
-    for (const name of containerNames) {
-        await runCommand(['docker', 'rm', '-f', name]);
-    }
-}
-
-export function runCommandDescription(): CLICommand {
+export function getRunCommand(): { cmd: Command, buildContextRequired: boolean, action: (context: CLIContext) => Promise<void> } {
     return {
-        name: 'run',
-        description: 'Run the tasks in the build file',
-        options: [
-            fileOption,
-            {
-                name: 'serial',
-                description: 'Run the tasks in series',
-                dataType: CLICommandOptionDataType.Boolean | CLICommandOptionDataType.StringArray,
-                required: false
-            },
-            {
-                name: 'parallel',
-                description: 'Run the tasks in parallel',
-                dataType: CLICommandOptionDataType.Boolean | CLICommandOptionDataType.StringArray,
-                required: false
-            },
-            {
-                name: 'only',
-                description: 'Run a single task',
-                dataType: CLICommandOptionDataType.String,
-                required: false
-            },
-            {
-                name: 'skip-services',
-                description: 'Do not run dependent services',
-                dataType: CLICommandOptionDataType.Boolean,
-                required: false
+        cmd: new Command()
+            .description('Run the pipeline that is defined in the build file.')
+            .option('--serial', 'Run the pipeline in serial order.', { conflicts: ['only'] })
+            .option('--only [task:string]', 'Run only a single task.', { conflicts: ['serial'] }),
+        buildContextRequired: true,
+        action: async (context: CLIContext) => {
+            if (context.graph === undefined) {
+                throw new Error('Graph is unavailable.');
             }
-        ],
-        requireBuildContext: true,
-        fn: run
+
+            const executor = createExecutor();
+            let graph = context.graph;
+
+            if (context.args['serial']) {
+                graph = graph.createSerialGraph();
+            }
+            else if (context.args['only']) {
+                graph = graph.createSerialGraphFrom([context.args['only'].toString()]);
+            }
+
+            const execution = executor.fromGraph(graph);
+
+            execution.subscribe(ev => {
+                switch (ev.type) {
+                    case 'started':
+                        context.runtime.loggerFn('info', `=== STARTED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
+                        break;
+                    case 'log':
+                        context.runtime.loggerFn(ev.level, ev.message, ev.task, { type: ev.type, task: ev.task });
+                        break;
+                    case 'finishedSuccessfully':
+                        context.runtime.loggerFn('info', `=== FINISHED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
+                        break;
+                    case 'failedCondition':
+                        context.runtime.loggerFn('warn', `Failed condition (${ev.condition})`, ev.task, { type: ev.type, task: ev.task, conditionId: ev.conditionId, condition: ev.condition });
+                        break;
+                    case 'failed':
+                        context.runtime.loggerFn('error', ev.error || 'Failed', ev.task, { type: ev.type, task: ev.task });
+                        break;
+                }
+            });
+
+            if (context.runtime.beforeTaskExecution !== undefined) {
+                execution.beforeTask(async (task) => {
+                    await context.runtime.beforeTaskExecution!(task);
+                });
+            }
+
+            if (context.runtime.afterTaskExecution !== undefined) {
+                execution.afterTask(async (task, error) => {
+                    await context.runtime.afterTaskExecution!(task, error);
+                });
+            }
+
+            if (context.runtime.beforeExecution !== undefined) {
+                await context.runtime.beforeExecution();
+            }
+
+            try {
+                await execution.execute();
+            }
+            finally {
+                if (context.runtime.afterExecution !== undefined) {
+                    await context.runtime.afterExecution();
+                }
+            }
+        }
     };
 }

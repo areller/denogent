@@ -1,58 +1,29 @@
-import { getCommand, initializeCommands, showHelp } from "./commands.ts";
-import type { BuildContext, CLIContext } from "./context.ts";
-import { jsonLog, jsonLogCleanBuffer, jsonStreamLog, LoggerFn, simpleLog } from "./logger.ts";
 import { Args, parseArgs } from "../deps.ts";
+import type { BuildContext, CLIContext } from "./context.ts";
+import { Command } from "../deps.ts";
+import type { Runtime } from "../internal/runtime.ts";
+import { LocalRuntime } from "../internal/local_runtime.ts";
+import { createGraph, Graph } from "../internal/graph/graph.ts";
+import { jsonStreamLog, simpleLog } from "./logger.ts";
+import { getRunCommand } from "./run/run.ts";
+import { getCLIVersion } from "./version.ts";
+import { getTasksCommand } from "./tasks/tasks.ts";
+import { stdPath } from "../deps.ts";
+import { getCreateCommand } from "./create/create.ts";
+import { getGenerateCommand } from "./generate/generate.ts";
 
-export enum CLICommandOptionDataType {
-    Boolean = 0,
-    Number = 1 << 0,
-    String = 1 << 1,
-    StringArray = 1 << 2
+const defaultBuildFile = stdPath.join('build', 'build.ts');
+const parsedArgs = parseArgs(Deno.args);
+
+function getMainFilePath() {
+    const cwd = Deno.cwd();
+    return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length + 1);
 }
 
-export const fileOption: CLICommandOption = {
-    name: 'file',
-    description: 'The path to the build file',
-    dataType: CLICommandOptionDataType.String,
-    required: true
-};
-
-export const optionalFileOption: CLICommandOption = {
-    name: 'file',
-    description: 'The path to the build file',
-    dataType: CLICommandOptionDataType.String,
-    required: false
-};
-
-export interface CLICommandOption {
-    name: string;
-    description: string;
-    dataType: CLICommandOptionDataType;
-    required: boolean;
-}
-
-export interface CLICommand {
-    name: string;
-    description: string;
-    options: CLICommandOption[];
-    requireBuildContext: boolean;
-    fn: (context: CLIContext) => Promise<void>
-}
-
-export interface CreateCLIArgs {
-    /**
-     * The context for the CLI.
-     */
-    context?: BuildContext;
-}
-
-async function runCLIViaDenoRun(cliArgs: Args): Promise<void> {
-    if (!cliArgs.file) {
-        return console.error(`Option '--file' is required but wasn't provided.`);
-    }
-
+// run denogent via `deno run {buildFile}`
+async function runCLIFromFile(file: string) {
     const process = await Deno.run({
-        cmd: ['deno', 'run', '-q', '-A', '--unstable', cliArgs.file, ...Deno.args],
+        cmd: ['deno', 'run', '-q', '-A', '--unstable', file, ...Deno.args],
         stdout: 'inherit',
         stderr: 'inherit'
     });
@@ -61,72 +32,69 @@ async function runCLIViaDenoRun(cliArgs: Args): Promise<void> {
     Deno.exit(status.code);
 }
 
-function decideLogger(cliArgs: Args, buildContext: BuildContext): LoggerFn | undefined {
-    if (cliArgs['json-stream']) {
-        return jsonStreamLog;
-    }
-    else if (cliArgs['json']) {
-        return jsonLog;
-    }
-    else if (cliArgs['runtime']) {
-        const ciArray = buildContext.ciIntegrations.filter(c => c.type == cliArgs['runtime']);
+async function getRuntime(args: Args, buildContext?: BuildContext): Promise<[Runtime, Graph | undefined]> {
+    const graph = buildContext !== undefined ? createGraph(buildContext.targetTasks) : undefined;
+    let runtime: Runtime;
+    if (buildContext !== undefined && args['runtime'] && args['runtime'] != 'local') {
+        const ciArray = buildContext.ciIntegrations.filter(c => c.type == args['runtime']);
         if (ciArray === undefined || ciArray.length == 0) {
-            return undefined;
+            throw new Error(`Unknown runtime '${args['runtime']}'.`);
         }
 
-        const ci = ciArray[0];
-
-        return ci.logFn;
-    }
-
-    return simpleLog;
-}
-
-// gets the {path} in `deno run {path}`
-function getMainFilePath() {
-    const cwd = Deno.cwd();
-    return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length + 1);
-}
-
-export async function createCLI(args: CreateCLIArgs): Promise<void> {
-    initializeCommands();
-
-    const cliArgs = parseArgs(Deno.args);
-    if (cliArgs._.length == 0) {
-        return showHelp();
-    }
-
-    const cmd = getCommand(cliArgs._[0].toString());
-    if (cmd === undefined) {
-        return simpleLog('error', `Command '${cliArgs._[0]}' was not found.`);
-    }
-
-    if (cmd.requireBuildContext && cmd.options.filter(opt => opt == fileOption).length > 0) {
-        if (args.context === undefined) {
-            return await runCLIViaDenoRun(cliArgs);
-        }
-        else {
-            cliArgs.file = getMainFilePath();
-        }
-    }
-
-    const logger = decideLogger(cliArgs, args.context!);
-    if (logger === undefined) {
-        return simpleLog('error', 'Unable to choose a logger');
-    }
-
-    try {
-        await cmd.fn({
-            buildContext: args.context,
-            args: cliArgs,
-            logger
+        runtime = await ciArray[0].createRuntime({
+            graph: graph!
         });
     }
-    catch (err) {
-        logger('error', err);
-        Deno.exit(1);
+    else {
+        const logger = args['json'] ? jsonStreamLog : simpleLog;
+        runtime = new LocalRuntime(graph, args, logger);
     }
-    finally {
-        jsonLogCleanBuffer();
-    }
+
+    return [runtime, graph];
+}
+
+async function createContext(args: Args, buildFile: string, buildContext?: BuildContext): Promise<CLIContext> {
+    const [runtime, graph] = await getRuntime(args, buildContext);
+
+    return {
+        buildContext,
+        buildFile,
+        args,
+        runtime,
+        graph
+    };
+}
+
+function createCommand(buildContext: BuildContext | undefined, rawCommand: { cmd: Command, buildContextRequired: boolean, action: (context: CLIContext) => Promise<void> }): Command {
+    return rawCommand
+        .cmd
+        .action(async () => {
+            let file = (parsedArgs['file'] as string) ?? defaultBuildFile;
+            if (rawCommand.buildContextRequired && buildContext === undefined) {
+                return await runCLIFromFile(file);
+            }
+
+            const context = await createContext(parsedArgs, file, buildContext);
+
+            const actionRes = rawCommand.action(context);
+            if (actionRes instanceof Promise) {
+                await actionRes;
+            }
+        });
+}
+
+export async function createCLI(buildContext?: BuildContext) {
+    const version = getCLIVersion();
+    await new Command()
+        .name('denogent')
+        .version(version == '{{VERSION}}' ? '' : version)
+        .description('A TypeScript build system')
+        .option('--file [path:string]', 'The path to the build file.', { global: true, default: defaultBuildFile })
+        .option('--json [:boolean]', 'Emit logs as json.', { default: false, global: true })
+        .option('--runtime [type:string]', 'The runtime/CI type.', { default: 'local', global: true })
+        .command('create', createCommand(buildContext, getCreateCommand()))
+        .command('generate', createCommand(buildContext, getGenerateCommand()))
+        .command('run', createCommand(buildContext, getRunCommand()))
+        .command('tasks', createCommand(buildContext, getTasksCommand()))
+        .parse(Deno.args);
 }

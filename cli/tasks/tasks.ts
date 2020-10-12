@@ -1,25 +1,20 @@
-import { createGraph } from "../../internal/graph/graph.ts";
-import { CLICommand, fileOption } from "../cli.ts";
+import { Command } from "../../deps.ts";
 import type { CLIContext } from "../context.ts";
 
-async function run(context?: CLIContext): Promise<void> {
-    const graph = createGraph(context?.buildContext?.targetTasks!);
-    for (const name of graph.taskNames) {
-        const task = graph.getTask(name)!;
-        context?.logger('info', task.name, undefined, {
-            task
-        });
-    }
-}
-
-export function tasksCommandDescription(): CLICommand {
+export function getTasksCommand(): { cmd: Command, buildContextRequired: boolean, action: (context: CLIContext) => Promise<void> } {
     return {
-        name: 'tasks',
-        description: 'Returns the list of tasks',
-        options: [
-            fileOption
-        ],
-        requireBuildContext: true,
-        fn: run
+        cmd: new Command()
+            .description('Return the list of tasks in the pipeline.'),
+        buildContextRequired: true,
+        action: async (context: CLIContext) => {
+            if (context.graph === undefined) {
+                throw new Error('Graph is unavailable.');
+            }
+
+            for (const taskName of context.graph.taskNames) {
+                const task = context.graph.getTask(taskName)!;
+                context.runtime.loggerFn('info', taskName, undefined, { task });
+            }
+        }
     }
 }

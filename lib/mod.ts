@@ -3,7 +3,7 @@
 */
 
 export type { ExecFn, CondFn, Context } from "./core/task.ts";
-export type { Logger } from "./core/logger.ts";
+export type { Logger, LogLevel, LoggerFn } from "./core/logger.ts";
 export type { Extension } from "./core/extension.ts";
 export type { CreateBuilderArgs } from "./core/builder.ts";
 export { Task, task } from "./core/task.ts";

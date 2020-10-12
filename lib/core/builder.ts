@@ -21,10 +21,8 @@ export interface CreateBuilderArgs {
 
 export function createBuilder(args: CreateBuilderArgs) {
     createCLI({
-        context: {
-            name: args.name,
-            targetTasks: args.targetTasks instanceof Array ? args.targetTasks : [args.targetTasks],
-            ciIntegrations: args.ciIntegrations ?? []
-        }
+        name: args.name,
+        targetTasks: args.targetTasks instanceof Array ? args.targetTasks : [args.targetTasks],
+        ciIntegrations: args.ciIntegrations ?? []
     });
 }

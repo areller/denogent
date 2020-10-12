@@ -1,6 +1,6 @@
-import type { LoggerFn } from "../../cli/logger.ts";
 import type { Graph } from "../../internal/graph/graph.ts";
 import type { Logger } from "../core/logger.ts";
+import type { Runtime } from "../../internal/runtime.ts";
 
 export interface CleanArgs {
     /**
@@ -38,9 +38,16 @@ export interface GenerateArgs {
     path?: string;
 }
 
+export interface CreateRuntimeArgs {
+    /**
+     * the graph object
+     */
+    graph: Graph;
+}
+
 export interface CIIntegration {
+
     type: string;
-    logFn: LoggerFn;
 
     /**
      * Cleans the files of the CI integration.
@@ -53,4 +60,10 @@ export interface CIIntegration {
      * @param args generate arguments
      */
     generate(args: GenerateArgs): Promise<void>;
+
+    /**
+     * Creates a runtime interface for the CI integration.
+     * @param args create runtime arguments
+     */
+    createRuntime(args: CreateRuntimeArgs): Promise<Runtime>;
 }
