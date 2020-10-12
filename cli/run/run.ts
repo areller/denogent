@@ -58,17 +58,23 @@ export function getRunCommand(): { cmd: Command, buildContextRequired: boolean, 
                 });
             }
 
-            if (context.runtime.beforeExecution !== undefined) {
-                await context.runtime.beforeExecution();
-            }
-
             try {
-                await execution.execute();
-            }
-            finally {
-                if (context.runtime.afterExecution !== undefined) {
-                    await context.runtime.afterExecution();
+                if (context.runtime.beforeExecution !== undefined) {
+                    await context.runtime.beforeExecution();
                 }
+
+                try {
+                    await execution.execute();
+                }
+                finally {
+                    if (context.runtime.afterExecution !== undefined) {
+                        await context.runtime.afterExecution();
+                    }
+                }
+            }
+            catch (error) {
+                context.runtime.loggerFn('error', error);
+                Deno.exit(1);
             }
         }
     };

@@ -116,7 +116,7 @@ export class GitHubActions implements CIIntegration {
                         ...this.buildUses(args),
                         {
                             name: 'run build',
-                            run: `deno run -A -q --unstable ${args.buildFile} --serial --skip-services --runtime gh-actions run`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
+                            run: `deno run -A -q --unstable ${args.buildFile} run --serial --runtime gh-actions`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
                             env: {
                                 ...runEnv,
                                 ...this.buildSecrets(args)

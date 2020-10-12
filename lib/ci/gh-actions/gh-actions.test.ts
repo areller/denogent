@@ -218,7 +218,7 @@ async function workflowAssertTest(ghActions: GitHubActions, graph: Graph, image:
 
         let runStep = {
             name: 'run build',
-            run: 'deno run -A -q --unstable build/some-build.ts --serial --skip-services --runtime gh-actions run',
+            run: 'deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions',
             env
         };
 
