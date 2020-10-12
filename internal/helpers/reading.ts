@@ -8,7 +8,7 @@ export async function readLines(readers: (Deno.Reader & Deno.Closer)[], closeAft
     readers = [...readers];
     let lineBuffer = '';
 
-    const buf = new Uint8Array(1024);
+    const buf = new Uint8Array(32 * 1024);
 
     while (readers.length > 0) {
         const [n, reader] = await Promise.race(readers.map(r => r.read(buf).then(n => [n, r] as [number, Deno.Reader & Deno.Closer])));
