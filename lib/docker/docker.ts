@@ -77,7 +77,7 @@ export class DockerClient {
      * Runs a docker sub command.
      * @param args sub command arguments
      */
-    async subcmd(args: DockerClientSubCommandArgs) {
+    async subcmd(args: DockerClientSubCommandArgs): Promise<string> {
         let [_, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(' '), true);
         return output.trim();
     }
