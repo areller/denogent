@@ -8,191 +8,191 @@ export type CondFn = (context?: Context) => Promise<boolean> | boolean;
  * The execution context of the task
  */
 export interface Context {
-	logger: Logger;
+  logger: Logger;
 }
 
 /**
  * A task represents a unit of work, that may depend or may trigger other tasks.
  */
 export class Task {
-	private _exec?: ExecFn;
-	private _dependencies: Task[];
-	private _dependents: Task[];
-	private _conditions: CondFn[];
-	private _tags: { [name: string]: string[] };
-	private _properties: { [name: string]: unknown };
-	private _extensions: { [key: string]: Extension };
-	private _propagateExceptions: boolean;
+  private _exec?: ExecFn;
+  private _dependencies: Task[];
+  private _dependents: Task[];
+  private _conditions: CondFn[];
+  private _tags: { [name: string]: string[] };
+  private _properties: { [name: string]: unknown };
+  private _extensions: { [key: string]: Extension };
+  private _propagateExceptions: boolean;
 
-	constructor(private _name: string) {
-		this._dependencies = [];
-		this._dependents = [];
-		this._conditions = [];
-		this._tags = {};
-		this._properties = {};
-		this._extensions = {};
-		this._propagateExceptions = true;
-	}
+  constructor(private _name: string) {
+    this._dependencies = [];
+    this._dependents = [];
+    this._conditions = [];
+    this._tags = {};
+    this._properties = {};
+    this._extensions = {};
+    this._propagateExceptions = true;
+  }
 
-	/**
-	 * Defines a dependency or an array of dependencies, that the current task depends on.
-	 * @param dependencies a single dependency or an array or dependencies. (a dependency can either be another task or an extension)
-	 */
-	dependsOn(dependencies: Task | Task[] | Extension | Extension[]): Task {
-		if (dependencies instanceof Array) {
-			for (const dependency of dependencies) {
-				this.dependsOn(dependency);
-			}
-		} else if (dependencies instanceof Task) {
-			dependencies._dependents.push(this);
-			this._dependencies.push(dependencies);
-		} else if ((dependencies as Extension).enrich !== undefined) {
-			if (this._extensions[dependencies.key] !== undefined) {
-				throw new Error(`Task '${this.name}' already depends on extension with key '${dependencies.key}'.`);
-			}
+  /**
+   * Defines a dependency or an array of dependencies, that the current task depends on.
+   * @param dependencies a single dependency or an array or dependencies. (a dependency can either be another task or an extension)
+   */
+  dependsOn(dependencies: Task | Task[] | Extension | Extension[]): Task {
+    if (dependencies instanceof Array) {
+      for (const dependency of dependencies) {
+        this.dependsOn(dependency);
+      }
+    } else if (dependencies instanceof Task) {
+      dependencies._dependents.push(this);
+      this._dependencies.push(dependencies);
+    } else if ((dependencies as Extension).enrich !== undefined) {
+      if (this._extensions[dependencies.key] !== undefined) {
+        throw new Error(`Task '${this.name}' already depends on extension with key '${dependencies.key}'.`);
+      }
 
-			dependencies.enrich(this);
-			this._extensions[dependencies.key] = dependencies;
-		}
+      dependencies.enrich(this);
+      this._extensions[dependencies.key] = dependencies;
+    }
 
-		return this;
-	}
+    return this;
+  }
 
-	/**
-	 * Defines a task or an array of task, that would be triggered by the current task's completion.
-	 * @param tasks a single task or an array of tasks
-	 */
-	triggers(tasks: Task | Task[]): Task {
-		if (tasks instanceof Array) {
-			for (let task of tasks) {
-				task._dependencies.push(this);
-				this._dependents.push(task);
-			}
-		} else {
-			tasks._dependencies.push(this);
-			this._dependents.push(tasks);
-		}
+  /**
+   * Defines a task or an array of task, that would be triggered by the current task's completion.
+   * @param tasks a single task or an array of tasks
+   */
+  triggers(tasks: Task | Task[]): Task {
+    if (tasks instanceof Array) {
+      for (let task of tasks) {
+        task._dependencies.push(this);
+        this._dependents.push(task);
+      }
+    } else {
+      tasks._dependencies.push(this);
+      this._dependents.push(tasks);
+    }
 
-		return this;
-	}
+    return this;
+  }
 
-	/**
-	 * Defines a condition for the current task to run.
-	 * @param cond a condition for the current task to run
-	 */
-	when(cond: CondFn): Task {
-		this._conditions.push(cond);
-		return this;
-	}
+  /**
+   * Defines a condition for the current task to run.
+   * @param cond a condition for the current task to run
+   */
+  when(cond: CondFn): Task {
+    this._conditions.push(cond);
+    return this;
+  }
 
-	/**
-	 * Defines the function that the current task would executes.
-	 * @param exec the function that the current task executes
-	 */
-	does(exec: ExecFn): Task {
-		this._exec = exec;
-		return this;
-	}
+  /**
+   * Defines the function that the current task would executes.
+   * @param exec the function that the current task executes
+   */
+  does(exec: ExecFn): Task {
+    this._exec = exec;
+    return this;
+  }
 
-	/**
-	 * Adds a tag to the current task.
-	 * @param name the name of the tag
-	 * @param value the value of the tag
-	 */
-	tag(name: string, value: string | string[]): Task {
-		if (!this._tags[name]) {
-			this._tags[name] = value instanceof Array ? value : [value];
-		} else {
-			if (value instanceof Array) {
-				this._tags[name].push(...value);
-			} else {
-				this._tags[name].push(value);
-			}
-		}
-		return this;
-	}
+  /**
+   * Adds a tag to the current task.
+   * @param name the name of the tag
+   * @param value the value of the tag
+   */
+  tag(name: string, value: string | string[]): Task {
+    if (!this._tags[name]) {
+      this._tags[name] = value instanceof Array ? value : [value];
+    } else {
+      if (value instanceof Array) {
+        this._tags[name].push(...value);
+      } else {
+        this._tags[name].push(value);
+      }
+    }
+    return this;
+  }
 
-	/**
-	 * Assigns a property to the current task.
-	 * @param name the name of the property
-	 * @param value the value of the property
-	 */
-	property(name: string, value: unknown): Task {
-		this._properties[name] = value;
-		return this;
-	}
+  /**
+   * Assigns a property to the current task.
+   * @param name the name of the property
+   * @param value the value of the property
+   */
+  property(name: string, value: unknown): Task {
+    this._properties[name] = value;
+    return this;
+  }
 
-	/**
-	 * Sets whether or not the task should propagate its exception upon failure.
-	 * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = true)
-	 */
-	breakCircuit(breakCircuit?: boolean): Task {
-		this._propagateExceptions = !(breakCircuit ?? true);
-		return this;
-	}
+  /**
+   * Sets whether or not the task should propagate its exception upon failure.
+   * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = true)
+   */
+  breakCircuit(breakCircuit?: boolean): Task {
+    this._propagateExceptions = !(breakCircuit ?? true);
+    return this;
+  }
 
-	/**
-	 * Gets an array of tasks that the current task depends on.
-	 */
-	get dependencies(): Task[] {
-		return this._dependencies;
-	}
+  /**
+   * Gets an array of tasks that the current task depends on.
+   */
+  get dependencies(): Task[] {
+    return this._dependencies;
+  }
 
-	/**
-	 * Gets an array of tasks that depend on the current task.
-	 */
-	get dependents(): Task[] {
-		return this._dependents;
-	}
+  /**
+   * Gets an array of tasks that depend on the current task.
+   */
+  get dependents(): Task[] {
+    return this._dependents;
+  }
 
-	/**
-	 * Gets an array of conditions that have to met before the current task is able to run.
-	 */
-	get conditions(): CondFn[] {
-		return this._conditions;
-	}
+  /**
+   * Gets an array of conditions that have to met before the current task is able to run.
+   */
+  get conditions(): CondFn[] {
+    return this._conditions;
+  }
 
-	/**
-	 * Gets the function that the current task executes.
-	 */
-	get exec(): ExecFn | undefined {
-		return this._exec;
-	}
+  /**
+   * Gets the function that the current task executes.
+   */
+  get exec(): ExecFn | undefined {
+    return this._exec;
+  }
 
-	/**
-	 * Gets whether or not the task should propagate its own exception upon failure.
-	 */
-	get propagateExceptions(): boolean {
-		return this._propagateExceptions;
-	}
+  /**
+   * Gets whether or not the task should propagate its own exception upon failure.
+   */
+  get propagateExceptions(): boolean {
+    return this._propagateExceptions;
+  }
 
-	/**
-	 * Gets the name of the current task.
-	 */
-	get name(): string {
-		return this._name;
-	}
+  /**
+   * Gets the name of the current task.
+   */
+  get name(): string {
+    return this._name;
+  }
 
-	/**
-	 * Gets the tags of the current task.
-	 */
-	get tags(): { [name: string]: string[] } {
-		return this._tags;
-	}
+  /**
+   * Gets the tags of the current task.
+   */
+  get tags(): { [name: string]: string[] } {
+    return this._tags;
+  }
 
-	/**
-	 * Gets the properties of the current task.
-	 */
-	get properties(): { [name: string]: unknown } {
-		return this._properties;
-	}
+  /**
+   * Gets the properties of the current task.
+   */
+  get properties(): { [name: string]: unknown } {
+    return this._properties;
+  }
 
-	/**
-	 * Gets an array of extensions that the current task depends on.
-	 */
-	get extensions(): Extension[] {
-		return Object.values(this._extensions);
-	}
+  /**
+   * Gets an array of extensions that the current task depends on.
+   */
+  get extensions(): Extension[] {
+    return Object.values(this._extensions);
+  }
 }
 
 /**
@@ -201,5 +201,5 @@ export class Task {
  * @param name the name of the task
  */
 export function task(name: string): Task {
-	return new Task(name);
+  return new Task(name);
 }

@@ -1,6 +1,6 @@
 export {
-	assertArrayContains,
-	assertEquals,
-	assertNotEquals,
-	fail,
+  assertArrayContains,
+  assertEquals,
+  assertNotEquals,
+  fail,
 } from 'https://deno.land/std@0.74.0/testing/asserts.ts';

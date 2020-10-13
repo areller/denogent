@@ -28,13 +28,13 @@ export { default as deno } from './deno/deno.ts';
  */
 
 export type {
-	DockerClientArgs,
-	DockerClientBuildArgs,
-	DockerClientPushArgs,
-	DockerRegistryCredentials,
-	DockerClientSubCommandArgs,
-	DockerServiceArgs,
-	DockerContainerArgs,
+  DockerClientArgs,
+  DockerClientBuildArgs,
+  DockerClientPushArgs,
+  DockerRegistryCredentials,
+  DockerClientSubCommandArgs,
+  DockerServiceArgs,
+  DockerContainerArgs,
 } from './docker/args.ts';
 export { default as docker } from './docker/docker.ts';
 
