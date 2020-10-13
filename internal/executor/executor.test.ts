@@ -153,7 +153,7 @@ describe("executor.test.ts", (t) => {
             type: "failedCondition",
             task: "taskA",
             conditionId: 0,
-            condition: "_ => false",
+            condition: "(_) => false",
           },
         },
       },
@@ -168,7 +168,7 @@ describe("executor.test.ts", (t) => {
         type: "failedCondition",
         task: "taskA",
         conditionId: 0,
-        condition: "_ => false",
+        condition: "(_) => false",
       },
     ]);
   });
