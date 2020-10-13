@@ -25,3 +25,5 @@ jobs:
         run: >-
           deno run -A -q --unstable build/build.ts run --serial --runtime
           gh-actions
+        env:
+          NEST_API_KEY: '${{ secrets.NEST_API_KEY }}'
