@@ -45,7 +45,7 @@ const publish = task('publish')
   .dependsOn(runtime.secret('NEST_API_KEY'))
   .dependsOn(replaceVersion)
   .does(async ctx => {
-    const run = ['deno', 'run', '-A', '-f', '--unstable', 'https://x.nest.land/eggs@0.2.3/mod.ts'];
+    const run = ['deno', 'run', '-A', '--unstable', 'https://x.nest.land/eggs@0.2.3/mod.ts'];
 
     await runtime.command({
       cmd: [...run, 'link', runtime.argValue('NEST_API_KEY')],
