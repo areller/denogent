@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "check-format": "prettier --check \"**/*.ts\"",
-    "format": "prettier --write \"**/*.ts\""
+    "check-format": "prettier --config .prettierrc --check \"**/*.ts\"",
+    "format": "prettier --config .prettierrc --write \"**/*.ts\""
   },
   "repository": {
     "type": "git",
