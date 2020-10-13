@@ -66,7 +66,7 @@ const publish = task('publish')
 
 createBuilder({
   name: 'denogent-build',
-  targetTasks: [checkFormat, test],
+  targetTasks: [checkFormat, publish],
   ciIntegrations: [
     createGitHubActions({
       image: 'ubuntu-latest',
