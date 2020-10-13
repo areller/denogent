@@ -1,4 +1,4 @@
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 export type LoggerFn = (level: LogLevel, message: string | Error, task?: string, meta?: unknown) => void;
 
 /**
@@ -48,9 +48,9 @@ export interface Logger {
  */
 export function createLoggerFromFn(loggerFn: LoggerFn, task?: string): Logger {
   return {
-    debug: (message: string, meta?: unknown) => loggerFn('debug', message, task, meta),
-    info: (message: string, meta?: unknown) => loggerFn('info', message, task, meta),
-    warn: (message: string, meta?: unknown) => loggerFn('warn', message, task, meta),
-    error: (message: string | Error, meta?: unknown) => loggerFn('error', message, task, meta),
+    debug: (message: string, meta?: unknown) => loggerFn("debug", message, task, meta),
+    info: (message: string, meta?: unknown) => loggerFn("info", message, task, meta),
+    warn: (message: string, meta?: unknown) => loggerFn("warn", message, task, meta),
+    error: (message: string | Error, meta?: unknown) => loggerFn("error", message, task, meta),
   };
 }

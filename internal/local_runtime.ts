@@ -1,9 +1,9 @@
-import { Args, uuidv4 } from '../deps.ts';
-import type { LoggerFn } from '../lib/core/logger.ts';
-import type { Service } from '../lib/docker/docker.ts';
-import type { Graph } from './graph/graph.ts';
-import { runCommand } from './helpers/cmd.ts';
-import type { Runtime } from './runtime.ts';
+import { Args, uuidv4 } from "../deps.ts";
+import type { LoggerFn } from "../lib/core/logger.ts";
+import type { Service } from "../lib/docker/docker.ts";
+import type { Graph } from "./graph/graph.ts";
+import { runCommand } from "./helpers/cmd.ts";
+import type { Runtime } from "./runtime.ts";
 
 export class LocalRuntime implements Runtime {
   private containerNames: string[];
@@ -16,7 +16,7 @@ export class LocalRuntime implements Runtime {
     {
       pre: this.launchDockerServices,
       post: this.removeDockerServices,
-      skipFlag: 'skip-services',
+      skipFlag: "skip-services",
     },
   ];
 
@@ -24,11 +24,11 @@ export class LocalRuntime implements Runtime {
     this.containerNames = [];
   }
 
-  get loggerFn(): LoggerFn {
+  public get loggerFn(): LoggerFn {
     return this.logger;
   }
 
-  async beforeExecution(): Promise<void> {
+  public async beforeExecution(): Promise<void> {
     if (this.graph === undefined) {
       return;
     }
@@ -42,7 +42,7 @@ export class LocalRuntime implements Runtime {
     }
   }
 
-  async afterExecution(): Promise<void> {
+  public async afterExecution(): Promise<void> {
     if (this.graph === undefined) {
       return;
     }
@@ -56,11 +56,11 @@ export class LocalRuntime implements Runtime {
     }
   }
 
-  async launchDockerServices(): Promise<void> {
+  public async launchDockerServices(): Promise<void> {
     let services: { [name: string]: Service } = {};
     for (const taskName of this.graph!.taskNames) {
       const task = this.graph!.getTask(taskName)!;
-      const dockerServices = task.properties['docker-services'] as { [name: string]: Service } | undefined;
+      const dockerServices = task.properties["docker-services"] as { [name: string]: Service } | undefined;
 
       if (dockerServices !== undefined) {
         for (const dockerService of Object.values(dockerServices)) {
@@ -73,40 +73,40 @@ export class LocalRuntime implements Runtime {
       return;
     }
 
-    if (!(await runCommand(['docker', '--version'], undefined, undefined, false))[0]) {
+    if (!(await runCommand(["docker", "--version"], undefined, undefined, false))[0]) {
       throw new Error(`Docker is not installed.`);
     }
 
     for (const service of Object.values(services)) {
-      const id = uuidv4.generate().replaceAll('-', '');
-      let cmd = ['docker', 'run', '--rm', '--name', id, '-idt'];
+      const id = uuidv4.generate().replaceAll("-", "");
+      let cmd = ["docker", "run", "--rm", "--name", id, "-idt"];
       for (const port of service.ports) {
-        cmd.push('-p', `${port}:${port}`);
+        cmd.push("-p", `${port}:${port}`);
       }
 
       cmd.push(service.image);
 
-      await runCommand(cmd, line => {
-        this.loggerFn('debug', line);
+      await runCommand(cmd, (line) => {
+        this.loggerFn("debug", line);
       });
 
       this.containerNames.push(id);
 
-      Deno.env.set(`${service.name.toUpperCase()}_HOST`, 'localhost');
+      Deno.env.set(`${service.name.toUpperCase()}_HOST`, "localhost");
       if (service.ports.length > 0) {
         Deno.env.set(`${service.name.toUpperCase()}_PORT`, service.ports[0].toString());
-        Deno.env.set(`${service.name.toUpperCase()}_PORTS`, service.ports.join(';'));
+        Deno.env.set(`${service.name.toUpperCase()}_PORTS`, service.ports.join(";"));
       }
     }
   }
 
-  async removeDockerServices(): Promise<void> {
+  public async removeDockerServices(): Promise<void> {
     if (this.containerNames.length == 0) {
       return;
     }
 
     for (const name of this.containerNames) {
-      await runCommand(['docker', 'rm', '-f', name]);
+      await runCommand(["docker", "rm", "-f", name]);
     }
   }
 }

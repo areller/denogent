@@ -1,5 +1,5 @@
-import type { ExecFn, CondFn, Task as TaskDef } from '../../lib/core/task.ts';
-import { breadthFirst, breadthFirstWithDepth } from '../helpers/algos.ts';
+import type { ExecFn, CondFn, Task as TaskDef } from "../../lib/core/task.ts";
+import { breadthFirst, breadthFirstWithDepth } from "../helpers/algos.ts";
 
 /**
  * Represents a task
@@ -33,7 +33,7 @@ export class Graph {
    * Gets an instance of a task by its name.
    * @param name the name of the task
    */
-  getTask(name: string): Task | undefined {
+  public getTask(name: string): Task | undefined {
     return this._tasks[name];
   }
 
@@ -41,7 +41,7 @@ export class Graph {
    * Creates a graph that would run given tasks in a serial order.
    * @param taskNames the names of the tasks
    */
-  createSerialGraphFrom(taskNames: string[]): Graph {
+  public createSerialGraphFrom(taskNames: string[]): Graph {
     if (taskNames.length == 0) {
       return new Graph({}, []);
     }
@@ -82,7 +82,7 @@ export class Graph {
    * Creates a graph that would run given tasks in parallel.
    * @param taskNames the names of the tasks
    */
-  createParallelGraphFrom(taskNames: string[]): Graph {
+  public createParallelGraphFrom(taskNames: string[]): Graph {
     if (taskNames.length == 0) {
       return new Graph({}, []);
     }
@@ -115,14 +115,14 @@ export class Graph {
   /**
    * Creates a graph that would run all tasks of current graph in serial order.
    */
-  createSerialGraph(): Graph {
+  public createSerialGraph(): Graph {
     return this.createSerialGraphFrom(this.getAllTasksInOrder());
   }
 
   /**
    * Creates a graph that would run all tasks of current graph in parallel.
    */
-  createParallelGraph(): Graph {
+  public createParallelGraph(): Graph {
     return this.createParallelGraphFrom(this.getAllTasksInOrder());
   }
 
@@ -131,13 +131,13 @@ export class Graph {
    * The tasks in each level depend on the tasks in the level above.
    * The tasks in the first level (level = 0) are the tasks without dependencies and are the first to run in the graph, while the tasks in the last level are the last to run in the graph.
    */
-  getTasksByLevel(): { [level: number]: Task[] } {
+  public getTasksByLevel(): { [level: number]: Task[] } {
     let map: { [level: number]: Task[] } = {};
 
     breadthFirstWithDepth(
       this.taskObjects(this.startTasks),
-      t => this.taskObjects(t.dependents),
-      t => this.taskObjects(t.dependencies),
+      (t) => this.taskObjects(t.dependents),
+      (t) => this.taskObjects(t.dependencies),
       (t, level) => {
         let tasksOfLevel = map[level];
         if (tasksOfLevel === undefined) {
@@ -155,21 +155,21 @@ export class Graph {
   /**
    * Gets the tasks with no dependencies, and the first to run in the graph.
    */
-  get startTasks() {
+  public get startTasks() {
     return this._startTasks;
   }
 
   /**
    * Gets the tasks with no dependents.
    */
-  get targetTasks() {
+  public get targetTasks() {
     return this._endTasks;
   }
 
   /**
    * Gets an array of the names of all the tasks in the graph.
    */
-  get taskNames() {
+  public get taskNames() {
     return this._names;
   }
 
@@ -178,8 +178,8 @@ export class Graph {
 
     breadthFirst(
       this.taskObjects(endTasks),
-      t => this.taskObjects(t.dependencies),
-      t => {
+      (t) => this.taskObjects(t.dependencies),
+      (t) => {
         if (t.dependencies.length == 0) {
           startTasks.push(t.name);
         }
@@ -194,8 +194,8 @@ export class Graph {
 
     breadthFirst(
       this.taskObjects(startTasks),
-      t => this.taskObjects(t.dependents),
-      t => {
+      (t) => this.taskObjects(t.dependents),
+      (t) => {
         if (t.dependents.length == 0) {
           endTasks.push(t.name);
         }
@@ -206,7 +206,7 @@ export class Graph {
   }
 
   private taskObjects(names: string[]): Task[] {
-    return names.map(n => this._tasks[n]);
+    return names.map((n) => this._tasks[n]);
   }
 
   private getAllTasksInOrder(): string[] {
@@ -226,8 +226,8 @@ export function createGraph(targetTasks: TaskDef[]) {
 
   breadthFirst(
     targetTasks,
-    t => t.dependencies.concat(t.dependents),
-    t => {
+    (t) => t.dependencies.concat(t.dependents),
+    (t) => {
       let task = tasks[t.name];
       if (task !== undefined) {
         throw new Error(`task '${t.name}' is defined more than once.`);
@@ -237,8 +237,8 @@ export function createGraph(targetTasks: TaskDef[]) {
         name: t.name,
         exec: t.exec,
         conditions: t.conditions,
-        dependencies: t.dependencies.map(d => d.name),
-        dependents: t.dependents.map(d => d.name),
+        dependencies: t.dependencies.map((d) => d.name),
+        dependents: t.dependents.map((d) => d.name),
         tags: t.tags,
         properties: t.properties,
         propagateExceptions: t.propagateExceptions,
@@ -250,6 +250,6 @@ export function createGraph(targetTasks: TaskDef[]) {
 
   return new Graph(
     tasks,
-    targetTasks.map(t => t.name),
+    targetTasks.map((t) => t.name),
   );
 }

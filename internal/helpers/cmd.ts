@@ -1,4 +1,4 @@
-import { readLines } from './reading.ts';
+import { readLines } from "./reading.ts";
 
 /**
  * Runs a command and returns success/failure and output.
@@ -16,14 +16,14 @@ export async function runCommand(
   const process = Deno.run({
     cmd: cmd,
     cwd: path ?? Deno.cwd(),
-    stdout: 'piped',
-    stderr: 'piped',
+    stdout: "piped",
+    stderr: "piped",
   });
 
-  let output = '';
+  let output = "";
 
-  await readLines([process.stdout, process.stderr], true, token => {
-    if (onLine && token != '\n') {
+  await readLines([process.stdout, process.stderr], true, (token) => {
+    if (onLine && token != "\n") {
       onLine(token);
     }
 
@@ -33,7 +33,7 @@ export async function runCommand(
   const status = await process.status();
 
   if (!status.success && (throwOnFailure ?? true)) {
-    throw new Error(`Command '${cmd.join(' ')}' has failed.`);
+    throw new Error(`Command '${cmd.join(" ")}' has failed.`);
   }
 
   return [status.success, output];

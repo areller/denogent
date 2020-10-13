@@ -1,36 +1,36 @@
-import { emptyTempDir, mockDebugLogger } from '../../../internal/testing/helpers.ts';
-import { describe } from '../../../internal/testing/test.ts';
-import { GitHubActions } from './gh-actions.ts';
-import { createGraph, Graph } from '../../../internal/graph/graph.ts';
-import { task } from '../../core/task.ts';
-import { parseYaml, stdFs, stdPath } from '../../../deps.ts';
-import { assertEquals } from '../../../tests_deps.ts';
+import { emptyTempDir, mockDebugLogger } from "../../../internal/testing/helpers.ts";
+import { describe } from "../../../internal/testing/test.ts";
+import { GitHubActions } from "./gh-actions.ts";
+import { createGraph, Graph } from "../../../internal/graph/graph.ts";
+import { task } from "../../core/task.ts";
+import { parseYaml, stdFs, stdPath } from "../../../deps.ts";
+import { assertEquals } from "../../../tests_deps.ts";
 
-describe('gh-actions.test.ts', t => {
-  t.test('clean should clean workflow file', async () => {
-    await emptyTempDir(async temp => {
-      const workflowsPath = stdPath.join(temp, '.github', 'workflows');
+describe("gh-actions.test.ts", (t) => {
+  t.test("clean should clean workflow file", async () => {
+    await emptyTempDir(async (temp) => {
+      const workflowsPath = stdPath.join(temp, ".github", "workflows");
       await stdFs.ensureDir(workflowsPath);
-      const workflowFile = stdPath.join(workflowsPath, 'workflow.yaml');
+      const workflowFile = stdPath.join(workflowsPath, "workflow.yaml");
       await stdFs.ensureFile(workflowFile);
 
       assertEquals(await stdFs.exists(workflowFile), true);
 
-      const ghActions = new GitHubActions('some-image');
+      const ghActions = new GitHubActions("some-image");
       await ghActions.clean({ path: temp, logger: mockDebugLogger() });
 
       assertEquals(await stdFs.exists(workflowFile), false);
     });
   });
 
-  t.test('generate should generate a workflow file', async () => {
+  t.test("generate should generate a workflow file", async () => {
     await workflowAssertTest(
-      new GitHubActions('ubuntu-latest'),
+      new GitHubActions("ubuntu-latest"),
       createSimpleGraph(),
-      'ubuntu-latest',
+      "ubuntu-latest",
       {
         push: {
-          branches: ['master'],
+          branches: ["master"],
         },
       },
       [],
@@ -39,18 +39,18 @@ describe('gh-actions.test.ts', t => {
     );
   });
 
-  t.test('generate should generate workflow file (branches)', async () => {
+  t.test("generate should generate workflow file (branches)", async () => {
     await workflowAssertTest(
-      new GitHubActions('ubuntu-latest', undefined, ['master', 'dev'], ['master'], ['v*']),
+      new GitHubActions("ubuntu-latest", undefined, ["master", "dev"], ["master"], ["v*"]),
       createSimpleGraph(),
-      'ubuntu-latest',
+      "ubuntu-latest",
       {
         push: {
-          branches: ['master', 'dev'],
-          tags: ['v*'],
+          branches: ["master", "dev"],
+          tags: ["v*"],
         },
         pull_request: {
-          branches: ['master'],
+          branches: ["master"],
         },
       },
       [],
@@ -59,49 +59,49 @@ describe('gh-actions.test.ts', t => {
     );
   });
 
-  t.test('generate should generate a workflow file (secrets)', async () => {
+  t.test("generate should generate a workflow file (secrets)", async () => {
     await workflowAssertTest(
-      new GitHubActions('ubuntu-latest'),
+      new GitHubActions("ubuntu-latest"),
       createGraphWithSecrets(),
-      'ubuntu-latest',
+      "ubuntu-latest",
       {
         push: {
-          branches: ['master'],
+          branches: ["master"],
         },
       },
       [],
       undefined,
       {
-        token: '${{ secrets.token }}',
-        username: '${{ secrets.username }}',
-        password: '${{ secrets.password }}',
+        token: "${{ secrets.token }}",
+        username: "${{ secrets.username }}",
+        password: "${{ secrets.password }}",
       },
     );
   });
 
-  t.test('generate should generate a workflow file (uses)', async () => {
+  t.test("generate should generate a workflow file (uses)", async () => {
     await workflowAssertTest(
-      new GitHubActions('ubuntu-latest'),
+      new GitHubActions("ubuntu-latest"),
       createGraphWithUses(),
-      'ubuntu-latest',
+      "ubuntu-latest",
       {
         push: {
-          branches: ['master'],
+          branches: ["master"],
         },
       },
       [
         {
-          name: 'nodejs',
-          uses: 'nodejs/nodejs',
+          name: "nodejs",
+          uses: "nodejs/nodejs",
           with: {
-            'node-version': '12.18',
+            "node-version": "12.18",
           },
         },
         {
-          name: 'dotnet',
-          uses: 'dotnet/dotnet',
+          name: "dotnet",
+          uses: "dotnet/dotnet",
           with: {
-            'dotnet-version': '5.0',
+            "dotnet-version": "5.0",
           },
         },
       ],
@@ -110,77 +110,77 @@ describe('gh-actions.test.ts', t => {
     );
   });
 
-  t.test('generate should generate a workflow file (services)', async () => {
+  t.test("generate should generate a workflow file (services)", async () => {
     await workflowAssertTest(
-      new GitHubActions('ubuntu-latest'),
+      new GitHubActions("ubuntu-latest"),
       createGraphWithServices(),
-      'ubuntu-latest',
+      "ubuntu-latest",
       {
         push: {
-          branches: ['master'],
+          branches: ["master"],
         },
       },
       [],
       {
         serviceA: {
-          image: 'serviceA:0.1',
-          ports: ['8080:8080'],
+          image: "serviceA:0.1",
+          ports: ["8080:8080"],
         },
         serviceB: {
-          image: 'serviceB:0.1',
-          ports: ['8081:8081', '8082:8082'],
+          image: "serviceB:0.1",
+          ports: ["8081:8081", "8082:8082"],
         },
       },
       {
-        SERVICEA_HOST: 'localhost',
-        SERVICEA_PORT: '8080',
-        SERVICEA_PORTS: '8080',
-        SERVICEB_HOST: 'localhost',
-        SERVICEB_PORT: '8081',
-        SERVICEB_PORTS: '8081;8082',
+        SERVICEA_HOST: "localhost",
+        SERVICEA_PORT: "8080",
+        SERVICEA_PORTS: "8080",
+        SERVICEB_HOST: "localhost",
+        SERVICEB_PORT: "8081",
+        SERVICEB_PORTS: "8081;8082",
       },
     );
   });
 });
 
 function createSimpleGraph(): Graph {
-  let a = task('a');
-  let b = task('b').dependsOn(a);
+  let a = task("a");
+  let b = task("b").dependsOn(a);
 
   return createGraph([b]);
 }
 
 function createGraphWithSecrets(): Graph {
-  let a = task('a').property('secrets', ['username', 'password']);
-  let b = task('b').dependsOn(a).property('secrets', ['username', 'token']);
+  let a = task("a").property("secrets", ["username", "password"]);
+  let b = task("b").dependsOn(a).property("secrets", ["username", "token"]);
 
   return createGraph([b]);
 }
 
 function createGraphWithUses(): Graph {
   const nodeJsUse = {
-    name: 'nodejs',
-    uses: 'nodejs/nodejs',
+    name: "nodejs",
+    uses: "nodejs/nodejs",
     with: {
-      'node-version': '12.18',
+      "node-version": "12.18",
     },
   };
   const dotnetUse = {
-    name: 'dotnet',
-    uses: 'dotnet/dotnet',
+    name: "dotnet",
+    uses: "dotnet/dotnet",
     with: {
-      'dotnet-version': '5.0',
+      "dotnet-version": "5.0",
     },
   };
 
-  let a = task('a').property('gh-actions-uses', {
-    ['nodejs']: nodeJsUse,
+  let a = task("a").property("gh-actions-uses", {
+    ["nodejs"]: nodeJsUse,
   });
-  let b = task('b')
+  let b = task("b")
     .dependsOn(a)
-    .property('gh-actions-uses', {
-      ['nodejs']: nodeJsUse,
-      ['dotnet']: dotnetUse,
+    .property("gh-actions-uses", {
+      ["nodejs"]: nodeJsUse,
+      ["dotnet"]: dotnetUse,
     });
 
   return createGraph([b]);
@@ -188,24 +188,24 @@ function createGraphWithUses(): Graph {
 
 function createGraphWithServices(): Graph {
   const serviceA = {
-    name: 'serviceA',
-    image: 'serviceA:0.1',
+    name: "serviceA",
+    image: "serviceA:0.1",
     ports: [8080],
   };
   const serviceB = {
-    name: 'serviceB',
-    image: 'serviceB:0.1',
+    name: "serviceB",
+    image: "serviceB:0.1",
     ports: [8081, 8082],
   };
 
-  let a = task('a').property('docker-services', {
-    ['serviceA']: serviceA,
+  let a = task("a").property("docker-services", {
+    ["serviceA"]: serviceA,
   });
-  let b = task('b')
+  let b = task("b")
     .dependsOn(a)
-    .property('docker-services', {
-      ['serviceA']: serviceA,
-      ['serviceB']: serviceB,
+    .property("docker-services", {
+      ["serviceA"]: serviceA,
+      ["serviceB"]: serviceB,
     });
 
   return createGraph([b]);
@@ -220,46 +220,46 @@ async function workflowAssertTest(
   services: unknown,
   env: unknown,
 ) {
-  await emptyTempDir(async temp => {
+  await emptyTempDir(async (temp) => {
     await ghActions.generate({
-      name: 'build',
-      buildFile: stdPath.join('build', 'some-build.ts'),
+      name: "build",
+      buildFile: stdPath.join("build", "some-build.ts"),
       graph: graph,
       logger: mockDebugLogger(),
       path: temp,
     });
 
-    const workflowFile = stdPath.join(temp, '.github', 'workflows', 'build.yml');
+    const workflowFile = stdPath.join(temp, ".github", "workflows", "build.yml");
     assertEquals(await stdFs.exists(workflowFile), true);
 
     let runStep = {
-      name: 'run build',
-      run: 'deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions',
+      name: "run build",
+      run: "deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions",
       env,
     };
 
     if (env === undefined) {
-      delete runStep['env'];
+      delete runStep["env"];
     }
 
     let workflow = {
-      name: 'build',
+      name: "build",
       on: triggers,
       jobs: {
         [image]: {
           name: image,
-          'runs-on': image,
+          "runs-on": image,
           services,
           steps: [
             {
-              name: 'checkout',
-              uses: 'actions/checkout@v2',
+              name: "checkout",
+              uses: "actions/checkout@v2",
             },
             {
-              name: 'setup deno',
-              uses: 'denolib/setup-deno@v2',
+              name: "setup deno",
+              uses: "denolib/setup-deno@v2",
               with: {
-                'deno-version': `v${Deno.version.deno}`,
+                "deno-version": `v${Deno.version.deno}`,
               },
             },
             ...extraSteps,
@@ -270,7 +270,7 @@ async function workflowAssertTest(
     };
 
     if (services === undefined) {
-      delete workflow['jobs'][image]['services'];
+      delete workflow["jobs"][image]["services"];
     }
 
     let workflowFromFile = (await readWorkflowFile(workflowFile)) as typeof workflow;

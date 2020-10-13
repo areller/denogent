@@ -11,7 +11,7 @@ class TestCollection {
     _fn(this);
   }
 
-  test(name: string, fn: () => void | Promise<void>): void {
+  public test(name: string, fn: () => void | Promise<void>): void {
     Deno.test({
       name: `${this._title} ${name}`,
       fn: fn,
@@ -20,7 +20,7 @@ class TestCollection {
     });
   }
 
-  describe(name: string, fn: (t: TestCollection) => void): void {
+  public describe(name: string, fn: (t: TestCollection) => void): void {
     new TestCollection(name, fn, this);
   }
 }

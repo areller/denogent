@@ -10,28 +10,28 @@ export async function readLines(
   fn: (token: string) => void,
 ) {
   readers = [...readers];
-  let lineBuffer = '';
+  let lineBuffer = "";
 
   const buf = new Uint8Array(32 * 1024);
 
   while (readers.length > 0) {
     const [n, reader] = await Promise.race(
-      readers.map(r => r.read(buf).then(n => [n, r] as [number, Deno.Reader & Deno.Closer])),
+      readers.map((r) => r.read(buf).then((n) => [n, r] as [number, Deno.Reader & Deno.Closer])),
     );
 
     if (n !== null && n > 0) {
       let readStr = new TextDecoder().decode(buf.subarray(0, n));
-      let lineBreak = readStr.indexOf('\n', 0);
+      let lineBreak = readStr.indexOf("\n", 0);
 
       while (lineBreak != -1) {
         lineBuffer += readStr.substr(0, lineBreak);
         if (lineBuffer.length > 0) {
           fn(lineBuffer);
         }
-        fn('\n');
-        lineBuffer = '';
+        fn("\n");
+        lineBuffer = "";
         readStr = readStr.substr(lineBreak + 1);
-        lineBreak = readStr.indexOf('\n', 0);
+        lineBreak = readStr.indexOf("\n", 0);
       }
 
       if (readStr.length > 0) {
@@ -42,7 +42,7 @@ export async function readLines(
         fn(lineBuffer);
       }
 
-      readers = readers.filter(r => r !== reader);
+      readers = readers.filter((r) => r !== reader);
       if (closeAfterUse) {
         reader.close();
       }

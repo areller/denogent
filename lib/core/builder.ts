@@ -1,6 +1,6 @@
-import { createCLI } from '../../cli/cli.ts';
-import type { CIIntegration } from '../ci/ci_integration.ts';
-import type { Task } from './task.ts';
+import { createCLI } from "../../cli/cli.ts";
+import type { CIIntegration } from "../ci/ci_integration.ts";
+import type { Task } from "./task.ts";
 
 export interface CreateBuilderArgs {
   /**

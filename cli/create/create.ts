@@ -1,5 +1,5 @@
-import { Command, stdFs } from '../../deps.ts';
-import type { CLIContext } from '../context.ts';
+import { Command, stdFs } from "../../deps.ts";
+import type { CLIContext } from "../context.ts";
 
 export function getCreateCommand(): {
   cmd: Command;
@@ -7,17 +7,17 @@ export function getCreateCommand(): {
   action: (context: CLIContext) => Promise<void>;
 } {
   return {
-    cmd: new Command().description('Create a new build file').option('--override', 'Override an existing build file.', {
+    cmd: new Command().description("Create a new build file").option("--override", "Override an existing build file.", {
       default: false,
     }),
     buildContextRequired: false,
     action: async (context: CLIContext) => {
       if (context.buildFile === undefined) {
-        throw new Error('Build file is unavailable.');
+        throw new Error("Build file is unavailable.");
       }
 
       const filePath = context.buildFile;
-      const override = context.args['override'] ?? false;
+      const override = context.args["override"] ?? false;
 
       if (await stdFs.exists(filePath)) {
         if (!override) {
@@ -48,7 +48,7 @@ createBuilder({
         ),
       );
 
-      context.runtime.loggerFn('info', `Created '${filePath}'.`);
+      context.runtime.loggerFn("info", `Created '${filePath}'.`);
     },
   };
 }

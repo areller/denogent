@@ -1,5 +1,5 @@
-import type { LoggerFn } from '../lib/core/logger.ts';
-import type { Task } from './graph/graph.ts';
+import type { LoggerFn } from "../lib/core/logger.ts";
+import type { Task } from "./graph/graph.ts";
 
 export interface Runtime {
   /**

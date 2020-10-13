@@ -1,9 +1,9 @@
-import type { CIIntegration, CleanArgs, CreateRuntimeArgs, GenerateArgs } from '../ci_integration.ts';
-import { issue } from './commands.ts';
-import type { Service } from '../../docker/docker.ts';
-import { stdFs, stdPath, stringifyYaml } from '../../../deps.ts';
-import type { Runtime } from '../../../internal/runtime.ts';
-import type { LoggerFn, LogLevel } from '../../core/logger.ts';
+import type { CIIntegration, CleanArgs, CreateRuntimeArgs, GenerateArgs } from "../ci_integration.ts";
+import { issue } from "./commands.ts";
+import type { Service } from "../../docker/docker.ts";
+import { stdFs, stdPath, stringifyYaml } from "../../../deps.ts";
+import type { Runtime } from "../../../internal/runtime.ts";
+import type { LoggerFn, LogLevel } from "../../core/logger.ts";
 
 type Triggers = {
   push?: { branches?: string[]; tags?: string[] };
@@ -19,34 +19,34 @@ export type GHAUses = {
 export type GHAUsesCollection = { [name: string]: GHAUses };
 
 class GitHubActionsRuntime implements Runtime {
-  get loggerFn(): LoggerFn {
+  public get loggerFn(): LoggerFn {
     return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
       if (meta !== undefined) {
         const attrs = meta as { type: string };
-        if (attrs.type == 'started') {
-          issue('group', task);
+        if (attrs.type == "started") {
+          issue("group", task);
           return;
-        } else if (['finishedSuccessfully', 'failedCondition', 'failed'].indexOf(attrs.type) != -1) {
-          if (attrs.type == 'failedCondition' || attrs.type == 'failed') {
+        } else if (["finishedSuccessfully", "failedCondition", "failed"].indexOf(attrs.type) != -1) {
+          if (attrs.type == "failedCondition" || attrs.type == "failed") {
             console.error(message);
           }
 
-          issue('endgroup');
+          issue("endgroup");
           return;
         }
       }
 
       switch (level) {
-        case 'debug':
+        case "debug":
           console.log(message);
           break;
-        case 'info':
+        case "info":
           console.log(message);
           break;
-        case 'warn':
+        case "warn":
           console.warn(message);
           break;
-        case 'error':
+        case "error":
           console.error(message);
           break;
       }
@@ -63,17 +63,17 @@ export class GitHubActions implements CIIntegration {
     private onPushTags?: string[],
   ) {}
 
-  get type(): string {
-    return 'gh-actions';
+  public get type(): string {
+    return "gh-actions";
   }
 
-  async createRuntime(args: CreateRuntimeArgs): Promise<Runtime> {
+  public async createRuntime(args: CreateRuntimeArgs): Promise<Runtime> {
     return new GitHubActionsRuntime();
   }
 
-  async clean(args: CleanArgs): Promise<void> {
+  public async clean(args: CleanArgs): Promise<void> {
     const workflowsPath =
-      args.path === undefined ? stdPath.join('.github', 'workflows') : stdPath.join(args.path, '.github', 'workflows');
+      args.path === undefined ? stdPath.join(".github", "workflows") : stdPath.join(args.path, ".github", "workflows");
 
     if (!(await stdFs.exists(workflowsPath))) {
       return;
@@ -86,9 +86,9 @@ export class GitHubActions implements CIIntegration {
     args.logger.debug(`cleaned directory '${workflowsPath}'.`);
   }
 
-  async generate(args: GenerateArgs): Promise<void> {
+  public async generate(args: GenerateArgs): Promise<void> {
     const workflowsPath =
-      args.path === undefined ? stdPath.join('.github', 'workflows') : stdPath.join(args.path, '.github', 'workflows');
+      args.path === undefined ? stdPath.join(".github", "workflows") : stdPath.join(args.path, ".github", "workflows");
     if (await stdFs.exists(workflowsPath)) {
       throw new Error(`Folder '.github/workflows' already exists.`);
     }
@@ -104,24 +104,24 @@ export class GitHubActions implements CIIntegration {
       jobs: {
         [this.image]: {
           name: this.image,
-          'runs-on': this.image,
+          "runs-on": this.image,
           container: this.dockerImage,
           services: this.buildServices(args, runEnv),
           steps: [
             {
-              name: 'checkout',
-              uses: 'actions/checkout@v2',
+              name: "checkout",
+              uses: "actions/checkout@v2",
             },
             {
-              name: 'setup deno',
-              uses: 'denolib/setup-deno@v2',
+              name: "setup deno",
+              uses: "denolib/setup-deno@v2",
               with: {
-                'deno-version': `v${Deno.version.deno}`,
+                "deno-version": `v${Deno.version.deno}`,
               },
             },
             ...this.buildUses(args),
             {
-              name: 'run build',
+              name: "run build",
               run: `deno run -A -q --unstable ${args.buildFile} run --serial --runtime gh-actions`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
               env: {
                 ...runEnv,
@@ -136,7 +136,7 @@ export class GitHubActions implements CIIntegration {
     const workflowFilePath = stdPath.join(workflowsPath, `${args.name}.yml`);
     await stdFs.ensureFile(workflowFilePath);
 
-    const contents = '# automatically generated by denogent\n\n' + this.createYaml(workflow);
+    const contents = "# automatically generated by denogent\n\n" + this.createYaml(workflow);
     await Deno.writeFile(workflowFilePath, new TextEncoder().encode(contents), {
       create: true,
     });
@@ -149,7 +149,7 @@ export class GitHubActions implements CIIntegration {
 
     for (const taskName of args.graph.taskNames) {
       const task = args.graph.getTask(taskName)!;
-      const ghaUses = task.properties['gh-actions-uses'] as GHAUsesCollection;
+      const ghaUses = task.properties["gh-actions-uses"] as GHAUsesCollection;
 
       if (ghaUses !== undefined) {
         uses = { ...uses, ...ghaUses };
@@ -162,7 +162,7 @@ export class GitHubActions implements CIIntegration {
   private buildTriggers(args: GenerateArgs): Triggers {
     let triggers: Triggers = {};
 
-    const onPushBranches = this.onPushBranches ?? ['master'];
+    const onPushBranches = this.onPushBranches ?? ["master"];
     if (onPushBranches.length > 0) {
       if (!triggers.push) {
         triggers.push = {};
@@ -194,20 +194,20 @@ export class GitHubActions implements CIIntegration {
     let services: { [name: string]: GHAService } = {};
     for (const taskName of args.graph.taskNames) {
       const task = args.graph.getTask(taskName)!;
-      const dockerServices = task.properties['docker-services'] as { [name: string]: Service } | undefined;
+      const dockerServices = task.properties["docker-services"] as { [name: string]: Service } | undefined;
 
       if (dockerServices !== undefined) {
         for (const dockerService of Object.values(dockerServices)) {
           services[dockerService.name] = {
             image: dockerService.image,
-            ports: this.dockerImage === undefined ? dockerService.ports.map(p => `${p}:${p}`) : [],
+            ports: this.dockerImage === undefined ? dockerService.ports.map((p) => `${p}:${p}`) : [],
           };
 
           runEnv[`${dockerService.name.toUpperCase()}_HOST`] =
-            this.dockerImage === undefined ? 'localhost' : dockerService.name;
+            this.dockerImage === undefined ? "localhost" : dockerService.name;
           if (dockerService.ports.length > 0) {
             runEnv[`${dockerService.name.toUpperCase()}_PORT`] = dockerService.ports[0].toString();
-            runEnv[`${dockerService.name.toUpperCase()}_PORTS`] = dockerService.ports.join(';');
+            runEnv[`${dockerService.name.toUpperCase()}_PORTS`] = dockerService.ports.join(";");
           }
         }
       }
@@ -222,7 +222,7 @@ export class GitHubActions implements CIIntegration {
     let allSecrets = [];
     for (const taskName of args.graph.taskNames) {
       const task = args.graph.getTask(taskName)!;
-      const secrets = task.properties['secrets'] as string[];
+      const secrets = task.properties["secrets"] as string[];
 
       if (secrets !== undefined) {
         allSecrets.push(...secrets);
@@ -232,7 +232,7 @@ export class GitHubActions implements CIIntegration {
     const secretsSet = new Set(allSecrets);
 
     for (const secret of secretsSet.values()) {
-      env[secret] = '${{ secrets.' + secret + ' }}';
+      env[secret] = "${{ secrets." + secret + " }}";
     }
 
     return env;
@@ -251,7 +251,7 @@ export class GitHubActions implements CIIntegration {
         return undefined;
       }
 
-      return obj.map(elem => this.sanitizeEmptyFields(elem));
+      return obj.map((elem) => this.sanitizeEmptyFields(elem));
     } else if (obj instanceof Object) {
       if (Object.keys(obj).length == 0) {
         return undefined;

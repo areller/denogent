@@ -5,10 +5,10 @@ import type {
   DockerContainerArgs,
   DockerClientSubCommandArgs,
   DockerClientPushArgs,
-} from './args.ts';
-import type { Extension } from '../core/extension.ts';
-import { runCommand } from '../../internal/helpers/cmd.ts';
-import { stdPath } from '../../deps.ts';
+} from "./args.ts";
+import type { Extension } from "../core/extension.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
+import { stdPath } from "../../deps.ts";
 
 export type Service = { name: string; image: string; ports: number[] };
 
@@ -18,12 +18,12 @@ export class DockerClient {
   constructor() {
     this._detectDockerTask = new Promise((resolve, reject) => {
       const process = Deno.run({
-        cmd: ['docker', '--version'],
-        stdout: 'null',
-        stderr: 'null',
+        cmd: ["docker", "--version"],
+        stdout: "null",
+        stderr: "null",
       });
 
-      process.status().then(async status => {
+      process.status().then(async (status) => {
         if (!status.success) {
           reject(`Docker wasn't detected.`);
         } else {
@@ -37,23 +37,23 @@ export class DockerClient {
    * Builds a docker image from a given Dockerfile.
    * @param args docker build arguments
    */
-  async build(args: DockerClientBuildArgs): Promise<void> {
-    let runArgs = ['build'];
+  public async build(args: DockerClientBuildArgs): Promise<void> {
+    let runArgs = ["build"];
     if (args.dockerFile) {
-      runArgs.push('-f', args.dockerFile);
+      runArgs.push("-f", args.dockerFile);
     }
     if (args.buildArgs) {
       for (const entry of Object.entries(args.buildArgs)) {
-        runArgs.push('--build-arg', entry[0], entry[1]);
+        runArgs.push("--build-arg", entry[0], entry[1]);
       }
     }
     if (args.tag) {
       for (const tag of args.tag instanceof Array ? args.tag : [args.tag]) {
-        runArgs.push('-t', tag);
+        runArgs.push("-t", tag);
       }
     }
 
-    runArgs.push(args.path ?? '.');
+    runArgs.push(args.path ?? ".");
 
     await this.runDocker(args, runArgs);
   }
@@ -62,9 +62,9 @@ export class DockerClient {
    * Pushes a given docker image to a given registry.
    * @param args docker push arguments
    */
-  async push(args: DockerClientPushArgs): Promise<void> {
+  public async push(args: DockerClientPushArgs): Promise<void> {
     if (args.credentials !== undefined) {
-      let cmd = ['login', '-u', args.credentials.username, '-p', args.credentials.password];
+      let cmd = ["login", "-u", args.credentials.username, "-p", args.credentials.password];
       if (args.credentials.registry !== undefined) {
         cmd.push(args.credentials.registry);
       }
@@ -72,7 +72,7 @@ export class DockerClient {
     }
 
     for (const tag of args.tag instanceof Array ? args.tag : [args.tag]) {
-      await this.runDocker(args, ['push', tag]);
+      await this.runDocker(args, ["push", tag]);
     }
   }
 
@@ -80,8 +80,8 @@ export class DockerClient {
    * Runs a docker sub command.
    * @param args sub command arguments
    */
-  async subcmd(args: DockerClientSubCommandArgs): Promise<string> {
-    let [_, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(' '), true);
+  public async subcmd(args: DockerClientSubCommandArgs): Promise<string> {
+    let [_, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }
 
@@ -95,8 +95,8 @@ export class DockerClient {
     const path = this.getCwd(args.path);
 
     const [status, output] = await runCommand(
-      ['docker', ...cmd],
-      line => {
+      ["docker", ...cmd],
+      (line) => {
         if (args.logger) {
           args.logger.debug(line);
         }
@@ -106,7 +106,7 @@ export class DockerClient {
     );
     if (!status && (throwOnFailure ?? true)) {
       cmd = secretArguments ?? false ? [cmd[0]] : cmd;
-      throw new Error(`Unsuccessful response for 'docker ${cmd.join(' ')}'.`);
+      throw new Error(`Unsuccessful response for 'docker ${cmd.join(" ")}'.`);
     }
 
     return [status, output];
@@ -141,17 +141,17 @@ class Docker {
    * Declares a dependency on a docker service. (the dependant task should be able to access that service)
    * @param args service dependency arguments
    */
-  service(args: DockerServiceArgs): Extension {
+  public service(args: DockerServiceArgs): Extension {
     return {
-      name: 'docker-service',
+      name: "docker-service",
       key: `dokcer-service_${args.name}`,
-      enrich: t => {
-        let services = t.properties['docker-services'] as {
+      enrich: (t) => {
+        let services = t.properties["docker-services"] as {
           [name: string]: Service;
         };
         if (services === undefined) {
           services = {};
-          t.properties['docker-services'] = services;
+          t.properties["docker-services"] = services;
         }
 
         if (services[args.name]) {
@@ -171,16 +171,16 @@ class Docker {
    * Declares a dependency on a container image. (the dependant task should run within that container)
    * @param args container dependency arguments
    */
-  container(args: DockerContainerArgs): Extension {
+  public container(args: DockerContainerArgs): Extension {
     return {
-      name: 'docker-container',
+      name: "docker-container",
       key: `docker-container_${args.image}`,
-      enrich: t => {
-        if (t.properties['docker-image']) {
+      enrich: (t) => {
+        if (t.properties["docker-image"]) {
           throw new Error(`Task '${t.name}' already has a 'docker-image' property.`);
         }
 
-        t.properties['docker-image'] = args.image;
+        t.properties["docker-image"] = args.image;
       },
     };
   }
@@ -188,7 +188,7 @@ class Docker {
   /**
    * Gets the docker client
    */
-  get client(): DockerClient {
+  public get client(): DockerClient {
     if (!this._client) {
       this._client = new DockerClient();
     }

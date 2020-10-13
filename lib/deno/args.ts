@@ -1,4 +1,4 @@
-import type { Logger } from '../core/logger.ts';
+import type { Logger } from "../core/logger.ts";
 
 /**
  * Deno runtime permissions.

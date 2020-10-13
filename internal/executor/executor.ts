@@ -1,7 +1,7 @@
-import { EventEmitter } from '../../deps.ts';
-import type { TaskContext } from '../../lib/core/context.ts';
-import type { Graph, Task } from '../graph/graph.ts';
-import type { TaskLogEvent, TaskEvent, EventSink } from './events.ts';
+import { EventEmitter } from "../../deps.ts";
+import type { TaskContext } from "../../lib/core/context.ts";
+import type { Graph, Task } from "../graph/graph.ts";
+import type { TaskLogEvent, TaskEvent, EventSink } from "./events.ts";
 
 interface TaskTracker {
   task: Task;
@@ -45,7 +45,7 @@ export class Execution {
     this._events = new EventEmitter();
   }
 
-  execute(): Promise<ExecutionResult> {
+  public execute(): Promise<ExecutionResult> {
     for (const name of this._graph.taskNames) {
       this._tasksTracker[name] = {
         task: this._graph.getTask(name)!,
@@ -61,17 +61,17 @@ export class Execution {
     return this._endPromise;
   }
 
-  subscribe(fn: (event: TaskEvent) => void) {
-    this._events.addListener('_', (ev: unknown) => {
+  public subscribe(fn: (event: TaskEvent) => void) {
+    this._events.addListener("_", (ev: unknown) => {
       fn(ev as TaskEvent);
     });
   }
 
-  beforeTask(fn: (task: Task) => Promise<void>) {
+  public beforeTask(fn: (task: Task) => Promise<void>) {
     this._beforeTaskFn = fn;
   }
 
-  afterTask(fn: (task: Task, error?: Error) => Promise<void>) {
+  public afterTask(fn: (task: Task, error?: Error) => Promise<void>) {
     this._afterTaskFn = fn;
   }
 
@@ -108,7 +108,7 @@ export class Execution {
     try {
       // firing task started event
       this.fireEvent({
-        type: 'started',
+        type: "started",
         task: task.name,
       });
 
@@ -168,20 +168,20 @@ export class Execution {
     // firing events
     if (success) {
       this.fireEvent({
-        type: 'finishedSuccessfully',
+        type: "finishedSuccessfully",
         task: task.name,
       });
     } else {
       if (failedCondition !== undefined) {
         this.fireEvent({
-          type: 'failedCondition',
+          type: "failedCondition",
           task: task.name,
           conditionId: failedCondition,
           condition: task.conditions[failedCondition]!.toString(),
         });
       } else {
         this.fireEvent({
-          type: 'failed',
+          type: "failed",
           task: task.name,
           error: error,
         });
@@ -189,7 +189,7 @@ export class Execution {
     }
 
     // trying to fire dependents
-    this.spawnCollectionOfTasks(task.dependents, t => {
+    this.spawnCollectionOfTasks(task.dependents, (t) => {
       let tracker = this._tasksTracker[t.name];
       tracker.dependenciesFinished++;
 
@@ -243,13 +243,13 @@ export class Execution {
 
   private fireEvent(ev: TaskEvent) {
     const tracker = this._tasksTracker[ev.task]!;
-    if (ev.type == 'log') {
+    if (ev.type == "log") {
       tracker.logs.push(ev);
     } else {
       tracker.lastEvent = ev;
     }
 
-    this._events.emit('_', ev);
+    this._events.emit("_", ev);
   }
 
   private createContext(task: Task): TaskContext {
@@ -276,7 +276,7 @@ export class Executor {
    * @param graph the graph object
    * @param contextCreator a function that creates a TaskContext for a given task
    */
-  fromGraph(graph: Graph, contextCreator: ContextCreator): Execution {
+  public fromGraph(graph: Graph, contextCreator: ContextCreator): Execution {
     return new Execution(graph, contextCreator);
   }
 }
