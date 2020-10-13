@@ -1,5 +1,5 @@
 import { Args, parseArgs } from '../deps.ts';
-import type { BuildContext, CLIContext } from './context.ts';
+import type { CLIContext } from './context.ts';
 import { Command } from '../deps.ts';
 import type { Runtime } from '../internal/runtime.ts';
 import { LocalRuntime } from '../internal/local_runtime.ts';
@@ -11,6 +11,8 @@ import { getTasksCommand } from './tasks/tasks.ts';
 import { stdPath } from '../deps.ts';
 import { getCreateCommand } from './create/create.ts';
 import { getGenerateCommand } from './generate/generate.ts';
+import type { BuildContext } from '../lib/core/context.ts';
+import type { CIIntegration } from '../lib/ci/ci_integration.ts';
 
 const defaultBuildFile = stdPath.join('build', 'build.ts');
 const parsedArgs = parseArgs(Deno.args);
@@ -32,7 +34,10 @@ async function runCLIFromFile(file: string) {
   Deno.exit(status.code);
 }
 
-async function getRuntime(args: Args, buildContext?: BuildContext): Promise<[Runtime, Graph | undefined]> {
+async function getRuntime(
+  args: Args,
+  buildContext?: BuildContext,
+): Promise<[Runtime, CIIntegration | undefined, Graph | undefined]> {
   const graph = buildContext !== undefined ? createGraph(buildContext.targetTasks) : undefined;
   let runtime: Runtime;
   if (buildContext !== undefined && args['runtime'] && args['runtime'] != 'local') {
@@ -44,16 +49,18 @@ async function getRuntime(args: Args, buildContext?: BuildContext): Promise<[Run
     runtime = await ciArray[0].createRuntime({
       graph: graph!,
     });
+
+    return [runtime, ciArray[0], graph];
   } else {
     const logger = args['json'] ? jsonStreamLog : simpleLog;
     runtime = new LocalRuntime(graph, args, logger);
-  }
 
-  return [runtime, graph];
+    return [runtime, undefined, graph];
+  }
 }
 
 async function createContext(args: Args, buildFile: string, buildContext?: BuildContext): Promise<CLIContext> {
-  const [runtime, graph] = await getRuntime(args, buildContext);
+  const [runtime, ciIntegration, graph] = await getRuntime(args, buildContext);
 
   return {
     buildContext,
@@ -61,6 +68,7 @@ async function createContext(args: Args, buildFile: string, buildContext?: Build
     args,
     runtime,
     graph,
+    ciIntegration,
   };
 }
 

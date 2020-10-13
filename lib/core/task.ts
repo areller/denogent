@@ -1,15 +1,8 @@
+import type { TaskContext } from './context.ts';
 import type { Extension } from './extension.ts';
-import type { Logger } from './logger.ts';
 
-export type ExecFn = (context?: Context) => Promise<void> | void;
-export type CondFn = (context?: Context) => Promise<boolean> | boolean;
-
-/**
- * The execution context of the task
- */
-export interface Context {
-  logger: Logger;
-}
+export type ExecFn = (context?: TaskContext) => Promise<void> | void;
+export type CondFn = (context?: TaskContext) => Promise<boolean> | boolean;
 
 /**
  * A task represents a unit of work, that may depend or may trigger other tasks.

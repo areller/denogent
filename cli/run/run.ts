@@ -1,6 +1,28 @@
 import { Command } from '../../deps.ts';
-import { createExecutor } from '../../internal/executor/executor.ts';
+import { ContextCreator, createExecutor } from '../../internal/executor/executor.ts';
+import { createLoggerFromFn } from '../../lib/core/logger.ts';
 import type { CLIContext } from '../context.ts';
+
+function createContextCreator(context: CLIContext): ContextCreator {
+  return (taskObj, eventSink) => {
+    return {
+      logger: createLoggerFromFn(
+        (level, message, task, meta) =>
+          eventSink({
+            type: 'log',
+            task: task!,
+            level,
+            meta,
+            message: message instanceof Error ? message.message : message,
+            error: message instanceof Error ? message : undefined,
+          }),
+        taskObj.name,
+      ),
+      build: context.buildContext!,
+      ci: context.ciIntegration?.type,
+    };
+  };
+}
 
 export function getRunCommand(): {
   cmd: Command;
@@ -18,6 +40,9 @@ export function getRunCommand(): {
       }),
     buildContextRequired: true,
     action: async (context: CLIContext) => {
+      if (context.buildContext === undefined) {
+        throw new Error('Build context is unavailable.');
+      }
       if (context.graph === undefined) {
         throw new Error('Graph is unavailable.');
       }
@@ -31,7 +56,7 @@ export function getRunCommand(): {
         graph = graph.createSerialGraphFrom([context.args['only'].toString()]);
       }
 
-      const execution = executor.fromGraph(graph);
+      const execution = executor.fromGraph(graph, createContextCreator(context));
 
       execution.subscribe(ev => {
         switch (ev.type) {

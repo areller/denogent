@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../deps.ts';
-import type { Context } from '../../lib/core/task.ts';
+import type { TaskContext } from '../../lib/core/context.ts';
 import type { Graph, Task } from '../graph/graph.ts';
-import type { LogLevel, TaskLogEvent, TaskEvent } from './events.ts';
+import type { TaskLogEvent, TaskEvent, EventSink } from './events.ts';
 
 interface TaskTracker {
   task: Task;
@@ -13,6 +13,8 @@ interface TaskTracker {
   logs: TaskLogEvent[];
   lastEvent?: TaskEvent;
 }
+
+export type ContextCreator = (task: Task, eventSink: EventSink) => TaskContext;
 
 export class Execution {
   private _endPromise: Promise<ExecutionResult>;
@@ -29,7 +31,7 @@ export class Execution {
   private _beforeTaskFn?: (task: Task) => Promise<void>;
   private _afterTaskFn?: (task: Task, error?: Error) => Promise<void>;
 
-  constructor(private _graph: Graph) {
+  constructor(private _graph: Graph, private _contextCreator: ContextCreator) {
     this._endPromise = new Promise((resolve, reject) => {
       this._resolve = resolve;
       this._reject = reject;
@@ -250,27 +252,8 @@ export class Execution {
     this._events.emit('_', ev);
   }
 
-  private writeLogToTask(task: Task, level: LogLevel, msg: string | Error, meta?: unknown) {
-    const event: TaskLogEvent = {
-      type: 'log',
-      task: task.name,
-      level: level,
-      message: msg instanceof Error ? msg.message : msg,
-      error: msg instanceof Error ? msg : undefined,
-    };
-
-    this.fireEvent(event);
-  }
-
-  private createContext(task: Task): Context {
-    return {
-      logger: {
-        debug: (msg, meta) => this.writeLogToTask(task, 'debug', msg, meta),
-        info: (msg, meta) => this.writeLogToTask(task, 'info', msg, meta),
-        warn: (msg, meta) => this.writeLogToTask(task, 'warn', msg, meta),
-        error: (msg: string | Error, meta?: unknown) => this.writeLogToTask(task, 'error', msg, meta),
-      },
-    };
+  private createContext(task: Task): TaskContext {
+    return this._contextCreator(task, this.fireEvent.bind(this));
   }
 }
 
@@ -288,8 +271,13 @@ export interface ExecutionResult {
 export class Executor {
   constructor() {}
 
-  fromGraph(graph: Graph): Execution {
-    return new Execution(graph);
+  /**
+   * Creates an execution for a given graph.
+   * @param graph the graph object
+   * @param contextCreator a function that creates a TaskContext for a given task
+   */
+  fromGraph(graph: Graph, contextCreator: ContextCreator): Execution {
+    return new Execution(graph, contextCreator);
   }
 }
 
