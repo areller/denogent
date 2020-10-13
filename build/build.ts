@@ -36,7 +36,7 @@ const replaceVersion = task('replace version')
   .does(async ctx => {
     const version = (await git.describe({ logger: false })) ?? '';
 
-    ctx?.logger.debug('version: ' + (await git.describe({ logger: false })));
+    ctx?.logger.debug('version: ' + (await git.describe({ logger: ctx?.logger })));
 
     const versionFile = (await fs.getFile(['cli', 'version.ts']))!;
     let contents = await versionFile.getContentsString();
