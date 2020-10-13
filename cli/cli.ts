@@ -11,8 +11,8 @@ import { getTasksCommand } from './tasks/tasks.ts';
 import { stdPath } from '../deps.ts';
 import { getCreateCommand } from './create/create.ts';
 import { getGenerateCommand } from './generate/generate.ts';
-import type { BuildContext } from "../lib/core/context.ts";
-import type { CIIntegration } from "../lib/ci/ci_integration.ts";
+import type { BuildContext } from '../lib/core/context.ts';
+import type { CIIntegration } from '../lib/ci/ci_integration.ts';
 
 const defaultBuildFile = stdPath.join('build', 'build.ts');
 const parsedArgs = parseArgs(Deno.args);
@@ -34,7 +34,10 @@ async function runCLIFromFile(file: string) {
   Deno.exit(status.code);
 }
 
-async function getRuntime(args: Args, buildContext?: BuildContext): Promise<[Runtime, CIIntegration | undefined, Graph | undefined]> {
+async function getRuntime(
+  args: Args,
+  buildContext?: BuildContext,
+): Promise<[Runtime, CIIntegration | undefined, Graph | undefined]> {
   const graph = buildContext !== undefined ? createGraph(buildContext.targetTasks) : undefined;
   let runtime: Runtime;
   if (buildContext !== undefined && args['runtime'] && args['runtime'] != 'local') {
@@ -65,7 +68,7 @@ async function createContext(args: Args, buildFile: string, buildContext?: Build
     args,
     runtime,
     graph,
-    ciIntegration
+    ciIntegration,
   };
 }
 

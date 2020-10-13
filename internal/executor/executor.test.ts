@@ -4,8 +4,8 @@ import { describe } from '../testing/test.ts';
 import { createExecutor, ExecutionResult } from './executor.ts';
 import { assertEquals, assertNotEquals, fail } from '../../tests_deps.ts';
 import type { EventSink, TaskEvent, TaskFailedEvent } from './events.ts';
-import type { TaskContext } from "../../lib/core/context.ts";
-import { createLoggerFromFn } from "../../lib/core/logger.ts";
+import type { TaskContext } from '../../lib/core/context.ts';
+import { createLoggerFromFn } from '../../lib/core/logger.ts';
 
 describe('executor.test.ts', t => {
   t.test('single task', async () => {
@@ -94,7 +94,7 @@ describe('executor.test.ts', t => {
               level: 'debug',
               message: 'hello',
               error: undefined,
-              meta: undefined
+              meta: undefined,
             },
           ],
           lastEvent: {
@@ -116,7 +116,7 @@ describe('executor.test.ts', t => {
         level: 'debug',
         message: 'hello',
         error: undefined,
-        meta: undefined
+        meta: undefined,
       },
       {
         type: 'finishedSuccessfully',
@@ -211,7 +211,7 @@ describe('executor.test.ts', t => {
             level: 'debug',
             message: 'hello',
             error: undefined,
-            meta: undefined
+            meta: undefined,
           },
         ]);
       }
@@ -233,7 +233,7 @@ describe('executor.test.ts', t => {
                   level: 'debug',
                   message: 'hello',
                   error: undefined,
-                  meta: undefined
+                  meta: undefined,
                 },
               ],
               lastEvent: {
@@ -312,7 +312,7 @@ describe('executor.test.ts', t => {
               level: 'debug',
               message: 'helloA',
               error: undefined,
-              meta: undefined
+              meta: undefined,
             },
           ],
           lastEvent: {
@@ -330,7 +330,7 @@ describe('executor.test.ts', t => {
               level: 'debug',
               message: 'helloB',
               error: undefined,
-              meta: undefined
+              meta: undefined,
             },
           ],
           lastEvent: {
@@ -382,7 +382,7 @@ describe('executor.test.ts', t => {
             level: 'debug',
             message: 'helloA',
             error: undefined,
-            meta: undefined
+            meta: undefined,
           },
         ]);
       }
@@ -404,7 +404,7 @@ describe('executor.test.ts', t => {
                   level: 'debug',
                   message: 'helloA',
                   error: undefined,
-                  meta: undefined
+                  meta: undefined,
                 },
               ],
               lastEvent: {
@@ -423,7 +423,7 @@ describe('executor.test.ts', t => {
                   level: 'debug',
                   message: 'helloB',
                   error: undefined,
-                  meta: undefined
+                  meta: undefined,
                 },
               ],
               lastEvent: {
@@ -441,18 +441,22 @@ describe('executor.test.ts', t => {
 
 function createContext(task: Task, eventSink: EventSink): TaskContext {
   return {
-    logger: createLoggerFromFn((level, message, task, meta) => eventSink({
-      type: 'log',
-      task: task!,
-      level,
-      meta,
-      message: message instanceof Error ? message.message : message,
-      error: message instanceof Error ? message : undefined
-    }), task.name),
+    logger: createLoggerFromFn(
+      (level, message, task, meta) =>
+        eventSink({
+          type: 'log',
+          task: task!,
+          level,
+          meta,
+          message: message instanceof Error ? message.message : message,
+          error: message instanceof Error ? message : undefined,
+        }),
+      task.name,
+    ),
     build: {
       name: 'build',
       targetTasks: [],
-      ciIntegrations: []
-    }
+      ciIntegrations: [],
+    },
   };
 }

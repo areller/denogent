@@ -1,21 +1,25 @@
 import { Command } from '../../deps.ts';
 import { ContextCreator, createExecutor } from '../../internal/executor/executor.ts';
-import { createLoggerFromFn } from "../../lib/core/logger.ts";
+import { createLoggerFromFn } from '../../lib/core/logger.ts';
 import type { CLIContext } from '../context.ts';
 
 function createContextCreator(context: CLIContext): ContextCreator {
   return (taskObj, eventSink) => {
     return {
-      logger: createLoggerFromFn((level, message, task, meta) => eventSink({
-        type: 'log',
-        task: task!,
-        level,
-        meta,
-        message: message instanceof Error ? message.message : message,
-        error: message instanceof Error ? message : undefined
-      }), taskObj.name),
+      logger: createLoggerFromFn(
+        (level, message, task, meta) =>
+          eventSink({
+            type: 'log',
+            task: task!,
+            level,
+            meta,
+            message: message instanceof Error ? message.message : message,
+            error: message instanceof Error ? message : undefined,
+          }),
+        taskObj.name,
+      ),
       build: context.buildContext!,
-      ci: context.ciIntegration?.type
+      ci: context.ciIntegration?.type,
     };
   };
 }
