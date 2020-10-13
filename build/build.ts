@@ -66,7 +66,7 @@ const publish = task('publish')
   });
 
 async function getVersion() {
-  return '0.1';
+  return '0.1.0';
 }
 
 createBuilder({
