@@ -34,10 +34,9 @@ const test = task('test').does(async ctx => {
 const replaceVersion = task('replace version')
   .dependsOn(test)
   .does(async ctx => {
-    const version = 'v0.1';
     const versionFile = (await fs.getFile(['cli', 'version.ts']))!;
     let contents = await versionFile.getContentsString();
-    contents = contents.replaceAll('{{VERSION}}', version);
+    contents = contents.replaceAll('{{VERSION}}', await getVersion());
     await versionFile.override(contents);
   });
 
@@ -53,10 +52,22 @@ const publish = task('publish')
     });
 
     await runtime.command({
-      cmd: [...run, 'publish'],
+      cmd: [
+        ...run,
+        'publish',
+        'denogent',
+        '--version',
+        await getVersion(),
+        '--description',
+        'A TypeScript build system',
+      ],
       logger: ctx?.logger,
     });
   });
+
+async function getVersion() {
+  return 'v0.1';
+}
 
 createBuilder({
   name: 'denogent-build',
