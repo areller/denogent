@@ -2,8 +2,12 @@
 
 **Disclaimer: This tool is in active development.**
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0a2779fd560245e8adf327a0542b5590)](https://app.codacy.com/gh/areller/denogent?utm_source=github.com&utm_medium=referral&utm_content=areller/denogent&utm_campaign=Badge_Grade)
+<div align="center">
+
 [![Actions Status](https://github.com/areller/denogent/workflows/denogent-build/badge.svg)](https://github.com/areller/denogent/actions)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0a2779fd560245e8adf327a0542b5590)](https://app.codacy.com/gh/areller/denogent?utm_source=github.com&utm_medium=referral&utm_content=areller/denogent&utm_campaign=Badge_Grade)
+
+</div>
 
 [denogent](https://github.com/areller/denogent) is a tool for creating and running build pipelines.
 
