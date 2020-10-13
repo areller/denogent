@@ -15,7 +15,7 @@
 
 To install the latest version of the `denogent` CLI tool, run
 
-```
+```bash
 deno install -A --unstable https://deno.land/x/denogent/denogent.ts
 ```
 
@@ -23,13 +23,13 @@ deno install -A --unstable https://deno.land/x/denogent/denogent.ts
 
 The `build file` is the place where you define your build pipeline. To create one, run
 
-```
+```bash
 denogent create
 ```
 
 By default, `denogent create` will create the build file at `build/build.ts`. To create the file at a different path, run
 
-```
+```bash
 denogent create --file path/to/buid/file.ts
 ```
 
@@ -109,7 +109,7 @@ In this scenario, we tell the `publish image` to run only when the the commit th
 
 To execute the build pipeline locally, run 
 
-```
+```bash
 denogent run --file build/build.ts
 ```
 
@@ -120,7 +120,7 @@ However, you can run `denogent` pipelines from a CI system, and `denogent` provi
 
 In the `build.ts` file, in the call to `createBuilder`, you can add a CI system integration. Once you've defined your CI system integration in the build file, run
 
-```
+```bash
 denogent generate --file build/build.ts --ci {the name of the CI system}
 ```
 
@@ -149,7 +149,7 @@ createBuilder({
 });
 ```
 
-```
+```bash
 denogent generate --file build/build.ts --ci gh-actions
 ```
 
