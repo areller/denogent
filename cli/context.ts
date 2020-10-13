@@ -1,14 +1,8 @@
-import type { CIIntegration } from '../lib/ci/ci_integration.ts';
-import type { Task } from '../lib/core/task.ts';
 import type { Args } from '../deps.ts';
 import type { Runtime } from '../internal/runtime.ts';
 import type { Graph } from '../internal/graph/graph.ts';
-
-export interface BuildContext {
-  name: string;
-  targetTasks: Task[];
-  ciIntegrations: CIIntegration[];
-}
+import type { BuildContext } from "../lib/core/context.ts";
+import type { CIIntegration } from "../lib/ci/ci_integration.ts";
 
 export interface CLIContext {
   buildContext?: BuildContext;
@@ -16,4 +10,5 @@ export interface CLIContext {
   graph?: Graph;
   args: Args;
   runtime: Runtime;
+  ciIntegration?: CIIntegration;
 }

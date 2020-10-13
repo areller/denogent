@@ -2,7 +2,8 @@
  * Core
  */
 
-export type { ExecFn, CondFn, Context } from './core/task.ts';
+export type { ExecFn, CondFn } from './core/task.ts';
+export type { TaskContext, BuildContext } from './core/context.ts';
 export type { Logger, LogLevel, LoggerFn } from './core/logger.ts';
 export type { Extension } from './core/extension.ts';
 export type { CreateBuilderArgs } from './core/builder.ts';

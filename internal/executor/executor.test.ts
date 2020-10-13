@@ -1,14 +1,16 @@
 import { task } from '../../lib/core/task.ts';
-import { createGraph } from '../graph/graph.ts';
+import { createGraph, Task } from '../graph/graph.ts';
 import { describe } from '../testing/test.ts';
 import { createExecutor, ExecutionResult } from './executor.ts';
 import { assertEquals, assertNotEquals, fail } from '../../tests_deps.ts';
-import type { TaskEvent, TaskFailedEvent } from './events.ts';
+import type { EventSink, TaskEvent, TaskFailedEvent } from './events.ts';
+import type { TaskContext } from "../../lib/core/context.ts";
+import { createLoggerFromFn } from "../../lib/core/logger.ts";
 
 describe('executor.test.ts', t => {
   t.test('single task', async () => {
     const graph = createGraph([task('taskA')]);
-    const execution = createExecutor().fromGraph(graph);
+    const execution = createExecutor().fromGraph(graph, createContext);
     const res = await execution.execute();
 
     assertEquals(res, {
@@ -34,7 +36,7 @@ describe('executor.test.ts', t => {
         log.push('taskA');
       }),
     ]);
-    const execution = createExecutor().fromGraph(graph);
+    const execution = createExecutor().fromGraph(graph, createContext);
 
     execution.beforeTask(async task => {
       log.push('pre: ' + task.name);
@@ -70,7 +72,7 @@ describe('executor.test.ts', t => {
         ctx?.logger.debug('hello');
       }),
     ]);
-    const execution = createExecutor().fromGraph(graph);
+    const execution = createExecutor().fromGraph(graph, createContext);
 
     let eventLog: TaskEvent[] = [];
 
@@ -92,6 +94,7 @@ describe('executor.test.ts', t => {
               level: 'debug',
               message: 'hello',
               error: undefined,
+              meta: undefined
             },
           ],
           lastEvent: {
@@ -113,6 +116,7 @@ describe('executor.test.ts', t => {
         level: 'debug',
         message: 'hello',
         error: undefined,
+        meta: undefined
       },
       {
         type: 'finishedSuccessfully',
@@ -129,7 +133,7 @@ describe('executor.test.ts', t => {
           ctx?.logger.debug('hello');
         }),
     ]);
-    const execution = createExecutor().fromGraph(graph);
+    const execution = createExecutor().fromGraph(graph, createContext);
 
     let eventLog: TaskEvent[] = [];
 
@@ -179,7 +183,7 @@ describe('executor.test.ts', t => {
             throw new Error('failure.');
           }),
       ]);
-      const execution = createExecutor().fromGraph(graph);
+      const execution = createExecutor().fromGraph(graph, createContext);
 
       let eventLog: TaskEvent[] = [];
 
@@ -207,6 +211,7 @@ describe('executor.test.ts', t => {
             level: 'debug',
             message: 'hello',
             error: undefined,
+            meta: undefined
           },
         ]);
       }
@@ -228,6 +233,7 @@ describe('executor.test.ts', t => {
                   level: 'debug',
                   message: 'hello',
                   error: undefined,
+                  meta: undefined
                 },
               ],
               lastEvent: {
@@ -257,7 +263,7 @@ describe('executor.test.ts', t => {
               throw new Error('failure.');
             }),
         ]);
-        const execution = createExecutor().fromGraph(graph);
+        const execution = createExecutor().fromGraph(graph, createContext);
 
         execution.beforeTask(async task => {
           log.push('pre: ' + task.name);
@@ -284,7 +290,7 @@ describe('executor.test.ts', t => {
       .dependsOn(taskA)
       .does(ctx => ctx?.logger.debug('helloB'));
     const graph = createGraph([taskB]);
-    const execution = createExecutor().fromGraph(graph);
+    const execution = createExecutor().fromGraph(graph, createContext);
 
     let eventLog: TaskEvent[] = [];
 
@@ -306,6 +312,7 @@ describe('executor.test.ts', t => {
               level: 'debug',
               message: 'helloA',
               error: undefined,
+              meta: undefined
             },
           ],
           lastEvent: {
@@ -323,6 +330,7 @@ describe('executor.test.ts', t => {
               level: 'debug',
               message: 'helloB',
               error: undefined,
+              meta: undefined
             },
           ],
           lastEvent: {
@@ -346,7 +354,7 @@ describe('executor.test.ts', t => {
         .dependsOn(taskA)
         .does(ctx => ctx?.logger.debug('helloB'));
       const graph = createGraph([taskB]);
-      const execution = createExecutor().fromGraph(graph);
+      const execution = createExecutor().fromGraph(graph, createContext);
 
       let eventLog: TaskEvent[] = [];
 
@@ -374,6 +382,7 @@ describe('executor.test.ts', t => {
             level: 'debug',
             message: 'helloA',
             error: undefined,
+            meta: undefined
           },
         ]);
       }
@@ -395,6 +404,7 @@ describe('executor.test.ts', t => {
                   level: 'debug',
                   message: 'helloA',
                   error: undefined,
+                  meta: undefined
                 },
               ],
               lastEvent: {
@@ -413,6 +423,7 @@ describe('executor.test.ts', t => {
                   level: 'debug',
                   message: 'helloB',
                   error: undefined,
+                  meta: undefined
                 },
               ],
               lastEvent: {
@@ -427,3 +438,21 @@ describe('executor.test.ts', t => {
     });
   });
 });
+
+function createContext(task: Task, eventSink: EventSink): TaskContext {
+  return {
+    logger: createLoggerFromFn((level, message, task, meta) => eventSink({
+      type: 'log',
+      task: task!,
+      level,
+      meta,
+      message: message instanceof Error ? message.message : message,
+      error: message instanceof Error ? message : undefined
+    }), task.name),
+    build: {
+      name: 'build',
+      targetTasks: [],
+      ciIntegrations: []
+    }
+  };
+}

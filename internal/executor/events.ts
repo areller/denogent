@@ -17,6 +17,7 @@ export interface TaskLogEvent {
   level: LogLevel;
   message: string;
   error?: Error;
+  meta?: unknown;
 }
 
 export interface TaskFailedConditionEvent {
@@ -36,3 +37,5 @@ export interface TaskFinishedSuccessfullyEvent {
   type: 'finishedSuccessfully';
   task: string;
 }
+
+export type EventSink = (event: TaskEvent) => void;
