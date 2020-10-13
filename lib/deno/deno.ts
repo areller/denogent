@@ -30,7 +30,7 @@ class DenoTools {
 
     const [status, _] = await runCommand(
       cmd,
-      line => {
+      (line) => {
         if (args.logger) {
           args.logger.debug(line.trim());
         }

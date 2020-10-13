@@ -18,7 +18,7 @@ class Runtime {
   async command(args: CommandArgs): Promise<[boolean, string]> {
     const res = (await runCommandInternal(
       args.cmd instanceof Array ? args.cmd : args.cmd.split(" "),
-      line => {
+      (line) => {
         if (args.logger) {
           args.logger.debug(line);
         }
@@ -78,7 +78,7 @@ class Runtime {
     return {
       name: "secret",
       key: `secret_${name}`,
-      enrich: t => {
+      enrich: (t) => {
         let secrets = t.properties["secrets"] as string[];
         if (secrets === undefined) {
           secrets = [];
@@ -97,7 +97,7 @@ class Runtime {
     }
 
     if (arg instanceof Array) {
-      return arg.map(a => a.toString());
+      return arg.map((a) => a.toString());
     } else {
       return [arg.toString()];
     }

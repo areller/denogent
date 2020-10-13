@@ -4,7 +4,7 @@ import type { LogLevel } from "../lib/core/logger.ts";
 export function simpleLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown) {
   const prefix = task !== undefined ? `[${task}] ` : "";
   // deno-lint-ignore no-explicit-any
-  const suffix = meta !== undefined ? " {" + Object.entries(meta as any).map(x => ` ${x[0]} = ${x[1]}`) + " }" : "";
+  const suffix = meta !== undefined ? " {" + Object.entries(meta as any).map((x) => ` ${x[0]} = ${x[1]}`) + " }" : "";
 
   switch (level) {
     case "debug":

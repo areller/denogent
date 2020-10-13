@@ -59,7 +59,7 @@ export function breadthFirstWithDepth<TVertex extends object>(
 ) {
   let visited = new WeakSet();
   let refs = new WeakMap();
-  let queue: [TVertex, number][] = [...roots.map(r => [r, 0] as [TVertex, number])];
+  let queue: [TVertex, number][] = [...roots.map((r) => [r, 0] as [TVertex, number])];
 
   while (queue.length > 0) {
     const [top, depth] = queue.splice(0, 1)[0];

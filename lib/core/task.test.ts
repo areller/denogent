@@ -2,7 +2,7 @@ import { Task, task } from "./task.ts";
 import { describe } from "../../internal/testing/test.ts";
 import { assertEquals } from "../../tests_deps.ts";
 
-describe("task.test.ts", t => {
+describe("task.test.ts", (t) => {
   t.test("dependsOn should create dependency", () => {
     let taskA = task("taskA");
     let taskB = task("taskB");
@@ -74,7 +74,7 @@ describe("task.test.ts", t => {
     assertEquals(taskA.propagateExceptions, true);
   });
 
-  [false, true, undefined].forEach(breakCircuit => {
+  [false, true, undefined].forEach((breakCircuit) => {
     const breakCircuitStr = breakCircuit === undefined ? "default" : breakCircuit ? "true" : "false";
     t.test(`breakCircuit = ${breakCircuitStr} should set propagateExceptions accordingly`, () => {
       let taskA = task("A");

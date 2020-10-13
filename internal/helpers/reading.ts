@@ -16,7 +16,7 @@ export async function readLines(
 
   while (readers.length > 0) {
     const [n, reader] = await Promise.race(
-      readers.map(r => r.read(buf).then(n => [n, r] as [number, Deno.Reader & Deno.Closer])),
+      readers.map((r) => r.read(buf).then((n) => [n, r] as [number, Deno.Reader & Deno.Closer])),
     );
 
     if (n !== null && n > 0) {
@@ -42,7 +42,7 @@ export async function readLines(
         fn(lineBuffer);
       }
 
-      readers = readers.filter(r => r !== reader);
+      readers = readers.filter((r) => r !== reader);
       if (closeAfterUse) {
         reader.close();
       }

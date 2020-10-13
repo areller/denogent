@@ -3,7 +3,7 @@ import { assertEquals } from "../../tests_deps.ts";
 import { describe } from "../testing/test.ts";
 import { breadthFirst, breadthFirstWithDepth } from "./algos.ts";
 
-describe("algos.test.ts", t => {
+describe("algos.test.ts", (t) => {
   t.test("breadthFirst should do breadth first traversal", () => {
     let a = task("a");
     let a1 = task("a1");
@@ -15,8 +15,8 @@ describe("algos.test.ts", t => {
 
     breadthFirst(
       [a],
-      t => t.dependents.concat(t.dependencies),
-      t => {
+      (t) => t.dependents.concat(t.dependencies),
+      (t) => {
         log.push(t.name);
       },
     );
@@ -34,8 +34,8 @@ describe("algos.test.ts", t => {
 
     breadthFirstWithDepth(
       [a],
-      t => t.dependents,
-      t => t.dependencies,
+      (t) => t.dependents,
+      (t) => t.dependencies,
       (t, depth) => {
         log.push([t.name, depth]);
       },

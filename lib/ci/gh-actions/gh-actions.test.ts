@@ -6,9 +6,9 @@ import { task } from "../../core/task.ts";
 import { parseYaml, stdFs, stdPath } from "../../../deps.ts";
 import { assertEquals } from "../../../tests_deps.ts";
 
-describe("gh-actions.test.ts", t => {
+describe("gh-actions.test.ts", (t) => {
   t.test("clean should clean workflow file", async () => {
-    await emptyTempDir(async temp => {
+    await emptyTempDir(async (temp) => {
       const workflowsPath = stdPath.join(temp, ".github", "workflows");
       await stdFs.ensureDir(workflowsPath);
       const workflowFile = stdPath.join(workflowsPath, "workflow.yaml");
@@ -220,7 +220,7 @@ async function workflowAssertTest(
   services: unknown,
   env: unknown,
 ) {
-  await emptyTempDir(async temp => {
+  await emptyTempDir(async (temp) => {
     await ghActions.generate({
       name: "build",
       buildFile: stdPath.join("build", "some-build.ts"),

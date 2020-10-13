@@ -15,7 +15,7 @@ class NodeJS {
     return {
       name: "build-kits-nodejs",
       key: `build-kits-nodejs_${version}`,
-      enrich: t => {
+      enrich: (t) => {
         t.dependsOn(docker.container({ image: `node:${dockerTag}` }));
         this.githubActionsInject(t, version);
       },

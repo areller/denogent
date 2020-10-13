@@ -200,7 +200,7 @@ export class GitHubActions implements CIIntegration {
         for (const dockerService of Object.values(dockerServices)) {
           services[dockerService.name] = {
             image: dockerService.image,
-            ports: this.dockerImage === undefined ? dockerService.ports.map(p => `${p}:${p}`) : [],
+            ports: this.dockerImage === undefined ? dockerService.ports.map((p) => `${p}:${p}`) : [],
           };
 
           runEnv[`${dockerService.name.toUpperCase()}_HOST`] =
@@ -251,7 +251,7 @@ export class GitHubActions implements CIIntegration {
         return undefined;
       }
 
-      return obj.map(elem => this.sanitizeEmptyFields(elem));
+      return obj.map((elem) => this.sanitizeEmptyFields(elem));
     } else if (obj instanceof Object) {
       if (Object.keys(obj).length == 0) {
         return undefined;

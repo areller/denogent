@@ -58,7 +58,7 @@ export function getRunCommand(): {
 
       const execution = executor.fromGraph(graph, createContextCreator(context));
 
-      execution.subscribe(ev => {
+      execution.subscribe((ev) => {
         switch (ev.type) {
           case "started":
             context.runtime.loggerFn("info", `=== STARTED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
@@ -93,7 +93,7 @@ export function getRunCommand(): {
       });
 
       if (context.runtime.beforeTaskExecution !== undefined) {
-        execution.beforeTask(async task => {
+        execution.beforeTask(async (task) => {
           await context.runtime.beforeTaskExecution!(task);
         });
       }

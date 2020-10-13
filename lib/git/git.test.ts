@@ -7,11 +7,11 @@ import { assertEquals } from "../../tests_deps.ts";
 
 const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), "testassets").substr("file:".length);
 
-describe("git.test.ts", t => {
+describe("git.test.ts", (t) => {
   [[false, "non-repo"] as [boolean, string], [true, "simple-repo"] as [boolean, string]].forEach(
     (asset: [boolean, string]) => {
       t.test(`isGitRepository should return true or false (${asset[1]})`, async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, asset[1]), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, asset[1]), async (temp) => {
           const isRepo = await git.isGitRepository({
             path: temp,
             logger: false,
@@ -22,7 +22,7 @@ describe("git.test.ts", t => {
       });
 
       t.test("getBranch should return the current branch", async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, "simple-repo"), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, "simple-repo"), async (temp) => {
           const branch = await git.getBranch({
             path: temp,
             logger: false,
@@ -33,7 +33,7 @@ describe("git.test.ts", t => {
       });
 
       t.test("getHeadCommit should return the head commit", async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, "simple-repo"), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, "simple-repo"), async (temp) => {
           const headCommit = await git.getHeadCommit({
             path: temp,
             logger: false,
@@ -44,7 +44,7 @@ describe("git.test.ts", t => {
       });
 
       t.test("describe should return undefined when there are no tags", async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, "simple-repo"), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, "simple-repo"), async (temp) => {
           const describe = await git.describe({
             path: temp,
             logger: false,
@@ -55,7 +55,7 @@ describe("git.test.ts", t => {
       });
 
       t.test("describe should return closest tag and distance from that tag", async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, "tagged-repo"), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, "tagged-repo"), async (temp) => {
           const describe = await git.describe({
             path: temp,
             logger: false,
@@ -66,7 +66,7 @@ describe("git.test.ts", t => {
       });
 
       t.test("isTagged should return false", async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, "tagged-repo"), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, "tagged-repo"), async (temp) => {
           const isTagged = await git.isTagged({
             path: temp,
             logger: false,
@@ -77,7 +77,7 @@ describe("git.test.ts", t => {
       });
 
       t.test("isTagged should return true", async () => {
-        await copyDirToTemp(stdPath.join(assetsPath, "tagged-repo"), async temp => {
+        await copyDirToTemp(stdPath.join(assetsPath, "tagged-repo"), async (temp) => {
           await runCommand(["git", "checkout", "v0.1"], undefined, temp, true);
           const isTagged = await git.isTagged({
             path: temp,

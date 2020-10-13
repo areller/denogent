@@ -13,7 +13,7 @@ class Git {
         stderr: "null",
       });
 
-      process.status().then(async status => {
+      process.status().then(async (status) => {
         if (!status.success) {
           reject(`Git wasn't detected.`);
         } else {

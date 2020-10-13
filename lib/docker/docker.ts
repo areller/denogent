@@ -23,7 +23,7 @@ export class DockerClient {
         stderr: "null",
       });
 
-      process.status().then(async status => {
+      process.status().then(async (status) => {
         if (!status.success) {
           reject(`Docker wasn't detected.`);
         } else {
@@ -96,7 +96,7 @@ export class DockerClient {
 
     const [status, output] = await runCommand(
       ["docker", ...cmd],
-      line => {
+      (line) => {
         if (args.logger) {
           args.logger.debug(line);
         }
@@ -145,7 +145,7 @@ class Docker {
     return {
       name: "docker-service",
       key: `dokcer-service_${args.name}`,
-      enrich: t => {
+      enrich: (t) => {
         let services = t.properties["docker-services"] as {
           [name: string]: Service;
         };
@@ -175,7 +175,7 @@ class Docker {
     return {
       name: "docker-container",
       key: `docker-container_${args.image}`,
-      enrich: t => {
+      enrich: (t) => {
         if (t.properties["docker-image"]) {
           throw new Error(`Task '${t.name}' already has a 'docker-image' property.`);
         }

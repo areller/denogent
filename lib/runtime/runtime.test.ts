@@ -7,9 +7,9 @@ import { stdPath } from "../../deps.ts";
 
 const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), "testassets").substr("file:".length);
 
-describe("runtime.test.ts", t => {
+describe("runtime.test.ts", (t) => {
   t.test("command should run a command", async () => {
-    await emptyTempDir(async temp => {
+    await emptyTempDir(async (temp) => {
       await runtime.command({ path: temp, cmd: ["touch", "a"], logger: false });
       await runtime.command({ path: temp, cmd: ["touch", "b"], logger: false });
 
@@ -17,7 +17,7 @@ describe("runtime.test.ts", t => {
       const [success, output] = await runtime.command({
         path: temp,
         cmd: "ls",
-        logger: mockDebugLogger(line => lines.push(line)),
+        logger: mockDebugLogger((line) => lines.push(line)),
       });
 
       assertEquals(success, true);
@@ -26,13 +26,13 @@ describe("runtime.test.ts", t => {
     });
   });
 
-  [false, true, undefined].forEach(throws => {
+  [false, true, undefined].forEach((throws) => {
     t.test(
       "command " +
         (throws === true || throws === undefined ? "should" : `shouldn't`) +
         " throw an exception when fails",
       async () => {
-        await copyDirToTemp(assetsPath, async temp => {
+        await copyDirToTemp(assetsPath, async (temp) => {
           try {
             const [status, _] = await runtime.command({
               path: temp,

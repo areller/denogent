@@ -7,7 +7,7 @@ import type { EventSink, TaskEvent, TaskFailedEvent } from "./events.ts";
 import type { TaskContext } from "../../lib/core/context.ts";
 import { createLoggerFromFn } from "../../lib/core/logger.ts";
 
-describe("executor.test.ts", t => {
+describe("executor.test.ts", (t) => {
   t.test("single task", async () => {
     const graph = createGraph([task("taskA")]);
     const execution = createExecutor().fromGraph(graph, createContext);
@@ -32,13 +32,13 @@ describe("executor.test.ts", t => {
     let log: string[] = [];
 
     const graph = createGraph([
-      task("taskA").does(_ => {
+      task("taskA").does((_) => {
         log.push("taskA");
       }),
     ]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
-    execution.beforeTask(async task => {
+    execution.beforeTask(async (task) => {
       log.push("pre: " + task.name);
     });
 
@@ -68,7 +68,7 @@ describe("executor.test.ts", t => {
 
   t.test("single task (events)", async () => {
     const graph = createGraph([
-      task("taskA").does(ctx => {
+      task("taskA").does((ctx) => {
         ctx?.logger.debug("hello");
       }),
     ]);
@@ -76,7 +76,7 @@ describe("executor.test.ts", t => {
 
     let eventLog: TaskEvent[] = [];
 
-    execution.subscribe(ev => {
+    execution.subscribe((ev) => {
       eventLog.push(ev);
     });
 
@@ -128,8 +128,8 @@ describe("executor.test.ts", t => {
   t.test("single task (failed condition)", async () => {
     const graph = createGraph([
       task("taskA")
-        .when(_ => false)
-        .does(ctx => {
+        .when((_) => false)
+        .does((ctx) => {
           ctx?.logger.debug("hello");
         }),
     ]);
@@ -137,7 +137,7 @@ describe("executor.test.ts", t => {
 
     let eventLog: TaskEvent[] = [];
 
-    execution.subscribe(ev => {
+    execution.subscribe((ev) => {
       eventLog.push(ev);
     });
 
@@ -173,12 +173,12 @@ describe("executor.test.ts", t => {
     ]);
   });
 
-  [false, true].forEach(propagateExceptions => {
+  [false, true].forEach((propagateExceptions) => {
     t.test(`single task (failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`, async () => {
       const graph = createGraph([
         task("taskA")
           .breakCircuit(!propagateExceptions)
-          .does(ctx => {
+          .does((ctx) => {
             ctx?.logger.debug("hello");
             throw new Error("failure.");
           }),
@@ -187,7 +187,7 @@ describe("executor.test.ts", t => {
 
       let eventLog: TaskEvent[] = [];
 
-      execution.subscribe(ev => {
+      execution.subscribe((ev) => {
         eventLog.push(ev);
       });
 
@@ -249,7 +249,7 @@ describe("executor.test.ts", t => {
     });
   });
 
-  [false, true].forEach(propagateExceptions => {
+  [false, true].forEach((propagateExceptions) => {
     t.test(
       `single task (afterTask is called) (failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`,
       async () => {
@@ -258,14 +258,14 @@ describe("executor.test.ts", t => {
         const graph = createGraph([
           task("taskA")
             .breakCircuit(!propagateExceptions)
-            .does(ctx => {
+            .does((ctx) => {
               log.push("taskA");
               throw new Error("failure.");
             }),
         ]);
         const execution = createExecutor().fromGraph(graph, createContext);
 
-        execution.beforeTask(async task => {
+        execution.beforeTask(async (task) => {
           log.push("pre: " + task.name);
         });
 
@@ -285,16 +285,16 @@ describe("executor.test.ts", t => {
   });
 
   t.test("two tasks", async () => {
-    const taskA = task("taskA").does(ctx => ctx?.logger.debug("helloA"));
+    const taskA = task("taskA").does((ctx) => ctx?.logger.debug("helloA"));
     const taskB = task("taskB")
       .dependsOn(taskA)
-      .does(ctx => ctx?.logger.debug("helloB"));
+      .does((ctx) => ctx?.logger.debug("helloB"));
     const graph = createGraph([taskB]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
     let eventLog: TaskEvent[] = [];
 
-    execution.subscribe(ev => {
+    execution.subscribe((ev) => {
       eventLog.push(ev);
     });
 
@@ -342,23 +342,23 @@ describe("executor.test.ts", t => {
     });
   });
 
-  [false, true].forEach(propagateExceptions => {
+  [false, true].forEach((propagateExceptions) => {
     t.test(`two tasks (first failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`, async () => {
       const taskA = task("taskA")
         .breakCircuit(!propagateExceptions)
-        .does(ctx => {
+        .does((ctx) => {
           ctx?.logger.debug("helloA");
           throw new Error("failure.");
         });
       const taskB = task("taskB")
         .dependsOn(taskA)
-        .does(ctx => ctx?.logger.debug("helloB"));
+        .does((ctx) => ctx?.logger.debug("helloB"));
       const graph = createGraph([taskB]);
       const execution = createExecutor().fromGraph(graph, createContext);
 
       let eventLog: TaskEvent[] = [];
 
-      execution.subscribe(ev => {
+      execution.subscribe((ev) => {
         eventLog.push(ev);
       });
 

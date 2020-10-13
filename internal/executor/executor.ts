@@ -189,7 +189,7 @@ export class Execution {
     }
 
     // trying to fire dependents
-    this.spawnCollectionOfTasks(task.dependents, t => {
+    this.spawnCollectionOfTasks(task.dependents, (t) => {
       let tracker = this._tasksTracker[t.name];
       tracker.dependenciesFinished++;
 

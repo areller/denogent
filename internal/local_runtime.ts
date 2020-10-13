@@ -86,7 +86,7 @@ export class LocalRuntime implements Runtime {
 
       cmd.push(service.image);
 
-      await runCommand(cmd, line => {
+      await runCommand(cmd, (line) => {
         this.loggerFn("debug", line);
       });
 

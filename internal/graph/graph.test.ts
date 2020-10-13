@@ -3,7 +3,7 @@ import { assertArrayContains, assertEquals } from "../../tests_deps.ts";
 import { describe } from "../testing/test.ts";
 import { createGraph } from "./graph.ts";
 
-describe("graph.test.ts", t => {
+describe("graph.test.ts", (t) => {
   t.test("taskNames should return all tasks", () => {
     let graph = createGraph(createTaskStructure());
     assertEquals(graph.taskNames.length, 7);
@@ -27,19 +27,19 @@ describe("graph.test.ts", t => {
     assertArrayContains(Object.keys(levels), ["0", "1", "2", "3"]);
 
     assertEquals(
-      levels[0].map(t => t.name),
+      levels[0].map((t) => t.name),
       ["a", "a1"],
     );
     assertEquals(
-      levels[1].map(t => t.name),
+      levels[1].map((t) => t.name),
       ["b", "c"],
     );
     assertEquals(
-      levels[2].map(t => t.name),
+      levels[2].map((t) => t.name),
       ["b1", "d"],
     );
     assertEquals(
-      levels[3].map(t => t.name),
+      levels[3].map((t) => t.name),
       ["e"],
     );
   });

@@ -136,8 +136,8 @@ export class Graph {
 
     breadthFirstWithDepth(
       this.taskObjects(this.startTasks),
-      t => this.taskObjects(t.dependents),
-      t => this.taskObjects(t.dependencies),
+      (t) => this.taskObjects(t.dependents),
+      (t) => this.taskObjects(t.dependencies),
       (t, level) => {
         let tasksOfLevel = map[level];
         if (tasksOfLevel === undefined) {
@@ -178,8 +178,8 @@ export class Graph {
 
     breadthFirst(
       this.taskObjects(endTasks),
-      t => this.taskObjects(t.dependencies),
-      t => {
+      (t) => this.taskObjects(t.dependencies),
+      (t) => {
         if (t.dependencies.length == 0) {
           startTasks.push(t.name);
         }
@@ -194,8 +194,8 @@ export class Graph {
 
     breadthFirst(
       this.taskObjects(startTasks),
-      t => this.taskObjects(t.dependents),
-      t => {
+      (t) => this.taskObjects(t.dependents),
+      (t) => {
         if (t.dependents.length == 0) {
           endTasks.push(t.name);
         }
@@ -206,7 +206,7 @@ export class Graph {
   }
 
   private taskObjects(names: string[]): Task[] {
-    return names.map(n => this._tasks[n]);
+    return names.map((n) => this._tasks[n]);
   }
 
   private getAllTasksInOrder(): string[] {
@@ -226,8 +226,8 @@ export function createGraph(targetTasks: TaskDef[]) {
 
   breadthFirst(
     targetTasks,
-    t => t.dependencies.concat(t.dependents),
-    t => {
+    (t) => t.dependencies.concat(t.dependents),
+    (t) => {
       let task = tasks[t.name];
       if (task !== undefined) {
         throw new Error(`task '${t.name}' is defined more than once.`);
@@ -237,8 +237,8 @@ export function createGraph(targetTasks: TaskDef[]) {
         name: t.name,
         exec: t.exec,
         conditions: t.conditions,
-        dependencies: t.dependencies.map(d => d.name),
-        dependents: t.dependents.map(d => d.name),
+        dependencies: t.dependencies.map((d) => d.name),
+        dependents: t.dependents.map((d) => d.name),
         tags: t.tags,
         properties: t.properties,
         propagateExceptions: t.propagateExceptions,
@@ -250,6 +250,6 @@ export function createGraph(targetTasks: TaskDef[]) {
 
   return new Graph(
     tasks,
-    targetTasks.map(t => t.name),
+    targetTasks.map((t) => t.name),
   );
 }
