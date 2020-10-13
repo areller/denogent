@@ -1,5 +1,5 @@
-import { stdFs, stdPath } from '../../deps.ts';
-import type { Logger } from '../../lib/core/logger.ts';
+import { stdFs, stdPath } from "../../deps.ts";
+import type { Logger } from "../../lib/core/logger.ts";
 
 export async function copyDirToTemp(path: string, fn: (tempPath: string) => Promise<void>): Promise<void> {
   const dir = await Deno.makeTempDir();
@@ -9,8 +9,8 @@ export async function copyDirToTemp(path: string, fn: (tempPath: string) => Prom
   });
 
   try {
-    if (await stdFs.exists(stdPath.join(dir, '._git'))) {
-      await stdFs.move(stdPath.join(dir, '._git'), stdPath.join(dir, '.git'));
+    if (await stdFs.exists(stdPath.join(dir, "._git"))) {
+      await stdFs.move(stdPath.join(dir, "._git"), stdPath.join(dir, ".git"));
     }
 
     await fn(dir);

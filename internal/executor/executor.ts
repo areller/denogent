@@ -1,7 +1,7 @@
-import { EventEmitter } from '../../deps.ts';
-import type { TaskContext } from '../../lib/core/context.ts';
-import type { Graph, Task } from '../graph/graph.ts';
-import type { TaskLogEvent, TaskEvent, EventSink } from './events.ts';
+import { EventEmitter } from "../../deps.ts";
+import type { TaskContext } from "../../lib/core/context.ts";
+import type { Graph, Task } from "../graph/graph.ts";
+import type { TaskLogEvent, TaskEvent, EventSink } from "./events.ts";
 
 interface TaskTracker {
   task: Task;
@@ -62,7 +62,7 @@ export class Execution {
   }
 
   subscribe(fn: (event: TaskEvent) => void) {
-    this._events.addListener('_', (ev: unknown) => {
+    this._events.addListener("_", (ev: unknown) => {
       fn(ev as TaskEvent);
     });
   }
@@ -108,7 +108,7 @@ export class Execution {
     try {
       // firing task started event
       this.fireEvent({
-        type: 'started',
+        type: "started",
         task: task.name,
       });
 
@@ -168,20 +168,20 @@ export class Execution {
     // firing events
     if (success) {
       this.fireEvent({
-        type: 'finishedSuccessfully',
+        type: "finishedSuccessfully",
         task: task.name,
       });
     } else {
       if (failedCondition !== undefined) {
         this.fireEvent({
-          type: 'failedCondition',
+          type: "failedCondition",
           task: task.name,
           conditionId: failedCondition,
           condition: task.conditions[failedCondition]!.toString(),
         });
       } else {
         this.fireEvent({
-          type: 'failed',
+          type: "failed",
           task: task.name,
           error: error,
         });
@@ -243,13 +243,13 @@ export class Execution {
 
   private fireEvent(ev: TaskEvent) {
     const tracker = this._tasksTracker[ev.task]!;
-    if (ev.type == 'log') {
+    if (ev.type == "log") {
       tracker.logs.push(ev);
     } else {
       tracker.lastEvent = ev;
     }
 
-    this._events.emit('_', ev);
+    this._events.emit("_", ev);
   }
 
   private createContext(task: Task): TaskContext {

@@ -1,7 +1,7 @@
-import { Command } from '../../deps.ts';
-import { ContextCreator, createExecutor } from '../../internal/executor/executor.ts';
-import { createLoggerFromFn } from '../../lib/core/logger.ts';
-import type { CLIContext } from '../context.ts';
+import { Command } from "../../deps.ts";
+import { ContextCreator, createExecutor } from "../../internal/executor/executor.ts";
+import { createLoggerFromFn } from "../../lib/core/logger.ts";
+import type { CLIContext } from "../context.ts";
 
 function createContextCreator(context: CLIContext): ContextCreator {
   return (taskObj, eventSink) => {
@@ -9,7 +9,7 @@ function createContextCreator(context: CLIContext): ContextCreator {
       logger: createLoggerFromFn(
         (level, message, task, meta) =>
           eventSink({
-            type: 'log',
+            type: "log",
             task: task!,
             level,
             meta,
@@ -31,60 +31,60 @@ export function getRunCommand(): {
 } {
   return {
     cmd: new Command()
-      .description('Run the pipeline that is defined in the build file.')
-      .option('--serial', 'Run the pipeline in serial order.', {
-        conflicts: ['only'],
+      .description("Run the pipeline that is defined in the build file.")
+      .option("--serial", "Run the pipeline in serial order.", {
+        conflicts: ["only"],
       })
-      .option('--only [task:string]', 'Run only a single task.', {
-        conflicts: ['serial'],
+      .option("--only [task:string]", "Run only a single task.", {
+        conflicts: ["serial"],
       }),
     buildContextRequired: true,
     action: async (context: CLIContext) => {
       if (context.buildContext === undefined) {
-        throw new Error('Build context is unavailable.');
+        throw new Error("Build context is unavailable.");
       }
       if (context.graph === undefined) {
-        throw new Error('Graph is unavailable.');
+        throw new Error("Graph is unavailable.");
       }
 
       const executor = createExecutor();
       let graph = context.graph;
 
-      if (context.args['serial']) {
+      if (context.args["serial"]) {
         graph = graph.createSerialGraph();
-      } else if (context.args['only']) {
-        graph = graph.createSerialGraphFrom([context.args['only'].toString()]);
+      } else if (context.args["only"]) {
+        graph = graph.createSerialGraphFrom([context.args["only"].toString()]);
       }
 
       const execution = executor.fromGraph(graph, createContextCreator(context));
 
       execution.subscribe(ev => {
         switch (ev.type) {
-          case 'started':
-            context.runtime.loggerFn('info', `=== STARTED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
+          case "started":
+            context.runtime.loggerFn("info", `=== STARTED '${ev.task}' ===`, ev.task, { type: ev.type, task: ev.task });
             break;
-          case 'log':
+          case "log":
             context.runtime.loggerFn(ev.level, ev.message, ev.task, {
               type: ev.type,
               task: ev.task,
             });
             break;
-          case 'finishedSuccessfully':
-            context.runtime.loggerFn('info', `=== FINISHED '${ev.task}' ===`, ev.task, {
+          case "finishedSuccessfully":
+            context.runtime.loggerFn("info", `=== FINISHED '${ev.task}' ===`, ev.task, {
               type: ev.type,
               task: ev.task,
             });
             break;
-          case 'failedCondition':
-            context.runtime.loggerFn('warn', `Failed condition (${ev.condition})`, ev.task, {
+          case "failedCondition":
+            context.runtime.loggerFn("warn", `Failed condition (${ev.condition})`, ev.task, {
               type: ev.type,
               task: ev.task,
               conditionId: ev.conditionId,
               condition: ev.condition,
             });
             break;
-          case 'failed':
-            context.runtime.loggerFn('error', ev.error || 'Failed', ev.task, {
+          case "failed":
+            context.runtime.loggerFn("error", ev.error || "Failed", ev.task, {
               type: ev.type,
               task: ev.task,
             });
@@ -117,7 +117,7 @@ export function getRunCommand(): {
           }
         }
       } catch (error) {
-        context.runtime.loggerFn('error', error);
+        context.runtime.loggerFn("error", error);
         Deno.exit(1);
       }
     },

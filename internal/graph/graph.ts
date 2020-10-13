@@ -1,5 +1,5 @@
-import type { ExecFn, CondFn, Task as TaskDef } from '../../lib/core/task.ts';
-import { breadthFirst, breadthFirstWithDepth } from '../helpers/algos.ts';
+import type { ExecFn, CondFn, Task as TaskDef } from "../../lib/core/task.ts";
+import { breadthFirst, breadthFirstWithDepth } from "../helpers/algos.ts";
 
 /**
  * Represents a task

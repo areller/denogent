@@ -1,6 +1,6 @@
-import type { CIIntegration } from '../ci/ci_integration.ts';
-import type { Logger } from './logger.ts';
-import type { Task } from './task.ts';
+import type { CIIntegration } from "../ci/ci_integration.ts";
+import type { Logger } from "./logger.ts";
+import type { Task } from "./task.ts";
 
 /**
  * Represents the build context

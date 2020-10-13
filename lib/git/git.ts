@@ -1,6 +1,6 @@
-import { stdPath } from '../../deps.ts';
-import { runCommand } from '../../internal/helpers/cmd.ts';
-import type { GitCommandArgs, GitSubCommandArgs } from './args.ts';
+import { stdPath } from "../../deps.ts";
+import { runCommand } from "../../internal/helpers/cmd.ts";
+import type { GitCommandArgs, GitSubCommandArgs } from "./args.ts";
 
 class Git {
   private _detectGitTask: Promise<void>;
@@ -8,9 +8,9 @@ class Git {
   constructor() {
     this._detectGitTask = new Promise((resolve, reject) => {
       let process = Deno.run({
-        cmd: ['git', '--version'],
-        stdout: 'null',
-        stderr: 'null',
+        cmd: ["git", "--version"],
+        stdout: "null",
+        stderr: "null",
       });
 
       process.status().then(async status => {
@@ -28,7 +28,7 @@ class Git {
    * @param args command arguments
    */
   async isGitRepository(args: GitCommandArgs): Promise<boolean> {
-    let [success, _] = await this.runGit(args, ['status'], false);
+    let [success, _] = await this.runGit(args, ["status"], false);
     return success;
   }
 
@@ -37,7 +37,7 @@ class Git {
    * @param args command arguments
    */
   async isTagged(args: GitCommandArgs): Promise<boolean> {
-    let [success, _] = await this.runGit(args, ['describe', '--exact-match', '--tags', 'HEAD'], false);
+    let [success, _] = await this.runGit(args, ["describe", "--exact-match", "--tags", "HEAD"], false);
     return success;
   }
 
@@ -46,7 +46,7 @@ class Git {
    * @param args command arguments
    */
   async getHeadCommit(args: GitCommandArgs): Promise<string> {
-    let [_, output] = await this.runGit(args, ['rev-parse', 'HEAD']);
+    let [_, output] = await this.runGit(args, ["rev-parse", "HEAD"]);
     return output.trim();
   }
 
@@ -55,7 +55,7 @@ class Git {
    * @param args command arguments
    */
   async getBranch(args: GitCommandArgs): Promise<string> {
-    let [_, output] = await this.runGit(args, ['rev-parse', '--abbrev-ref', 'HEAD']);
+    let [_, output] = await this.runGit(args, ["rev-parse", "--abbrev-ref", "HEAD"]);
     return output.trim();
   }
 
@@ -64,7 +64,7 @@ class Git {
    * @param args command arguments
    */
   async describe(args: GitCommandArgs): Promise<string | undefined> {
-    let [success, output] = await this.runGit(args, ['describe', '--tags'], false);
+    let [success, output] = await this.runGit(args, ["describe", "--tags"], false);
     if (!success) {
       return undefined;
     }
@@ -77,7 +77,7 @@ class Git {
    * @param args sub command arguments
    */
   async subcmd(args: GitSubCommandArgs): Promise<string> {
-    let [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(' '), true);
+    let [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }
 
@@ -85,9 +85,9 @@ class Git {
     await this.detectGit();
     const path = this.getCwd(args?.path);
 
-    const [status, output] = await runCommand(['git', ...cmd], undefined, path, false);
+    const [status, output] = await runCommand(["git", ...cmd], undefined, path, false);
     if (!status && (throwOnFailure ?? true)) {
-      throw new Error(`Unsuccessful response for 'git ${cmd.join(' ')}'.`);
+      throw new Error(`Unsuccessful response for 'git ${cmd.join(" ")}'.`);
     }
 
     return [status, output];

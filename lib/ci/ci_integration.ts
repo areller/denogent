@@ -1,6 +1,6 @@
-import type { Graph } from '../../internal/graph/graph.ts';
-import type { Logger } from '../core/logger.ts';
-import type { Runtime } from '../../internal/runtime.ts';
+import type { Graph } from "../../internal/graph/graph.ts";
+import type { Logger } from "../core/logger.ts";
+import type { Runtime } from "../../internal/runtime.ts";
 
 export interface CleanArgs {
   /**

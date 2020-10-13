@@ -1,4 +1,4 @@
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = "debug" | "info" | "warn" | "error";
 export type TaskEvent =
   | TaskStartedEvent
   | TaskLogEvent
@@ -7,12 +7,12 @@ export type TaskEvent =
   | TaskFinishedSuccessfullyEvent;
 
 export interface TaskStartedEvent {
-  type: 'started';
+  type: "started";
   task: string;
 }
 
 export interface TaskLogEvent {
-  type: 'log';
+  type: "log";
   task: string;
   level: LogLevel;
   message: string;
@@ -21,20 +21,20 @@ export interface TaskLogEvent {
 }
 
 export interface TaskFailedConditionEvent {
-  type: 'failedCondition';
+  type: "failedCondition";
   task: string;
   conditionId: number;
   condition: string;
 }
 
 export interface TaskFailedEvent {
-  type: 'failed';
+  type: "failed";
   task: string;
   error?: Error;
 }
 
 export interface TaskFinishedSuccessfullyEvent {
-  type: 'finishedSuccessfully';
+  type: "finishedSuccessfully";
   task: string;
 }
 

@@ -26,10 +26,10 @@ export function issueCommand(
 }
 
 export function issue(name: string, message?: string): void {
-  issueCommand(name, {}, message ?? '');
+  issueCommand(name, {}, message ?? "");
 }
 
-const CMD_STRING = '::';
+const CMD_STRING = "::";
 
 class Command {
   private readonly command: string;
@@ -38,7 +38,7 @@ class Command {
 
   constructor(command: string, properties: CommandProperties, message: string) {
     if (!command) {
-      command = 'missing.command';
+      command = "missing.command";
     }
 
     this.command = command;
@@ -50,7 +50,7 @@ class Command {
     let cmdStr = CMD_STRING + this.command;
 
     if (this.properties && Object.keys(this.properties).length > 0) {
-      cmdStr += ' ';
+      cmdStr += " ";
       let first = true;
       for (const key in this.properties) {
         // deno-lint-ignore no-prototype-builtins
@@ -60,7 +60,7 @@ class Command {
             if (first) {
               first = false;
             } else {
-              cmdStr += ',';
+              cmdStr += ",";
             }
 
             cmdStr += `${key}=${escapeProperty(val)}`;
@@ -81,8 +81,8 @@ class Command {
 // deno-lint-ignore no-explicit-any
 export function toCommandValue(input: any): string {
   if (input === null || input === undefined) {
-    return '';
-  } else if (typeof input === 'string' || input instanceof String) {
+    return "";
+  } else if (typeof input === "string" || input instanceof String) {
     return input as string;
   }
   return JSON.stringify(input);
@@ -90,15 +90,15 @@ export function toCommandValue(input: any): string {
 
 // deno-lint-ignore no-explicit-any
 function escapeData(s: any): string {
-  return toCommandValue(s).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+  return toCommandValue(s).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
 }
 
 // deno-lint-ignore no-explicit-any
 function escapeProperty(s: any): string {
   return toCommandValue(s)
-    .replace(/%/g, '%25')
-    .replace(/\r/g, '%0D')
-    .replace(/\n/g, '%0A')
-    .replace(/:/g, '%3A')
-    .replace(/,/g, '%2C');
+    .replace(/%/g, "%25")
+    .replace(/\r/g, "%0D")
+    .replace(/\n/g, "%0A")
+    .replace(/:/g, "%3A")
+    .replace(/,/g, "%2C");
 }

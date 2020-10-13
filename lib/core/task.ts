@@ -1,5 +1,5 @@
-import type { TaskContext } from './context.ts';
-import type { Extension } from './extension.ts';
+import type { TaskContext } from "./context.ts";
+import type { Extension } from "./extension.ts";
 
 export type ExecFn = (context?: TaskContext) => Promise<void> | void;
 export type CondFn = (context?: TaskContext) => Promise<boolean> | boolean;

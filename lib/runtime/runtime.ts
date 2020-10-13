@@ -1,7 +1,7 @@
-import { runCommand as runCommandInternal } from '../../internal/helpers/cmd.ts';
-import type { CommandArgs } from './args.ts';
-import type { Extension } from '../core/extension.ts';
-import { Args, dotenv, parseArgs } from '../../deps.ts';
+import { runCommand as runCommandInternal } from "../../internal/helpers/cmd.ts";
+import type { CommandArgs } from "./args.ts";
+import type { Extension } from "../core/extension.ts";
+import { Args, dotenv, parseArgs } from "../../deps.ts";
 
 class Runtime {
   private _args: Args;
@@ -17,7 +17,7 @@ class Runtime {
    */
   async command(args: CommandArgs): Promise<[boolean, string]> {
     const res = (await runCommandInternal(
-      args.cmd instanceof Array ? args.cmd : args.cmd.split(' '),
+      args.cmd instanceof Array ? args.cmd : args.cmd.split(" "),
       line => {
         if (args.logger) {
           args.logger.debug(line);
@@ -76,13 +76,13 @@ class Runtime {
    */
   secret(name: string): Extension {
     return {
-      name: 'secret',
+      name: "secret",
       key: `secret_${name}`,
       enrich: t => {
-        let secrets = t.properties['secrets'] as string[];
+        let secrets = t.properties["secrets"] as string[];
         if (secrets === undefined) {
           secrets = [];
-          t.properties['secrets'] = secrets;
+          t.properties["secrets"] = secrets;
         }
 
         secrets.push(name);

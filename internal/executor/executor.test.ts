@@ -1,75 +1,75 @@
-import { task } from '../../lib/core/task.ts';
-import { createGraph, Task } from '../graph/graph.ts';
-import { describe } from '../testing/test.ts';
-import { createExecutor, ExecutionResult } from './executor.ts';
-import { assertEquals, assertNotEquals, fail } from '../../tests_deps.ts';
-import type { EventSink, TaskEvent, TaskFailedEvent } from './events.ts';
-import type { TaskContext } from '../../lib/core/context.ts';
-import { createLoggerFromFn } from '../../lib/core/logger.ts';
+import { task } from "../../lib/core/task.ts";
+import { createGraph, Task } from "../graph/graph.ts";
+import { describe } from "../testing/test.ts";
+import { createExecutor, ExecutionResult } from "./executor.ts";
+import { assertEquals, assertNotEquals, fail } from "../../tests_deps.ts";
+import type { EventSink, TaskEvent, TaskFailedEvent } from "./events.ts";
+import type { TaskContext } from "../../lib/core/context.ts";
+import { createLoggerFromFn } from "../../lib/core/logger.ts";
 
-describe('executor.test.ts', t => {
-  t.test('single task', async () => {
-    const graph = createGraph([task('taskA')]);
+describe("executor.test.ts", t => {
+  t.test("single task", async () => {
+    const graph = createGraph([task("taskA")]);
     const execution = createExecutor().fromGraph(graph, createContext);
     const res = await execution.execute();
 
     assertEquals(res, {
       tasks: {
-        ['taskA']: {
-          task: 'taskA',
+        ["taskA"]: {
+          task: "taskA",
           success: true,
           logs: [],
           lastEvent: {
-            type: 'finishedSuccessfully',
-            task: 'taskA',
+            type: "finishedSuccessfully",
+            task: "taskA",
           },
         },
       },
     });
   });
 
-  t.test('single task (hooks)', async () => {
+  t.test("single task (hooks)", async () => {
     let log: string[] = [];
 
     const graph = createGraph([
-      task('taskA').does(_ => {
-        log.push('taskA');
+      task("taskA").does(_ => {
+        log.push("taskA");
       }),
     ]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
     execution.beforeTask(async task => {
-      log.push('pre: ' + task.name);
+      log.push("pre: " + task.name);
     });
 
     execution.afterTask(async (task, error) => {
       assertEquals(error, undefined);
-      log.push('post: ' + task.name);
+      log.push("post: " + task.name);
     });
 
     const res = await execution.execute();
 
     assertEquals(res, {
       tasks: {
-        ['taskA']: {
-          task: 'taskA',
+        ["taskA"]: {
+          task: "taskA",
           success: true,
           logs: [],
           lastEvent: {
-            type: 'finishedSuccessfully',
-            task: 'taskA',
+            type: "finishedSuccessfully",
+            task: "taskA",
           },
         },
       },
     });
 
-    assertEquals(log, ['pre: taskA', 'taskA', 'post: taskA']);
+    assertEquals(log, ["pre: taskA", "taskA", "post: taskA"]);
   });
 
-  t.test('single task (events)', async () => {
+  t.test("single task (events)", async () => {
     const graph = createGraph([
-      task('taskA').does(ctx => {
-        ctx?.logger.debug('hello');
+      task("taskA").does(ctx => {
+        ctx?.logger.debug("hello");
       }),
     ]);
     const execution = createExecutor().fromGraph(graph, createContext);
@@ -84,22 +84,22 @@ describe('executor.test.ts', t => {
 
     assertEquals(res, {
       tasks: {
-        ['taskA']: {
-          task: 'taskA',
+        ["taskA"]: {
+          task: "taskA",
           success: true,
           logs: [
             {
-              type: 'log',
-              task: 'taskA',
-              level: 'debug',
-              message: 'hello',
+              type: "log",
+              task: "taskA",
+              level: "debug",
+              message: "hello",
               error: undefined,
               meta: undefined,
             },
           ],
           lastEvent: {
-            type: 'finishedSuccessfully',
-            task: 'taskA',
+            type: "finishedSuccessfully",
+            task: "taskA",
           },
         },
       },
@@ -107,30 +107,30 @@ describe('executor.test.ts', t => {
 
     assertEquals(eventLog, [
       {
-        type: 'started',
-        task: 'taskA',
+        type: "started",
+        task: "taskA",
       },
       {
-        type: 'log',
-        task: 'taskA',
-        level: 'debug',
-        message: 'hello',
+        type: "log",
+        task: "taskA",
+        level: "debug",
+        message: "hello",
         error: undefined,
         meta: undefined,
       },
       {
-        type: 'finishedSuccessfully',
-        task: 'taskA',
+        type: "finishedSuccessfully",
+        task: "taskA",
       },
     ]);
   });
 
-  t.test('single task (failed condition)', async () => {
+  t.test("single task (failed condition)", async () => {
     const graph = createGraph([
-      task('taskA')
+      task("taskA")
         .when(_ => false)
         .does(ctx => {
-          ctx?.logger.debug('hello');
+          ctx?.logger.debug("hello");
         }),
     ]);
     const execution = createExecutor().fromGraph(graph, createContext);
@@ -145,15 +145,15 @@ describe('executor.test.ts', t => {
 
     assertEquals(res, {
       tasks: {
-        ['taskA']: {
-          task: 'taskA',
+        ["taskA"]: {
+          task: "taskA",
           success: false,
           logs: [],
           lastEvent: {
-            type: 'failedCondition',
-            task: 'taskA',
+            type: "failedCondition",
+            task: "taskA",
             conditionId: 0,
-            condition: '_ => false',
+            condition: "_ => false",
           },
         },
       },
@@ -161,26 +161,26 @@ describe('executor.test.ts', t => {
 
     assertEquals(eventLog, [
       {
-        type: 'started',
-        task: 'taskA',
+        type: "started",
+        task: "taskA",
       },
       {
-        type: 'failedCondition',
-        task: 'taskA',
+        type: "failedCondition",
+        task: "taskA",
         conditionId: 0,
-        condition: '_ => false',
+        condition: "_ => false",
       },
     ]);
   });
 
   [false, true].forEach(propagateExceptions => {
-    t.test(`single task (failed and propagateExceptions = ${propagateExceptions ? 'true' : 'false'})`, async () => {
+    t.test(`single task (failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`, async () => {
       const graph = createGraph([
-        task('taskA')
+        task("taskA")
           .breakCircuit(!propagateExceptions)
           .does(ctx => {
-            ctx?.logger.debug('hello');
-            throw new Error('failure.');
+            ctx?.logger.debug("hello");
+            throw new Error("failure.");
           }),
       ]);
       const execution = createExecutor().fromGraph(graph, createContext);
@@ -202,14 +202,14 @@ describe('executor.test.ts', t => {
 
         assertEquals(eventLog, [
           {
-            type: 'started',
-            task: 'taskA',
+            type: "started",
+            task: "taskA",
           },
           {
-            type: 'log',
-            task: 'taskA',
-            level: 'debug',
-            message: 'hello',
+            type: "log",
+            task: "taskA",
+            level: "debug",
+            message: "hello",
             error: undefined,
             meta: undefined,
           },
@@ -223,55 +223,55 @@ describe('executor.test.ts', t => {
 
         assertEquals(res, {
           tasks: {
-            ['taskA']: {
-              task: 'taskA',
+            ["taskA"]: {
+              task: "taskA",
               success: false,
               logs: [
                 {
-                  type: 'log',
-                  task: 'taskA',
-                  level: 'debug',
-                  message: 'hello',
+                  type: "log",
+                  task: "taskA",
+                  level: "debug",
+                  message: "hello",
                   error: undefined,
                   meta: undefined,
                 },
               ],
               lastEvent: {
-                type: 'failed',
-                task: 'taskA',
-                error: (res.tasks['taskA'].lastEvent as TaskFailedEvent).error,
+                type: "failed",
+                task: "taskA",
+                error: (res.tasks["taskA"].lastEvent as TaskFailedEvent).error,
               },
             },
           },
         });
-        assertEquals((res.tasks['taskA'].lastEvent as TaskFailedEvent).error?.message, 'failure.');
+        assertEquals((res.tasks["taskA"].lastEvent as TaskFailedEvent).error?.message, "failure.");
       }
     });
   });
 
   [false, true].forEach(propagateExceptions => {
     t.test(
-      `single task (afterTask is called) (failed and propagateExceptions = ${propagateExceptions ? 'true' : 'false'})`,
+      `single task (afterTask is called) (failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`,
       async () => {
         let log: string[] = [];
 
         const graph = createGraph([
-          task('taskA')
+          task("taskA")
             .breakCircuit(!propagateExceptions)
             .does(ctx => {
-              log.push('taskA');
-              throw new Error('failure.');
+              log.push("taskA");
+              throw new Error("failure.");
             }),
         ]);
         const execution = createExecutor().fromGraph(graph, createContext);
 
         execution.beforeTask(async task => {
-          log.push('pre: ' + task.name);
+          log.push("pre: " + task.name);
         });
 
         execution.afterTask(async (task, error) => {
           assertNotEquals(error, undefined);
-          log.push('post: ' + task.name + ' ' + error!.message);
+          log.push("post: " + task.name + " " + error!.message);
         });
 
         try {
@@ -279,16 +279,16 @@ describe('executor.test.ts', t => {
           // deno-lint-ignore no-empty
         } catch (err) {}
 
-        assertEquals(log, ['pre: taskA', 'taskA', 'post: taskA failure.']);
+        assertEquals(log, ["pre: taskA", "taskA", "post: taskA failure."]);
       },
     );
   });
 
-  t.test('two tasks', async () => {
-    const taskA = task('taskA').does(ctx => ctx?.logger.debug('helloA'));
-    const taskB = task('taskB')
+  t.test("two tasks", async () => {
+    const taskA = task("taskA").does(ctx => ctx?.logger.debug("helloA"));
+    const taskB = task("taskB")
       .dependsOn(taskA)
-      .does(ctx => ctx?.logger.debug('helloB'));
+      .does(ctx => ctx?.logger.debug("helloB"));
     const graph = createGraph([taskB]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
@@ -302,40 +302,40 @@ describe('executor.test.ts', t => {
 
     assertEquals(res, {
       tasks: {
-        ['taskA']: {
-          task: 'taskA',
+        ["taskA"]: {
+          task: "taskA",
           success: true,
           logs: [
             {
-              type: 'log',
-              task: 'taskA',
-              level: 'debug',
-              message: 'helloA',
+              type: "log",
+              task: "taskA",
+              level: "debug",
+              message: "helloA",
               error: undefined,
               meta: undefined,
             },
           ],
           lastEvent: {
-            type: 'finishedSuccessfully',
-            task: 'taskA',
+            type: "finishedSuccessfully",
+            task: "taskA",
           },
         },
-        ['taskB']: {
-          task: 'taskB',
+        ["taskB"]: {
+          task: "taskB",
           success: true,
           logs: [
             {
-              type: 'log',
-              task: 'taskB',
-              level: 'debug',
-              message: 'helloB',
+              type: "log",
+              task: "taskB",
+              level: "debug",
+              message: "helloB",
               error: undefined,
               meta: undefined,
             },
           ],
           lastEvent: {
-            type: 'finishedSuccessfully',
-            task: 'taskB',
+            type: "finishedSuccessfully",
+            task: "taskB",
           },
         },
       },
@@ -343,16 +343,16 @@ describe('executor.test.ts', t => {
   });
 
   [false, true].forEach(propagateExceptions => {
-    t.test(`two tasks (first failed and propagateExceptions = ${propagateExceptions ? 'true' : 'false'})`, async () => {
-      const taskA = task('taskA')
+    t.test(`two tasks (first failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`, async () => {
+      const taskA = task("taskA")
         .breakCircuit(!propagateExceptions)
         .does(ctx => {
-          ctx?.logger.debug('helloA');
-          throw new Error('failure.');
+          ctx?.logger.debug("helloA");
+          throw new Error("failure.");
         });
-      const taskB = task('taskB')
+      const taskB = task("taskB")
         .dependsOn(taskA)
-        .does(ctx => ctx?.logger.debug('helloB'));
+        .does(ctx => ctx?.logger.debug("helloB"));
       const graph = createGraph([taskB]);
       const execution = createExecutor().fromGraph(graph, createContext);
 
@@ -373,14 +373,14 @@ describe('executor.test.ts', t => {
 
         assertEquals(eventLog, [
           {
-            type: 'started',
-            task: 'taskA',
+            type: "started",
+            task: "taskA",
           },
           {
-            type: 'log',
-            task: 'taskA',
-            level: 'debug',
-            message: 'helloA',
+            type: "log",
+            task: "taskA",
+            level: "debug",
+            message: "helloA",
             error: undefined,
             meta: undefined,
           },
@@ -394,46 +394,46 @@ describe('executor.test.ts', t => {
 
         assertEquals(res, {
           tasks: {
-            ['taskA']: {
-              task: 'taskA',
+            ["taskA"]: {
+              task: "taskA",
               success: false,
               logs: [
                 {
-                  type: 'log',
-                  task: 'taskA',
-                  level: 'debug',
-                  message: 'helloA',
+                  type: "log",
+                  task: "taskA",
+                  level: "debug",
+                  message: "helloA",
                   error: undefined,
                   meta: undefined,
                 },
               ],
               lastEvent: {
-                type: 'failed',
-                task: 'taskA',
-                error: (res.tasks['taskA'].lastEvent as TaskFailedEvent).error,
+                type: "failed",
+                task: "taskA",
+                error: (res.tasks["taskA"].lastEvent as TaskFailedEvent).error,
               },
             },
-            ['taskB']: {
-              task: 'taskB',
+            ["taskB"]: {
+              task: "taskB",
               success: true,
               logs: [
                 {
-                  type: 'log',
-                  task: 'taskB',
-                  level: 'debug',
-                  message: 'helloB',
+                  type: "log",
+                  task: "taskB",
+                  level: "debug",
+                  message: "helloB",
                   error: undefined,
                   meta: undefined,
                 },
               ],
               lastEvent: {
-                type: 'finishedSuccessfully',
-                task: 'taskB',
+                type: "finishedSuccessfully",
+                task: "taskB",
               },
             },
           },
         });
-        assertEquals((res.tasks['taskA'].lastEvent as TaskFailedEvent).error?.message, 'failure.');
+        assertEquals((res.tasks["taskA"].lastEvent as TaskFailedEvent).error?.message, "failure.");
       }
     });
   });
@@ -444,7 +444,7 @@ function createContext(task: Task, eventSink: EventSink): TaskContext {
     logger: createLoggerFromFn(
       (level, message, task, meta) =>
         eventSink({
-          type: 'log',
+          type: "log",
           task: task!,
           level,
           meta,
@@ -454,7 +454,7 @@ function createContext(task: Task, eventSink: EventSink): TaskContext {
       task.name,
     ),
     build: {
-      name: 'build',
+      name: "build",
       targetTasks: [],
       ciIntegrations: [],
     },

@@ -1,4 +1,4 @@
-import { stdFs, stdPath } from '../../deps.ts';
+import { stdFs, stdPath } from "../../deps.ts";
 
 export class File {
   private _name: string;
@@ -189,5 +189,5 @@ export class Folder {
   }
 }
 
-const fs = new Folder('.');
+const fs = new Folder(".");
 export default fs;
