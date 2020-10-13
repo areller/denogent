@@ -34,13 +34,10 @@ const test = task('test').does(async ctx => {
 const replaceVersion = task('replace version')
   .dependsOn(test)
   .does(async ctx => {
-    const version = (await git.describe({ logger: false })) ?? '';
-
-    ctx?.logger.debug('version: ' + (await git.describe({ logger: ctx?.logger })));
-
+    const version = 'v0.1';
     const versionFile = (await fs.getFile(['cli', 'version.ts']))!;
     let contents = await versionFile.getContentsString();
-    contents = contents.replaceAll('{{VERSION}}', (await git.describe({ logger: false })) ?? '');
+    contents = contents.replaceAll('{{VERSION}}', version);
     await versionFile.override(contents);
   });
 
@@ -49,7 +46,7 @@ const publish = task('publish')
   .dependsOn(replaceVersion)
   .does(async ctx => {
     await runtime.command({
-      cmd: ['deno', 'instasll', '-A', '-f', '--unstable', '-n', 'eggs', 'https://x.nest.land/eggs@0.2.3/mod.ts'],
+      cmd: ['deno', 'install', '-A', '-f', '--unstable', '-n', 'eggs', 'https://x.nest.land/eggs@0.2.3/mod.ts'],
       logger: ctx?.logger,
     });
 
