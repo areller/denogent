@@ -57,7 +57,7 @@ const publish = task('publish')
         'publish',
         'denogent',
         '--files',
-        '**/*.ts',
+        'denogent.ts',
         '--version',
         await getVersion(),
         '--description',
