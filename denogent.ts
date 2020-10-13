@@ -1,3 +1,3 @@
-import { createCLI } from "./cli/cli.ts";
+import { createCLI } from './cli/cli.ts';
 
 createCLI(undefined);

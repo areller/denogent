@@ -1,0 +1,27 @@
+{
+  "name": "denogent",
+  "version": "1.0.0",
+  "description": "**Disclaimer: This tool is in active development.**",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "check-format": "prettier --config .prettierrc --check \"**/*.ts\"",
+    "format": "prettier --config .prettierrc --write \"**/*.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/areller/denogent.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/areller/denogent/issues"
+  },
+  "homepage": "https://github.com/areller/denogent#readme",
+  "devDependencies": {
+    "prettier": "^2.1.2"
+  }
+}
