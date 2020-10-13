@@ -73,7 +73,7 @@ function createCommand(
   },
 ): Command {
   return rawCommand.cmd.action(async () => {
-    let file = buildContext !== undefined ? getMainFilePath() : ((parsedArgs['file'] as string) ?? defaultBuildFile);
+    let file = buildContext !== undefined ? getMainFilePath() : (parsedArgs['file'] as string) ?? defaultBuildFile;
     if (rawCommand.buildContextRequired && buildContext === undefined) {
       return await runCLIFromFile(file);
     }

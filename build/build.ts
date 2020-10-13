@@ -34,7 +34,7 @@ const test = task('test').does(async ctx => {
 const replaceVersion = task('replace version')
   .dependsOn(test)
   .does(async ctx => {
-    const version = await git.describe({ logger: false }) ?? '';
+    const version = (await git.describe({ logger: false })) ?? '';
 
     ctx?.logger.debug('version: ' + version);
 
@@ -50,17 +50,17 @@ const publish = task('publish')
   .does(async ctx => {
     await runtime.command({
       cmd: ['deno', 'instasll', '-A', '-f', '--unstable', '-n', 'eggs', 'https://x.nest.land/eggs@0.2.3/mod.ts'],
-      logger: ctx?.logger
+      logger: ctx?.logger,
     });
 
     await runtime.command({
       cmd: ['eggs', 'link', runtime.argValue('NEST_API_KEY')],
-      logger: ctx?.logger
+      logger: ctx?.logger,
     });
 
     await runtime.command({
       cmd: ['eggs', 'publish'],
-      logger: ctx?.logger
+      logger: ctx?.logger,
     });
   });
 
