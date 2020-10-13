@@ -45,7 +45,7 @@ export class Execution {
     this._events = new EventEmitter();
   }
 
-  execute(): Promise<ExecutionResult> {
+  public execute(): Promise<ExecutionResult> {
     for (const name of this._graph.taskNames) {
       this._tasksTracker[name] = {
         task: this._graph.getTask(name)!,
@@ -61,17 +61,17 @@ export class Execution {
     return this._endPromise;
   }
 
-  subscribe(fn: (event: TaskEvent) => void) {
+  public subscribe(fn: (event: TaskEvent) => void) {
     this._events.addListener("_", (ev: unknown) => {
       fn(ev as TaskEvent);
     });
   }
 
-  beforeTask(fn: (task: Task) => Promise<void>) {
+  public beforeTask(fn: (task: Task) => Promise<void>) {
     this._beforeTaskFn = fn;
   }
 
-  afterTask(fn: (task: Task, error?: Error) => Promise<void>) {
+  public afterTask(fn: (task: Task, error?: Error) => Promise<void>) {
     this._afterTaskFn = fn;
   }
 
@@ -276,7 +276,7 @@ export class Executor {
    * @param graph the graph object
    * @param contextCreator a function that creates a TaskContext for a given task
    */
-  fromGraph(graph: Graph, contextCreator: ContextCreator): Execution {
+  public fromGraph(graph: Graph, contextCreator: ContextCreator): Execution {
     return new Execution(graph, contextCreator);
   }
 }

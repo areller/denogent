@@ -24,11 +24,11 @@ export class LocalRuntime implements Runtime {
     this.containerNames = [];
   }
 
-  get loggerFn(): LoggerFn {
+  public get loggerFn(): LoggerFn {
     return this.logger;
   }
 
-  async beforeExecution(): Promise<void> {
+  public async beforeExecution(): Promise<void> {
     if (this.graph === undefined) {
       return;
     }
@@ -42,7 +42,7 @@ export class LocalRuntime implements Runtime {
     }
   }
 
-  async afterExecution(): Promise<void> {
+  public async afterExecution(): Promise<void> {
     if (this.graph === undefined) {
       return;
     }
@@ -56,7 +56,7 @@ export class LocalRuntime implements Runtime {
     }
   }
 
-  async launchDockerServices(): Promise<void> {
+  public async launchDockerServices(): Promise<void> {
     let services: { [name: string]: Service } = {};
     for (const taskName of this.graph!.taskNames) {
       const task = this.graph!.getTask(taskName)!;
@@ -100,7 +100,7 @@ export class LocalRuntime implements Runtime {
     }
   }
 
-  async removeDockerServices(): Promise<void> {
+  public async removeDockerServices(): Promise<void> {
     if (this.containerNames.length == 0) {
       return;
     }

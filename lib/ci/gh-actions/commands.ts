@@ -46,7 +46,7 @@ class Command {
     this.message = message;
   }
 
-  toString(): string {
+  public toString(): string {
     let cmdStr = CMD_STRING + this.command;
 
     if (this.properties && Object.keys(this.properties).length > 0) {

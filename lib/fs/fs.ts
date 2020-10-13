@@ -11,7 +11,7 @@ export class File {
    * Appends content to the file.
    * @param data content to append to the file.
    */
-  async append(data: Uint8Array | string): Promise<void> {
+  public async append(data: Uint8Array | string): Promise<void> {
     await Deno.writeFile(this._path, data instanceof Uint8Array ? data : new TextEncoder().encode(data), {
       append: true,
     });
@@ -21,7 +21,7 @@ export class File {
    * Replaces the contents of the file with new contents.
    * @param data the new contents of the file.
    */
-  async override(data: Uint8Array | string): Promise<void> {
+  public async override(data: Uint8Array | string): Promise<void> {
     await Deno.writeFile(this._path, data instanceof Uint8Array ? data : new TextEncoder().encode(data), {
       append: false,
     });
@@ -30,14 +30,14 @@ export class File {
   /**
    * Gets the contents of the file.
    */
-  async getContents(): Promise<Uint8Array> {
+  public async getContents(): Promise<Uint8Array> {
     return await Deno.readFile(this._path);
   }
 
   /**
    * Gets the contents of the file as a string.
    */
-  async getContentsString(): Promise<string> {
+  public async getContentsString(): Promise<string> {
     const contents = await this.getContents();
     return new TextDecoder().decode(contents);
   }
@@ -45,21 +45,21 @@ export class File {
   /**
    * Deletes the file.
    */
-  async delete(): Promise<void> {
+  public async delete(): Promise<void> {
     await Deno.remove(this._path);
   }
 
   /**
    * Gets the path of the file.
    */
-  get path(): string {
+  public get path(): string {
     return this._path;
   }
 
   /**
    * Gets the name of the file.
    */
-  get name(): string {
+  public get name(): string {
     return this._name;
   }
 }
@@ -74,7 +74,7 @@ export class Folder {
   /**
    * Lists all the files in the current folder.
    */
-  async listFiles(): Promise<File[]> {
+  public async listFiles(): Promise<File[]> {
     var files: File[] = [];
     for await (const entry of stdFs.walk(this._path, {
       maxDepth: 1,
@@ -92,7 +92,7 @@ export class Folder {
   /**
    * Lists all the folders in the current folder.
    */
-  async listFolders(): Promise<Folder[]> {
+  public async listFolders(): Promise<Folder[]> {
     var folders: Folder[] = [];
     for await (const entry of stdFs.walk(this._path, {
       maxDepth: 1,
@@ -111,7 +111,7 @@ export class Folder {
    * Walk the file tree starting the current folder.
    * @param options walk options
    */
-  walk(options: stdFs.WalkOptions): AsyncIterableIterator<stdFs.WalkEntry> {
+  public walk(options: stdFs.WalkOptions): AsyncIterableIterator<stdFs.WalkEntry> {
     return stdFs.walk(this._path, options);
   }
 
@@ -119,7 +119,7 @@ export class Folder {
    * Return a folder from within the current folder.
    * @param path the path to the folder.
    */
-  async getFolder(path: string | string[]): Promise<Folder | undefined> {
+  public async getFolder(path: string | string[]): Promise<Folder | undefined> {
     const folderPath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
     if (!(await stdFs.exists(folderPath))) {
       return undefined;
@@ -132,7 +132,7 @@ export class Folder {
    * Returns a file from within the current folder.
    * @param path the path to the file.
    */
-  async getFile(path: string | string[]): Promise<File | undefined> {
+  public async getFile(path: string | string[]): Promise<File | undefined> {
     const filePath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
     if (!(await stdFs.exists(filePath))) {
       return undefined;
@@ -145,7 +145,7 @@ export class Folder {
    * Creates a new folder from within the current folder.
    * @param path the path to the folder.
    */
-  async createFolder(path: string | string[]): Promise<boolean> {
+  public async createFolder(path: string | string[]): Promise<boolean> {
     const folderPath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
     if (await stdFs.exists(folderPath)) {
       return false;
@@ -160,7 +160,7 @@ export class Folder {
    * @param path the path to the file.
    * @param data optional contents for the new file.
    */
-  async createFile(path: string | string[], data: Uint8Array | string | undefined): Promise<File | undefined> {
+  public async createFile(path: string | string[], data: Uint8Array | string | undefined): Promise<File | undefined> {
     const filePath = stdPath.join(this._path, path instanceof Array ? stdPath.join(...path) : path);
     if (await stdFs.exists(filePath)) {
       return undefined;
@@ -177,14 +177,14 @@ export class Folder {
   /**
    * Gets the path of the folder.
    */
-  get path(): string {
+  public get path(): string {
     return this._path;
   }
 
   /**
    * Gets the name of the folder.
    */
-  get name(): string {
+  public get name(): string {
     return this._name;
   }
 }

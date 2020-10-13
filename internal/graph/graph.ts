@@ -33,7 +33,7 @@ export class Graph {
    * Gets an instance of a task by its name.
    * @param name the name of the task
    */
-  getTask(name: string): Task | undefined {
+  public getTask(name: string): Task | undefined {
     return this._tasks[name];
   }
 
@@ -41,7 +41,7 @@ export class Graph {
    * Creates a graph that would run given tasks in a serial order.
    * @param taskNames the names of the tasks
    */
-  createSerialGraphFrom(taskNames: string[]): Graph {
+  public createSerialGraphFrom(taskNames: string[]): Graph {
     if (taskNames.length == 0) {
       return new Graph({}, []);
     }
@@ -82,7 +82,7 @@ export class Graph {
    * Creates a graph that would run given tasks in parallel.
    * @param taskNames the names of the tasks
    */
-  createParallelGraphFrom(taskNames: string[]): Graph {
+  public createParallelGraphFrom(taskNames: string[]): Graph {
     if (taskNames.length == 0) {
       return new Graph({}, []);
     }
@@ -115,14 +115,14 @@ export class Graph {
   /**
    * Creates a graph that would run all tasks of current graph in serial order.
    */
-  createSerialGraph(): Graph {
+  public createSerialGraph(): Graph {
     return this.createSerialGraphFrom(this.getAllTasksInOrder());
   }
 
   /**
    * Creates a graph that would run all tasks of current graph in parallel.
    */
-  createParallelGraph(): Graph {
+  public createParallelGraph(): Graph {
     return this.createParallelGraphFrom(this.getAllTasksInOrder());
   }
 
@@ -131,7 +131,7 @@ export class Graph {
    * The tasks in each level depend on the tasks in the level above.
    * The tasks in the first level (level = 0) are the tasks without dependencies and are the first to run in the graph, while the tasks in the last level are the last to run in the graph.
    */
-  getTasksByLevel(): { [level: number]: Task[] } {
+  public getTasksByLevel(): { [level: number]: Task[] } {
     let map: { [level: number]: Task[] } = {};
 
     breadthFirstWithDepth(
@@ -155,21 +155,21 @@ export class Graph {
   /**
    * Gets the tasks with no dependencies, and the first to run in the graph.
    */
-  get startTasks() {
+  public get startTasks() {
     return this._startTasks;
   }
 
   /**
    * Gets the tasks with no dependents.
    */
-  get targetTasks() {
+  public get targetTasks() {
     return this._endTasks;
   }
 
   /**
    * Gets an array of the names of all the tasks in the graph.
    */
-  get taskNames() {
+  public get taskNames() {
     return this._names;
   }
 

@@ -37,7 +37,7 @@ export class DockerClient {
    * Builds a docker image from a given Dockerfile.
    * @param args docker build arguments
    */
-  async build(args: DockerClientBuildArgs): Promise<void> {
+  public async build(args: DockerClientBuildArgs): Promise<void> {
     let runArgs = ["build"];
     if (args.dockerFile) {
       runArgs.push("-f", args.dockerFile);
@@ -62,7 +62,7 @@ export class DockerClient {
    * Pushes a given docker image to a given registry.
    * @param args docker push arguments
    */
-  async push(args: DockerClientPushArgs): Promise<void> {
+  public async push(args: DockerClientPushArgs): Promise<void> {
     if (args.credentials !== undefined) {
       let cmd = ["login", "-u", args.credentials.username, "-p", args.credentials.password];
       if (args.credentials.registry !== undefined) {
@@ -80,7 +80,7 @@ export class DockerClient {
    * Runs a docker sub command.
    * @param args sub command arguments
    */
-  async subcmd(args: DockerClientSubCommandArgs): Promise<string> {
+  public async subcmd(args: DockerClientSubCommandArgs): Promise<string> {
     let [_, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }
@@ -141,7 +141,7 @@ class Docker {
    * Declares a dependency on a docker service. (the dependant task should be able to access that service)
    * @param args service dependency arguments
    */
-  service(args: DockerServiceArgs): Extension {
+  public service(args: DockerServiceArgs): Extension {
     return {
       name: "docker-service",
       key: `dokcer-service_${args.name}`,
@@ -171,7 +171,7 @@ class Docker {
    * Declares a dependency on a container image. (the dependant task should run within that container)
    * @param args container dependency arguments
    */
-  container(args: DockerContainerArgs): Extension {
+  public container(args: DockerContainerArgs): Extension {
     return {
       name: "docker-container",
       key: `docker-container_${args.image}`,
@@ -188,7 +188,7 @@ class Docker {
   /**
    * Gets the docker client
    */
-  get client(): DockerClient {
+  public get client(): DockerClient {
     if (!this._client) {
       this._client = new DockerClient();
     }

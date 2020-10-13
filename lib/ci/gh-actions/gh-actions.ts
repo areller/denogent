@@ -19,7 +19,7 @@ export type GHAUses = {
 export type GHAUsesCollection = { [name: string]: GHAUses };
 
 class GitHubActionsRuntime implements Runtime {
-  get loggerFn(): LoggerFn {
+  public get loggerFn(): LoggerFn {
     return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
       if (meta !== undefined) {
         const attrs = meta as { type: string };
@@ -63,15 +63,15 @@ export class GitHubActions implements CIIntegration {
     private onPushTags?: string[],
   ) {}
 
-  get type(): string {
+  public get type(): string {
     return "gh-actions";
   }
 
-  async createRuntime(args: CreateRuntimeArgs): Promise<Runtime> {
+  public async createRuntime(args: CreateRuntimeArgs): Promise<Runtime> {
     return new GitHubActionsRuntime();
   }
 
-  async clean(args: CleanArgs): Promise<void> {
+  public async clean(args: CleanArgs): Promise<void> {
     const workflowsPath =
       args.path === undefined ? stdPath.join(".github", "workflows") : stdPath.join(args.path, ".github", "workflows");
 
@@ -86,7 +86,7 @@ export class GitHubActions implements CIIntegration {
     args.logger.debug(`cleaned directory '${workflowsPath}'.`);
   }
 
-  async generate(args: GenerateArgs): Promise<void> {
+  public async generate(args: GenerateArgs): Promise<void> {
     const workflowsPath =
       args.path === undefined ? stdPath.join(".github", "workflows") : stdPath.join(args.path, ".github", "workflows");
     if (await stdFs.exists(workflowsPath)) {

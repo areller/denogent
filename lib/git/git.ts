@@ -27,7 +27,7 @@ class Git {
    * Returns whether a directory contains a git repository or not.
    * @param args command arguments
    */
-  async isGitRepository(args: GitCommandArgs): Promise<boolean> {
+  public async isGitRepository(args: GitCommandArgs): Promise<boolean> {
     let [success, _] = await this.runGit(args, ["status"], false);
     return success;
   }
@@ -36,7 +36,7 @@ class Git {
    * Returns whether the HEAD of the repository is tagged or not.
    * @param args command arguments
    */
-  async isTagged(args: GitCommandArgs): Promise<boolean> {
+  public async isTagged(args: GitCommandArgs): Promise<boolean> {
     let [success, _] = await this.runGit(args, ["describe", "--exact-match", "--tags", "HEAD"], false);
     return success;
   }
@@ -45,7 +45,7 @@ class Git {
    * Returns the HEAD commit.
    * @param args command arguments
    */
-  async getHeadCommit(args: GitCommandArgs): Promise<string> {
+  public async getHeadCommit(args: GitCommandArgs): Promise<string> {
     let [_, output] = await this.runGit(args, ["rev-parse", "HEAD"]);
     return output.trim();
   }
@@ -54,7 +54,7 @@ class Git {
    * Returns the name of the current branch.
    * @param args command arguments
    */
-  async getBranch(args: GitCommandArgs): Promise<string> {
+  public async getBranch(args: GitCommandArgs): Promise<string> {
     let [_, output] = await this.runGit(args, ["rev-parse", "--abbrev-ref", "HEAD"]);
     return output.trim();
   }
@@ -63,7 +63,7 @@ class Git {
    * If the current commit is tagged, returns the name of the tag. Otherwise, returns `{closest tag}-{distance from that tag}`, or undefined if there is not tag in current tree.
    * @param args command arguments
    */
-  async describe(args: GitCommandArgs): Promise<string | undefined> {
+  public async describe(args: GitCommandArgs): Promise<string | undefined> {
     let [success, output] = await this.runGit(args, ["describe", "--tags"], false);
     if (!success) {
       return undefined;
@@ -76,7 +76,7 @@ class Git {
    * Runs a git sub command.
    * @param args sub command arguments
    */
-  async subcmd(args: GitSubCommandArgs): Promise<string> {
+  public async subcmd(args: GitSubCommandArgs): Promise<string> {
     let [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }

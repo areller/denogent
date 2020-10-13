@@ -15,7 +15,7 @@ class Runtime {
    * Runs a command and returns status and output.
    * @param args command arguments
    */
-  async command(args: CommandArgs): Promise<[boolean, string]> {
+  public async command(args: CommandArgs): Promise<[boolean, string]> {
     const res = (await runCommandInternal(
       args.cmd instanceof Array ? args.cmd : args.cmd.split(" "),
       (line) => {
@@ -34,7 +34,7 @@ class Runtime {
    * Gets the values of an argument.
    * @param name the name of the argument
    */
-  argValues(name: string): string[] {
+  public argValues(name: string): string[] {
     const envValues = this.envArgValues(name);
     if (envValues.length > 0) {
       return envValues;
@@ -48,7 +48,7 @@ class Runtime {
    * Gets the value of an argument or throws an error.
    * @param name the name of the argument
    */
-  argValue(name: string): string {
+  public argValue(name: string): string {
     const value = this.argValueOrDefault(name);
     if (value === undefined) {
       throw new Error(`Expected argument '${name}' to have a value.`);
@@ -61,7 +61,7 @@ class Runtime {
    * Gets the value of an argument.
    * @param name the name of the argument
    */
-  argValueOrDefault(name: string): string | undefined {
+  public argValueOrDefault(name: string): string | undefined {
     const values = this.argValues(name);
     if (values.length == 0) {
       return undefined;
@@ -74,7 +74,7 @@ class Runtime {
    * Declares a dependency on an environment secret.
    * @param name the name of the secret
    */
-  secret(name: string): Extension {
+  public secret(name: string): Extension {
     return {
       name: "secret",
       key: `secret_${name}`,

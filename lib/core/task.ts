@@ -31,7 +31,7 @@ export class Task {
    * Defines a dependency or an array of dependencies, that the current task depends on.
    * @param dependencies a single dependency or an array or dependencies. (a dependency can either be another task or an extension)
    */
-  dependsOn(dependencies: Task | Task[] | Extension | Extension[]): Task {
+  public dependsOn(dependencies: Task | Task[] | Extension | Extension[]): Task {
     if (dependencies instanceof Array) {
       for (const dependency of dependencies) {
         this.dependsOn(dependency);
@@ -55,7 +55,7 @@ export class Task {
    * Defines a task or an array of task, that would be triggered by the current task's completion.
    * @param tasks a single task or an array of tasks
    */
-  triggers(tasks: Task | Task[]): Task {
+  public triggers(tasks: Task | Task[]): Task {
     if (tasks instanceof Array) {
       for (let task of tasks) {
         task._dependencies.push(this);
@@ -73,7 +73,7 @@ export class Task {
    * Defines a condition for the current task to run.
    * @param cond a condition for the current task to run
    */
-  when(cond: CondFn): Task {
+  public when(cond: CondFn): Task {
     this._conditions.push(cond);
     return this;
   }
@@ -82,7 +82,7 @@ export class Task {
    * Defines the function that the current task would executes.
    * @param exec the function that the current task executes
    */
-  does(exec: ExecFn): Task {
+  public does(exec: ExecFn): Task {
     this._exec = exec;
     return this;
   }
@@ -92,7 +92,7 @@ export class Task {
    * @param name the name of the tag
    * @param value the value of the tag
    */
-  tag(name: string, value: string | string[]): Task {
+  public tag(name: string, value: string | string[]): Task {
     if (!this._tags[name]) {
       this._tags[name] = value instanceof Array ? value : [value];
     } else {
@@ -110,7 +110,7 @@ export class Task {
    * @param name the name of the property
    * @param value the value of the property
    */
-  property(name: string, value: unknown): Task {
+  public property(name: string, value: unknown): Task {
     this._properties[name] = value;
     return this;
   }
@@ -119,7 +119,7 @@ export class Task {
    * Sets whether or not the task should propagate its exception upon failure.
    * @param breakCircuit if true, the task won't propagate its exception in case of a failure. (default = true)
    */
-  breakCircuit(breakCircuit?: boolean): Task {
+  public breakCircuit(breakCircuit?: boolean): Task {
     this._propagateExceptions = !(breakCircuit ?? true);
     return this;
   }
@@ -127,63 +127,63 @@ export class Task {
   /**
    * Gets an array of tasks that the current task depends on.
    */
-  get dependencies(): Task[] {
+  public get dependencies(): Task[] {
     return this._dependencies;
   }
 
   /**
    * Gets an array of tasks that depend on the current task.
    */
-  get dependents(): Task[] {
+  public get dependents(): Task[] {
     return this._dependents;
   }
 
   /**
    * Gets an array of conditions that have to met before the current task is able to run.
    */
-  get conditions(): CondFn[] {
+  public get conditions(): CondFn[] {
     return this._conditions;
   }
 
   /**
    * Gets the function that the current task executes.
    */
-  get exec(): ExecFn | undefined {
+  public get exec(): ExecFn | undefined {
     return this._exec;
   }
 
   /**
    * Gets whether or not the task should propagate its own exception upon failure.
    */
-  get propagateExceptions(): boolean {
+  public get propagateExceptions(): boolean {
     return this._propagateExceptions;
   }
 
   /**
    * Gets the name of the current task.
    */
-  get name(): string {
+  public get name(): string {
     return this._name;
   }
 
   /**
    * Gets the tags of the current task.
    */
-  get tags(): { [name: string]: string[] } {
+  public get tags(): { [name: string]: string[] } {
     return this._tags;
   }
 
   /**
    * Gets the properties of the current task.
    */
-  get properties(): { [name: string]: unknown } {
+  public get properties(): { [name: string]: unknown } {
     return this._properties;
   }
 
   /**
    * Gets an array of extensions that the current task depends on.
    */
-  get extensions(): Extension[] {
+  public get extensions(): Extension[] {
     return Object.values(this._extensions);
   }
 }

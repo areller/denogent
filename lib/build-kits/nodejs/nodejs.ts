@@ -10,7 +10,7 @@ class NodeJS {
    * Declares a dependency on NodeJS
    * @param version NodeJS version
    */
-  setup(version?: NodeJSVersion): Extension {
+  public setup(version?: NodeJSVersion): Extension {
     const dockerTag = !version || version == "latest" ? "alpine" : version + "-alpine";
     return {
       name: "build-kits-nodejs",
