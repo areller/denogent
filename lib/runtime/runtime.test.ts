@@ -3,12 +3,13 @@ import { describe } from "../../internal/testing/test.ts";
 import runtime from "./runtime.ts";
 import { task } from "../core/task.ts";
 import { assertEquals, fail } from "../../tests_deps.ts";
-import { stdPath } from "../../deps.ts";
+import { stdFs, stdPath } from "../../deps.ts";
+import { getCurrentImportPath, isUnix, isWindows } from "../../internal/helpers/env.ts";
 
-const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), "testassets").substr("file:".length);
+const assetsPath = stdPath.join(getCurrentImportPath(import.meta.url), "testassets");
 
 describe("runtime.test.ts", (t) => {
-  t.test("command should run a command", async () => {
+  t.test("command should run a command (unix)", async () => {
     await emptyTempDir(async (temp) => {
       await runtime.command({ path: temp, cmd: ["touch", "a"], logger: false });
       await runtime.command({ path: temp, cmd: ["touch", "b"], logger: false });
@@ -24,7 +25,17 @@ describe("runtime.test.ts", (t) => {
       assertEquals(lines, ["a", "b"]);
       assertEquals(output, "a\nb\n");
     });
-  });
+  }, () => isUnix());
+
+  t.test('command should run a command (windows)', async () => {
+    await emptyTempDir(async (temp) => {
+      await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "a", "1000"], logger: false });
+      await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "b", "1000"], logger: false });
+
+      assertEquals(await stdFs.exists(stdPath.join(temp, "a")), true);
+      assertEquals(await stdFs.exists(stdPath.join(temp, "b")), true);
+    });
+  }, () => isWindows());
 
   [false, true, undefined].forEach((throws) => {
     t.test(

@@ -11,10 +11,26 @@ class TestCollection {
     _fn(this);
   }
 
-  public test(name: string, fn: () => void | Promise<void>): void {
+  public test(name: string, fn: () => void | Promise<void>, cond?: () => boolean | Promise<boolean>): void {
     Deno.test({
       name: `${this._title} ${name}`,
-      fn: fn,
+      fn: async () => {
+        let condRes = true;
+        if (cond !== undefined) {
+          const condPromise = cond();
+          condRes = condPromise instanceof Promise ? (await condPromise) : condPromise;
+        }
+
+        if (condRes) {
+          const fnPromise = fn();
+          if (fnPromise instanceof Promise) {
+            await fnPromise;
+          }
+        }
+        else {
+          console.log(`Skipping test due to failed condition '${cond}'`);
+        }
+      },
       sanitizeResources: false,
       sanitizeOps: false,
     });
