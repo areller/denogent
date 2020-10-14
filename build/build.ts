@@ -51,7 +51,7 @@ createBuilder({
   targetTasks: [checkFormat, test],
   ciIntegrations: [
     createGitHubActions({
-      image: "ubuntu-latest",
+      image: "windows-latest",
       onPRBranches: ["master"],
     }),
   ],
