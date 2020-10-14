@@ -7,10 +7,11 @@ const nodejsSetup = nodejs.setup("latest");
 const npmInstall = task("npm install")
   .dependsOn(nodejsSetup)
   .does(async (ctx) => {
+    /*
     await runtime.command({
       cmd: ["npm.cmd", "install"],
       logger: ctx?.logger,
-    });
+    });*/
   });
 
 const checkFormat = task("check format")
@@ -18,10 +19,11 @@ const checkFormat = task("check format")
   .dependsOn(npmInstall)
   .when((ctx) => ctx?.ci !== undefined)
   .does(async (ctx) => {
+    /*
     await runtime.command({
       cmd: ["npm", "run", "check-format"],
       logger: ctx?.logger,
-    });
+    });*/
   });
 
 const unitTests = task("unit tests").does(async (ctx) => {
