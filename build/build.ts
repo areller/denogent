@@ -19,10 +19,6 @@ const checkFormat = task("check format")
   .when((ctx) => ctx?.ci !== undefined)
   .does(async (ctx) => {
     await runtime.command({
-      cmd: ["npm", "run", "format"],
-      logger: ctx?.logger,
-    });
-    await runtime.command({
       cmd: ["npm", "run", "check-format"],
       logger: ctx?.logger,
     });
@@ -55,7 +51,7 @@ createBuilder({
   targetTasks: [checkFormat, test],
   ciIntegrations: [
     createGitHubActions({
-      image: "windows-latest",
+      image: "ubuntu-latest",
       onPRBranches: ["master"],
     }),
   ],
