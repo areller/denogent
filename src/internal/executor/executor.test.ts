@@ -32,7 +32,7 @@ describe("executor.test.ts", (t) => {
     const log: string[] = [];
 
     const graph = createGraph([
-      task("taskA").does((_) => {
+      task("taskA").does(() => {
         log.push("taskA");
       }),
     ]);
@@ -128,7 +128,7 @@ describe("executor.test.ts", (t) => {
   t.test("single task (failed condition)", async () => {
     const graph = createGraph([
       task("taskA")
-        .when((_) => false)
+        .when(() => false)
         .does((ctx) => {
           ctx?.logger.debug("hello");
         }),
@@ -158,10 +158,7 @@ describe("executor.test.ts", (t) => {
         },
       },
     });
-    assertEquals(
-      (res.tasks["taskA"].lastEvent as TaskFailedConditionEvent).condition.replaceAll(" ", ""),
-      "(_)=>false",
-    );
+    assertEquals((res.tasks["taskA"].lastEvent as TaskFailedConditionEvent).condition.replaceAll(" ", ""), "()=>false");
 
     assertEquals(eventLog, [
       {
@@ -175,7 +172,7 @@ describe("executor.test.ts", (t) => {
         condition: (eventLog[1] as TaskFailedConditionEvent).condition,
       },
     ]);
-    assertEquals((eventLog[1] as TaskFailedConditionEvent).condition.replaceAll(" ", ""), "(_)=>false");
+    assertEquals((eventLog[1] as TaskFailedConditionEvent).condition.replaceAll(" ", ""), "()=>false");
   });
 
   [false, true].forEach((propagateExceptions) => {
@@ -263,7 +260,7 @@ describe("executor.test.ts", (t) => {
         const graph = createGraph([
           task("taskA")
             .breakCircuit(!propagateExceptions)
-            .does((ctx) => {
+            .does(() => {
               log.push("taskA");
               throw new Error("failure.");
             }),
@@ -276,12 +273,12 @@ describe("executor.test.ts", (t) => {
 
         execution.afterTask(async (task, error) => {
           assertNotEquals(error, undefined);
-          log.push("post: " + task.name + " " + error!.message);
+          log.push("post: " + task.name + " " + error?.message ?? "");
         });
 
         try {
           await execution.execute();
-          // deno-lint-ignore no-empty
+          // eslint-disable-next-line no-empty
         } catch (err) {}
 
         assertEquals(log, ["pre: taskA", "taskA", "post: taskA failure."]);
@@ -450,7 +447,7 @@ function createContext(task: Task, eventSink: EventSink): TaskContext {
       (level, message, task, meta) =>
         eventSink({
           type: "log",
-          task: task!,
+          task: task ?? "",
           level,
           meta,
           message: message instanceof Error ? message.message : message,

@@ -18,7 +18,7 @@ export interface CreateBuilderArgs {
   ciIntegrations?: CIIntegration[];
 }
 
-export function createBuilder(args: CreateBuilderArgs) {
+export function createBuilder(args: CreateBuilderArgs): void {
   createCLI({
     name: args.name,
     targetTasks: args.targetTasks instanceof Array ? args.targetTasks : [args.targetTasks],

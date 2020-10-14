@@ -21,10 +21,10 @@ describe("fs.test.ts", (t) => {
       const folder1 = await rootFolder.getFolder("folder1");
       assertNotEquals(folder1, undefined);
 
-      const file1 = await folder1!.getFile("file1");
+      const file1 = await folder1?.getFile("file1");
 
       assertNotEquals(file1, undefined);
-      assertEquals(await file1!.getContentsString(), "contents1");
+      assertEquals(await file1?.getContentsString(), "contents1");
     });
   });
 

@@ -1,10 +1,12 @@
 import { Colors } from "../../deps.ts";
 import type { LogLevel } from "../lib/core/logger.ts";
 
-export function simpleLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown) {
+export function simpleLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown): void {
   const prefix = task !== undefined ? `[${task}] ` : "";
-  // deno-lint-ignore no-explicit-any
-  const suffix = meta !== undefined ? " {" + Object.entries(meta as any).map((x) => ` ${x[0]} = ${x[1]}`) + " }" : "";
+  const suffix =
+    meta !== undefined
+      ? " {" + Object.entries(meta as { [key: string]: unknown }).map((x) => ` ${x[0]} = ${x[1]}`) + " }"
+      : "";
 
   switch (level) {
     case "debug":
@@ -33,11 +35,10 @@ function createJSON(level: LogLevel, message: string | Error, task?: string, met
       stack: typeof message == "string" ? undefined : message.stack,
     },
     task,
-    // deno-lint-ignore no-explicit-any
-    ...((meta || {}) as any),
+    ...((meta || {}) as { [key: string]: unknown }),
   };
 }
 
-export function jsonStreamLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown) {
+export function jsonStreamLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown): void {
   console.log(JSON.stringify(createJSON(level, message, task, meta)));
 }

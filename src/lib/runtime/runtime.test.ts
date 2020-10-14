@@ -34,7 +34,7 @@ describe("runtime.test.ts", (t) => {
       async () => {
         await copyDirToTemp(assetsPath, async (temp) => {
           try {
-            const [status, _] = await runtime.command({
+            const [status] = await runtime.command({
               path: temp,
               cmd: ["deno", "run", "--no-check", "-A", "fail.ts"],
               logger: false,

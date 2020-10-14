@@ -9,7 +9,7 @@ const denogent = ["deno", "run", "-A", "--no-check", "--unstable", stdPath.join(
 describeE2E("generate.test.ts", (t) => {
   t.test(`'denogent generate' should generate workflow for GitHub Actions`, async () => {
     await createBuildInTempDir(async (temp) => {
-      const [success, _] = await runCommand(
+      const [success] = await runCommand(
         [...denogent, "generate", "--ci", "gh-actions", "--file", "build.ts"],
         undefined,
         temp,

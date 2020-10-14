@@ -15,7 +15,7 @@ export function getTasksCommand(): {
       }
 
       for (const taskName of context.graph.taskNames) {
-        const task = context.graph.getTask(taskName)!;
+        const task = context.graph.getExistingTask(taskName);
         context.runtime.loggerFn("info", taskName, undefined, { task });
       }
     },

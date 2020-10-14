@@ -28,7 +28,7 @@ class Git {
    * @param args command arguments
    */
   public async isGitRepository(args: GitCommandArgs): Promise<boolean> {
-    const [success, _] = await this.runGit(args, ["status"], false);
+    const [success] = await this.runGit(args, ["status"], false);
     return success;
   }
 
@@ -37,7 +37,7 @@ class Git {
    * @param args command arguments
    */
   public async isTagged(args: GitCommandArgs): Promise<boolean> {
-    const [success, _] = await this.runGit(args, ["describe", "--exact-match", "--tags", "HEAD"], false);
+    const [success] = await this.runGit(args, ["describe", "--exact-match", "--tags", "HEAD"], false);
     return success;
   }
 
@@ -46,7 +46,7 @@ class Git {
    * @param args command arguments
    */
   public async getHeadCommit(args: GitCommandArgs): Promise<string> {
-    const [_, output] = await this.runGit(args, ["rev-parse", "HEAD"]);
+    const [, output] = await this.runGit(args, ["rev-parse", "HEAD"]);
     return output.trim();
   }
 
@@ -55,7 +55,7 @@ class Git {
    * @param args command arguments
    */
   public async getBranch(args: GitCommandArgs): Promise<string> {
-    const [_, output] = await this.runGit(args, ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const [, output] = await this.runGit(args, ["rev-parse", "--abbrev-ref", "HEAD"]);
     return output.trim();
   }
 
@@ -77,7 +77,7 @@ class Git {
    * @param args sub command arguments
    */
   public async subcmd(args: GitSubCommandArgs): Promise<string> {
-    const [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
+    const [, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }
 

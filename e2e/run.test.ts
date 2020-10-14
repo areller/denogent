@@ -16,7 +16,7 @@ describeE2E("run.test.ts", (t) => {
           ? denogent
           : ["deno", "run", "-A", "--no-check", "--unstable", stdPath.join("build", "build.ts")];
         0;
-        const [success, _] = await runCommand([...baseCmd, "run"], undefined, temp, false);
+        const [success] = await runCommand([...baseCmd, "run"], undefined, temp, false);
         assertEquals(success, true);
       });
     });
@@ -25,7 +25,7 @@ describeE2E("run.test.ts", (t) => {
   t.test(`'denogent run' should run prepared build file (no json)`, async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: string[] = [];
-      const [success, _] = await runCommand(
+      const [success] = await runCommand(
         [...denogent, "run", "--file", "build.ts"],
         (line) => {
           assertEquals(isJson(line), false);
@@ -43,7 +43,7 @@ describeE2E("run.test.ts", (t) => {
   t.test(`'denogent run' should run prepared build file (json)`, async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: { log: { level: string; message: string }; task: string; type: string }[] = [];
-      const [success, _] = await runCommand(
+      const [success] = await runCommand(
         [...denogent, "run", "--file", "build.ts", "--json"],
         (line) => {
           assertEquals(isJson(line), true);

@@ -57,9 +57,13 @@ export class LocalRuntime implements Runtime {
   }
 
   public async launchDockerServices(): Promise<void> {
+    if (this.graph === undefined) {
+      throw new Error("Expected a graph");
+    }
+
     const services: { [name: string]: Service } = {};
-    for (const taskName of this.graph!.taskNames) {
-      const task = this.graph!.getTask(taskName)!;
+    for (const taskName of this.graph.taskNames) {
+      const task = this.graph.getExistingTask(taskName);
       const dockerServices = task.properties["docker-services"] as { [name: string]: Service } | undefined;
 
       if (dockerServices !== undefined) {

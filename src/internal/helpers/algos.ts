@@ -4,12 +4,12 @@
  * @param neighborsFn a function that defines how neighbor vertices are retrieved from a given vertex
  * @param fn the function that gets executed for every vertex of the graph
  */
-// deno-lint-ignore ban-types
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function breadthFirst<TVertex extends object>(
   roots: TVertex[],
   neighborsFn: (vertex: TVertex) => TVertex[],
   fn: (vertex: TVertex) => void,
-) {
+): void {
   const visited = new WeakSet();
   const queue: TVertex[] = [...roots];
 
@@ -50,13 +50,13 @@ export function breadthFirst<TVertex extends object>(
  * @param parentsFn a function that defines how parent vertices are retrieved from a given vertex (a child is one level deeper than a parent)
  * @param fn the function that gets executed for every vertex of the graph
  */
-// deno-lint-ignore ban-types
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function breadthFirstWithDepth<TVertex extends object>(
   roots: TVertex[],
   childrenFn: (vertex: TVertex) => TVertex[],
   parentsFn: (vertex: TVertex) => TVertex[],
   fn: (vertex: TVertex, depth: number) => void,
-) {
+): void {
   const visited = new WeakSet();
   const refs = new WeakMap();
   const queue: [TVertex, number][] = [...roots.map((r) => [r, 0] as [TVertex, number])];

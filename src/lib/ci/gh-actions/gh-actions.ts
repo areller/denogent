@@ -25,7 +25,7 @@ class GitHubActionsRuntime implements Runtime {
   public get loggerFn(): LoggerFn {
     return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
       // do not log for tasks that don't perform anything
-      if (task !== undefined && this.graph.getTask(task)!.exec === undefined) {
+      if (task !== undefined && this.graph.getTask(task)?.exec === undefined) {
         return;
       }
 
@@ -108,7 +108,7 @@ export class GitHubActions implements CIIntegration {
 
     const workflow = {
       name: args.name,
-      on: this.buildTriggers(args),
+      on: this.buildTriggers(),
       jobs: {
         [this.image]: {
           name: this.image,
@@ -156,7 +156,7 @@ export class GitHubActions implements CIIntegration {
     let uses: GHAUsesCollection = {};
 
     for (const taskName of args.graph.taskNames) {
-      const task = args.graph.getTask(taskName)!;
+      const task = args.graph.getExistingTask(taskName);
       const ghaUses = task.properties["gh-actions-uses"] as GHAUsesCollection;
 
       if (ghaUses !== undefined) {
@@ -167,7 +167,7 @@ export class GitHubActions implements CIIntegration {
     return Object.values(uses);
   }
 
-  private buildTriggers(args: GenerateArgs): Triggers {
+  private buildTriggers(): Triggers {
     const triggers: Triggers = {};
 
     const onPushBranches = this.onPushBranches ?? ["master"];
@@ -201,7 +201,7 @@ export class GitHubActions implements CIIntegration {
   private buildServices(args: GenerateArgs, runEnv: { [name: string]: string }) {
     const services: { [name: string]: GHAService } = {};
     for (const taskName of args.graph.taskNames) {
-      const task = args.graph.getTask(taskName)!;
+      const task = args.graph.getExistingTask(taskName);
       const dockerServices = task.properties["docker-services"] as { [name: string]: Service } | undefined;
 
       if (dockerServices !== undefined) {
@@ -229,7 +229,7 @@ export class GitHubActions implements CIIntegration {
 
     const allSecrets = [];
     for (const taskName of args.graph.taskNames) {
-      const task = args.graph.getTask(taskName)!;
+      const task = args.graph.getExistingTask(taskName);
       const secrets = task.properties["secrets"] as string[];
 
       if (secrets !== undefined) {
@@ -246,14 +246,13 @@ export class GitHubActions implements CIIntegration {
     return env;
   }
 
-  // deno-lint-ignore no-explicit-any
-  private createYaml(obj: any): string {
+  private createYaml(obj: unknown): string {
     const sanitized = this.sanitizeEmptyFields(obj);
     return stringifyYaml(sanitized);
   }
 
-  // deno-lint-ignore no-explicit-any
-  private sanitizeEmptyFields(obj: any): any {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private sanitizeEmptyFields(obj: unknown): any {
     if (obj instanceof Array) {
       if (obj.length == 0) {
         return undefined;
@@ -265,8 +264,7 @@ export class GitHubActions implements CIIntegration {
         return undefined;
       }
 
-      // deno-lint-ignore no-explicit-any
-      const newObj: any = {};
+      const newObj: { [key: string]: unknown } = {};
       for (const entry of Object.entries(obj)) {
         const value = this.sanitizeEmptyFields(entry[1]);
         if (value !== undefined) {
@@ -304,6 +302,6 @@ export interface CreateGitHubActionsArgs {
  * Creates a GitHub Actions CI integration.
  * @param args arguments for GitHub Actions
  */
-export function createGitHubActions(args: CreateGitHubActionsArgs) {
+export function createGitHubActions(args: CreateGitHubActionsArgs): GitHubActions {
   return new GitHubActions(args.image, undefined, args.onPushBranches, args.onPRBranches, args.onPushTags);
 }

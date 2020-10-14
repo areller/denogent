@@ -4,6 +4,7 @@
         "es2021": true
     },
     "extends": [
+        "prettier",
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended"
@@ -14,8 +15,10 @@
         "sourceType": "module"
     },
     "plugins": [
+        "prettier",
         "@typescript-eslint"
     ],
     "rules": {
+        "prettier/prettier": ["error"]
     }
 }

@@ -8,7 +8,7 @@ export async function readLines(
   readers: (Deno.Reader & Deno.Closer)[],
   closeAfterUse: boolean,
   fn: (token: string) => void,
-) {
+): Promise<void> {
   readers = [...readers];
   let lineBuffer = "";
 

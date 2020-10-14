@@ -38,6 +38,18 @@ export class Graph {
   }
 
   /**
+   * Gets an instance of a task by its name of throws an error.
+   * @param name the name of the task
+   */
+  public getExistingTask(name: string): Task {
+    const task = this._tasks[name];
+    if (!task) {
+      throw new Error(`tasks '${name}' is not defined.`);
+    }
+    return task;
+  }
+
+  /**
    * Creates a graph that would run given tasks in a serial order.
    * @param taskNames the names of the tasks
    */
@@ -75,7 +87,7 @@ export class Graph {
       newTasks[task.name] = detachedTask;
     }
 
-    return new Graph(newTasks, [lastTask!.name]);
+    return new Graph(newTasks, lastTask !== undefined ? [lastTask.name] : []);
   }
 
   /**
@@ -155,21 +167,21 @@ export class Graph {
   /**
    * Gets the tasks with no dependencies, and the first to run in the graph.
    */
-  public get startTasks() {
+  public get startTasks(): string[] {
     return this._startTasks;
   }
 
   /**
    * Gets the tasks with no dependents.
    */
-  public get targetTasks() {
+  public get targetTasks(): string[] {
     return this._endTasks;
   }
 
   /**
    * Gets an array of the names of all the tasks in the graph.
    */
-  public get taskNames() {
+  public get taskNames(): string[] {
     return this._names;
   }
 
@@ -221,7 +233,7 @@ export class Graph {
   }
 }
 
-export function createGraph(targetTasks: TaskDef[]) {
+export function createGraph(targetTasks: TaskDef[]): Graph {
   const tasks: { [name: string]: Task } = {};
 
   breadthFirst(

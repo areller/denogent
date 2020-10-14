@@ -48,7 +48,7 @@ export class Execution {
   public execute(): Promise<ExecutionResult> {
     for (const name of this._graph.taskNames) {
       this._tasksTracker[name] = {
-        task: this._graph.getTask(name)!,
+        task: this._graph.getExistingTask(name),
         dependenciesFinished: 0,
         finished: false,
         logs: [],
@@ -61,17 +61,17 @@ export class Execution {
     return this._endPromise;
   }
 
-  public subscribe(fn: (event: TaskEvent) => void) {
+  public subscribe(fn: (event: TaskEvent) => void): void {
     this._events.addListener("_", (ev: unknown) => {
       fn(ev as TaskEvent);
     });
   }
 
-  public beforeTask(fn: (task: Task) => Promise<void>) {
+  public beforeTask(fn: (task: Task) => Promise<void>): void {
     this._beforeTaskFn = fn;
   }
 
-  public afterTask(fn: (task: Task, error?: Error) => Promise<void>) {
+  public afterTask(fn: (task: Task, error?: Error) => Promise<void>): void {
     this._afterTaskFn = fn;
   }
 
@@ -81,7 +81,7 @@ export class Execution {
 
     this._runningTasksCount++;
     for (const name of tasks) {
-      const task = this._graph.getTask(name)!;
+      const task = this._graph.getExistingTask(name);
       let condRes = true;
 
       if (conditionFn !== undefined) {
@@ -177,7 +177,7 @@ export class Execution {
           type: "failedCondition",
           task: task.name,
           conditionId: failedCondition,
-          condition: task.conditions[failedCondition]!.toString(),
+          condition: task.conditions[failedCondition].toString(),
         });
       } else {
         this.fireEvent({
@@ -197,12 +197,12 @@ export class Execution {
     });
 
     // setting task status in the tracker
-    this._tasksTracker[task.name]!.success = success;
+    this._tasksTracker[task.name].success = success;
     if (failedCondition !== undefined) {
-      this._tasksTracker[task.name]!.failedCondition = [failedCondition, task.conditions[failedCondition].toString()];
+      this._tasksTracker[task.name].failedCondition = [failedCondition, task.conditions[failedCondition].toString()];
     }
-    this._tasksTracker[task.name]!.error = error;
-    this._tasksTracker[task.name]!.finished = true;
+    this._tasksTracker[task.name].error = error;
+    this._tasksTracker[task.name].finished = true;
 
     // deleting finished task from running tasks list
     delete this._runningTasks[task.name];
@@ -217,11 +217,15 @@ export class Execution {
       if (this._resolve !== undefined) {
         const tasks: { [name: string]: TaskExecutionResult } = {};
         for (const [name, taskTracker] of Object.entries(this._tasksTracker)) {
+          if (taskTracker.success === undefined || taskTracker.lastEvent === undefined) {
+            continue;
+          }
+
           tasks[name] = {
             task: name,
-            success: taskTracker.success!,
+            success: taskTracker.success ?? false,
             logs: taskTracker.logs,
-            lastEvent: taskTracker.lastEvent!,
+            lastEvent: taskTracker.lastEvent,
           };
         }
 
@@ -242,7 +246,7 @@ export class Execution {
   }
 
   private fireEvent(ev: TaskEvent) {
-    const tracker = this._tasksTracker[ev.task]!;
+    const tracker = this._tasksTracker[ev.task];
     if (ev.type == "log") {
       tracker.logs.push(ev);
     } else {
@@ -269,8 +273,6 @@ export interface ExecutionResult {
 }
 
 export class Executor {
-  constructor() {}
-
   /**
    * Creates an execution for a given graph.
    * @param graph the graph object
@@ -281,6 +283,6 @@ export class Executor {
   }
 }
 
-export function createExecutor() {
+export function createExecutor(): Executor {
   return new Executor();
 }

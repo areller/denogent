@@ -11,7 +11,7 @@ describeE2E("tasks.test.ts", (t) => {
   t.test(`'denogent tasks' should return list of tasks (no json)`, async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: string[] = [];
-      const [success, _] = await runCommand(
+      const [success] = await runCommand(
         [...denogent, "tasks", "--file", "build.ts"],
         (line) => {
           assertEquals(isJson(line), false);
@@ -31,7 +31,7 @@ describeE2E("tasks.test.ts", (t) => {
   t.test(`'denogent tasks' should return list of tasks (json)`, async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: { task: Task }[] = [];
-      const [success, _] = await runCommand(
+      const [success] = await runCommand(
         [...denogent, "tasks", "--file", "build.ts", "--json"],
         (line) => {
           assertEquals(isJson(line), true);

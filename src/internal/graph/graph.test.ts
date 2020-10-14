@@ -49,7 +49,7 @@ function createTaskStructure(): Task[] {
   const a = task("a");
   const a1 = task("a1");
   const b = task("b").dependsOn(a);
-  const b1 = task("b1").dependsOn(b);
+  task("b1").dependsOn(b);
   const c = task("c").dependsOn([a, a1]);
   const d = task("d").dependsOn([c]);
   const e = task("e").dependsOn([c, d]);

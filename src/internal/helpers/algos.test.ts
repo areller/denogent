@@ -8,9 +8,9 @@ describe("algos.test.ts", (t) => {
     const a = task("a");
     const a1 = task("a1");
     const b = task("b").dependsOn(a);
-    const c = task("c").dependsOn([a, a1]);
-    const d = task("d").dependsOn(b);
-    const e = task("e").dependsOn(b);
+    task("c").dependsOn([a, a1]);
+    task("d").dependsOn(b);
+    task("e").dependsOn(b);
     const log: string[] = [];
 
     breadthFirst(
@@ -29,7 +29,7 @@ describe("algos.test.ts", (t) => {
     const b = task("b").dependsOn(a);
     const c = task("c").dependsOn(a);
     const d = task("d").dependsOn(b);
-    const e = task("e").dependsOn([d, c]);
+    task("e").dependsOn([d, c]);
     const log: [string, number][] = [];
 
     breadthFirstWithDepth(

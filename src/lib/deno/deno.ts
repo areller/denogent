@@ -13,8 +13,6 @@ class DenoTools {
     [DenoPermissions.Write]: "--allow-write",
   };
 
-  constructor() {}
-
   public async test(args: DenoTestArgs): Promise<boolean> {
     const cmd = ["deno", "test"];
     this.insertPermissions(cmd, args.permissions);
@@ -32,7 +30,7 @@ class DenoTools {
 
     const path = this.getCwd(args.path);
 
-    const [status, _] = await runCommand(
+    const [status] = await runCommand(
       cmd,
       (line) => {
         if (args.logger) {
