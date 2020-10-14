@@ -1,5 +1,5 @@
 import { stdPath } from "../../deps.ts";
-import { Task } from "../../internal/graph/graph.ts";
+import type { Task } from "../../internal/graph/graph.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
 import { describeE2E } from "../../internal/testing/test.ts";
 import { assertEquals } from "../../tests_deps.ts";
