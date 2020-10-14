@@ -31,7 +31,7 @@ export function getCreateCommand(): {
       await Deno.writeFile(
         filePath,
         new TextEncoder().encode(
-          `import { createBuilder, task } from "https://deno.land/x/denogent/lib/mod.ts";
+          `import { createBuilder, task } from "https://deno.land/x/denogent/mod.ts";
 
 const someTask = task('some task')
     .does(async ctx => {
