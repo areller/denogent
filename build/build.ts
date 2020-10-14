@@ -17,6 +17,7 @@ const checkFormat = task("check format")
   .dependsOn(nodejsSetup)
   .dependsOn(npmInstall)
   .when((ctx) => ctx?.ci !== undefined)
+  .when(_ => false)
   .does(async (ctx) => {
     await runtime.command({
       cmd: ["npm", "run", "check-format"],
