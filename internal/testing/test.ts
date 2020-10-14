@@ -26,5 +26,9 @@ class TestCollection {
 }
 
 export function describe(name: string, fn: (t: TestCollection) => void): void {
-  new TestCollection(name, fn);
+  new TestCollection("[unit] " + name, fn);
+}
+
+export function describeE2E(name: string, fn: (t: TestCollection) => void): void {
+  new TestCollection("[e2e] " + name, fn);
 }

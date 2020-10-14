@@ -23,7 +23,7 @@ class DenoTools {
     }
 
     if (args.filter !== undefined) {
-      cmd.push(`--filter "${args.filter}"`);
+      cmd.push("--filter", `${args.filter}`);
     }
 
     const path = this.getCwd(args.path);
