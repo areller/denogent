@@ -1,6 +1,4 @@
-import { createGitHubActions } from "../lib/ci/gh-actions/mod.ts";
-import { createBuilder, task, deno, DenoPermissions, runtime } from "../lib/mod.ts";
-import { nodejs } from "../lib/build-kits/nodejs/mod.ts";
+import { createBuilder, task, deno, DenoPermissions, runtime, createGitHubActions, nodejs } from "../mod.ts";
 
 const nodejsSetup = nodejs.setup("latest");
 
