@@ -8,10 +8,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "check-format": "prettier --config .prettierrc --check \"(src|e2e)/**/*.ts\"",
-    "format": "prettier --config .prettierrc --write \"(src|e2e)/**/*.ts\"",
-    "lint": "eslint src/ e2e/",
-    "lint-fix": "eslint src/ e2e/ --fix"
+    "check-format": "prettier --config .prettierrc --check \"(src|e2e|build)/**/*.ts\"",
+    "format": "prettier --config .prettierrc --write \"(src|e2e|build)/**/*.ts\"",
+    "lint": "eslint src/ e2e/ build/",
+    "lint-fix": "eslint src/ e2e/ build/ --fix"
   },
   "repository": {
     "type": "git",

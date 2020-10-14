@@ -11,13 +11,13 @@ const npmInstall = task("npm install")
     });
   });
 
-const checkFormat = task("check format")
+const lint = task("lint")
   .dependsOn(nodejsSetup)
   .dependsOn(npmInstall)
   .when((ctx) => ctx?.ci !== undefined)
   .does(async (ctx) => {
     await runtime.command({
-      cmd: ["npm", "run", "check-format"],
+      cmd: ["npm", "run", "lint"],
       logger: ctx?.logger,
     });
   });
@@ -46,7 +46,7 @@ const test = task("test").dependsOn([unitTests, e2eTests]);
 
 createBuilder({
   name: "denogent-build",
-  targetTasks: [checkFormat, test],
+  targetTasks: [lint, test],
   ciIntegrations: [
     createGitHubActions({
       image: "ubuntu-latest",
