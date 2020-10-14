@@ -4,6 +4,7 @@ import type { Service } from "../../docker/docker.ts";
 import { stdFs, stdPath, stringifyYaml } from "../../../deps.ts";
 import type { Runtime } from "../../../internal/runtime.ts";
 import type { LoggerFn, LogLevel } from "../../core/logger.ts";
+import type { Graph } from "../../../internal/graph/graph.ts";
 
 type Triggers = {
   push?: { branches?: string[]; tags?: string[] };
@@ -19,8 +20,15 @@ export type GHAUses = {
 export type GHAUsesCollection = { [name: string]: GHAUses };
 
 class GitHubActionsRuntime implements Runtime {
+  constructor(private graph: Graph) {}
+
   public get loggerFn(): LoggerFn {
     return (level: LogLevel, message: string | Error, task?: string, meta?: unknown): void => {
+      // do not log for tasks that don't perform anything
+      if (task !== undefined && this.graph.getTask(task)!.exec === undefined) {
+        return;
+      }
+
       if (meta !== undefined) {
         const attrs = meta as { type: string };
         if (attrs.type == "started") {
@@ -68,7 +76,7 @@ export class GitHubActions implements CIIntegration {
   }
 
   public async createRuntime(args: CreateRuntimeArgs): Promise<Runtime> {
-    return new GitHubActionsRuntime();
+    return new GitHubActionsRuntime(args.graph);
   }
 
   public async clean(args: CleanArgs): Promise<void> {
