@@ -20,7 +20,7 @@ class Runtime {
     const originalCmd = args.cmd instanceof Array ? args.cmd : args.cmd.split(" ");
     let cmd = originalCmd;
     if (isWindows()) {
-      cmd = ['cmd', '/c', ...cmd];
+      cmd = ["cmd", "/c", ...cmd];
     }
 
     const res = (await runCommandInternal(

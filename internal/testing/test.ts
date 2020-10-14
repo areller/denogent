@@ -18,7 +18,7 @@ class TestCollection {
         let condRes = true;
         if (cond !== undefined) {
           const condPromise = cond();
-          condRes = condPromise instanceof Promise ? (await condPromise) : condPromise;
+          condRes = condPromise instanceof Promise ? await condPromise : condPromise;
         }
 
         if (condRes) {
@@ -26,8 +26,7 @@ class TestCollection {
           if (fnPromise instanceof Promise) {
             await fnPromise;
           }
-        }
-        else {
+        } else {
           console.log(`Skipping test due to failed condition '${cond}'`);
         }
       },

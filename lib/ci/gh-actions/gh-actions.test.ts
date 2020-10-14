@@ -24,7 +24,7 @@ describe("gh-actions.test.ts", (t) => {
     });
   });
 
-  ['unknown-image', 'ubuntu-latest', 'windows-latest'].forEach(image => {
+  ["unknown-image", "ubuntu-latest", "windows-latest"].forEach((image) => {
     t.test(`generate should generate a workflow file (image = ${image})`, async () => {
       await workflowAssertTest(
         new GitHubActions(image),
@@ -235,7 +235,9 @@ async function workflowAssertTest(
     const workflowFile = stdPath.join(temp, ".github", "workflows", "build.yml");
     assertEquals(await stdFs.exists(workflowFile), true);
 
-    const buildFilePath = image.startsWith('windows') ? pathJoin(['build', 'some-build.ts'], 'win') : pathJoin(['build', 'some-build.ts'], 'unix');
+    const buildFilePath = image.startsWith("windows")
+      ? pathJoin(["build", "some-build.ts"], "win")
+      : pathJoin(["build", "some-build.ts"], "unix");
 
     let runStep = {
       name: "run build",

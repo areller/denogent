@@ -9,33 +9,41 @@ import { getCurrentImportPath, isUnix, isWindows } from "../../internal/helpers/
 const assetsPath = stdPath.join(getCurrentImportPath(import.meta.url), "testassets");
 
 describe("runtime.test.ts", (t) => {
-  t.test("command should run a command (unix)", async () => {
-    await emptyTempDir(async (temp) => {
-      await runtime.command({ path: temp, cmd: ["touch", "a"], logger: false });
-      await runtime.command({ path: temp, cmd: ["touch", "b"], logger: false });
+  t.test(
+    "command should run a command (unix)",
+    async () => {
+      await emptyTempDir(async (temp) => {
+        await runtime.command({ path: temp, cmd: ["touch", "a"], logger: false });
+        await runtime.command({ path: temp, cmd: ["touch", "b"], logger: false });
 
-      let lines: string[] = [];
-      const [success, output] = await runtime.command({
-        path: temp,
-        cmd: "ls",
-        logger: mockDebugLogger((line) => lines.push(line)),
+        let lines: string[] = [];
+        const [success, output] = await runtime.command({
+          path: temp,
+          cmd: "ls",
+          logger: mockDebugLogger((line) => lines.push(line)),
+        });
+
+        assertEquals(success, true);
+        assertEquals(lines, ["a", "b"]);
+        assertEquals(output, "a\nb\n");
       });
+    },
+    () => isUnix(),
+  );
 
-      assertEquals(success, true);
-      assertEquals(lines, ["a", "b"]);
-      assertEquals(output, "a\nb\n");
-    });
-  }, () => isUnix());
+  t.test(
+    "command should run a command (windows)",
+    async () => {
+      await emptyTempDir(async (temp) => {
+        await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "a", "1000"], logger: false });
+        await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "b", "1000"], logger: false });
 
-  t.test('command should run a command (windows)', async () => {
-    await emptyTempDir(async (temp) => {
-      await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "a", "1000"], logger: false });
-      await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "b", "1000"], logger: false });
-
-      assertEquals(await stdFs.exists(stdPath.join(temp, "a")), true);
-      assertEquals(await stdFs.exists(stdPath.join(temp, "b")), true);
-    });
-  }, () => isWindows());
+        assertEquals(await stdFs.exists(stdPath.join(temp, "a")), true);
+        assertEquals(await stdFs.exists(stdPath.join(temp, "b")), true);
+      });
+    },
+    () => isWindows(),
+  );
 
   [false, true, undefined].forEach((throws) => {
     t.test(

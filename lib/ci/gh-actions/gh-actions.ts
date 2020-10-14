@@ -249,11 +249,10 @@ export class GitHubActions implements CIIntegration {
   }
 
   private adjustBuildFilePathToPlatform(path: string): string {
-    if (this.image.startsWith('windows')) {
-      return path.replaceAll('/', '\\');
-    }
-    else {
-      return path.replaceAll("\\", '/');
+    if (this.image.startsWith("windows")) {
+      return path.replaceAll("/", "\\");
+    } else {
+      return path.replaceAll("\\", "/");
     }
   }
 

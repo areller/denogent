@@ -54,19 +54,16 @@ async function tryRemoveDir(path: string): Promise<void> {
       if (isWindows()) {
         // windows has weird permission problems
         await removeRecursive(path);
-      }
-      else {
+      } else {
         await Deno.remove(path, {
-          recursive: true
+          recursive: true,
         });
       }
       return;
-    }
-    catch (err) {
+    } catch (err) {
       if (i == retries - 1) {
         throw err;
-      }
-      else {
+      } else {
         await delay(1000);
       }
     }
@@ -81,8 +78,7 @@ async function removeRecursive(path: string): Promise<void> {
 
     if (entry.isDirectory) {
       await removeRecursive(entry.path);
-    }
-    else {
+    } else {
       await Deno.remove(entry.path);
     }
   }
