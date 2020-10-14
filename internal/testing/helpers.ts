@@ -1,16 +1,19 @@
 import { stdFs, stdPath } from "../../deps.ts";
 import type { Logger } from "../../lib/core/logger.ts";
 
-export async function copyDirToTemp(path: string, fn: (tempPath: string) => Promise<void>): Promise<void> {
+export async function copyDirToTemp(path: string, fn: (tempPath: string) => Promise<void>, subTempDir?: string): Promise<void> {
   const dir = await Deno.makeTempDir();
+  const targetDir = subTempDir === undefined ? dir : stdPath.join(dir, subTempDir);
 
-  await stdFs.copy(path, dir, {
+  await stdFs.ensureDir(targetDir);
+
+  await stdFs.copy(path, targetDir, {
     overwrite: true,
   });
 
   try {
-    if (await stdFs.exists(stdPath.join(dir, "._git"))) {
-      await stdFs.move(stdPath.join(dir, "._git"), stdPath.join(dir, ".git"));
+    if (await stdFs.exists(stdPath.join(targetDir, "._git"))) {
+      await stdFs.move(stdPath.join(targetDir, "._git"), stdPath.join(targetDir, ".git"));
     }
 
     await fn(dir);

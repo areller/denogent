@@ -6,7 +6,7 @@ import { assertEquals } from "../../tests_deps.ts";
 
 const denogent = ["deno", "run", "-A", "--unstable", stdPath.join(Deno.cwd(), "denogent.ts")];
 
-describeE2E("[e2e] create.test.ts", (t) => {
+describeE2E("create.test.ts", (t) => {
   [undefined, stdPath.join("build", "build.ts"), stdPath.join("build", "build2.ts")].forEach((filePath) => {
     t.test(`'denogent create' should create build file (--file = ${filePath})`, async () => {
       await emptyTempDir(async (temp) => {
