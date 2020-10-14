@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // https://github.com/actions/toolkit/blob/master/packages/core/src/command.ts
 
 interface CommandProperties {

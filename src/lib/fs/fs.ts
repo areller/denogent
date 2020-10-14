@@ -75,7 +75,7 @@ export class Folder {
    * Lists all the files in the current folder.
    */
   public async listFiles(): Promise<File[]> {
-    var files: File[] = [];
+    const files: File[] = [];
     for await (const entry of stdFs.walk(this._path, {
       maxDepth: 1,
       includeFiles: true,
@@ -93,7 +93,7 @@ export class Folder {
    * Lists all the folders in the current folder.
    */
   public async listFolders(): Promise<Folder[]> {
-    var folders: Folder[] = [];
+    const folders: Folder[] = [];
     for await (const entry of stdFs.walk(this._path, {
       maxDepth: 1,
       includeFiles: false,

@@ -13,10 +13,8 @@ class DenoTools {
     [DenoPermissions.Write]: "--allow-write",
   };
 
-  constructor() {}
-
   public async test(args: DenoTestArgs): Promise<boolean> {
-    let cmd = ["deno", "test"];
+    const cmd = ["deno", "test"];
     this.insertPermissions(cmd, args.permissions);
     if (args.flags !== undefined) {
       cmd.push(...args.flags);
@@ -26,9 +24,13 @@ class DenoTools {
       cmd.push("--filter", `${args.filter}`);
     }
 
+    if (args.files !== undefined) {
+      cmd.push(args.files);
+    }
+
     const path = this.getCwd(args.path);
 
-    const [status, _] = await runCommand(
+    const [status] = await runCommand(
       cmd,
       (line) => {
         if (args.logger) {

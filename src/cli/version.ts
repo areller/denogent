@@ -1,3 +1,3 @@
-export function getCLIVersion() {
+export function getCLIVersion(): string {
   return "{{VERSION}}";
 }

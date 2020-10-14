@@ -3,7 +3,7 @@ import { copyDirToTemp } from "../src/internal/testing/helpers.ts";
 
 const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), "testassets").substr("file:".length);
 
-export async function createBuildInTempDir(fn: (tempPath: string) => Promise<void>) {
+export async function createBuildInTempDir(fn: (tempPath: string) => Promise<void>): Promise<void> {
   await copyDirToTemp(
     ".",
     async (temp) => {

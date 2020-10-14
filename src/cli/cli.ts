@@ -40,14 +40,14 @@ async function getRuntime(
 ): Promise<[Runtime, CIIntegration | undefined, Graph | undefined]> {
   const graph = buildContext !== undefined ? createGraph(buildContext.targetTasks) : undefined;
   let runtime: Runtime;
-  if (buildContext !== undefined && args["runtime"] && args["runtime"] != "local") {
+  if (buildContext !== undefined && graph !== undefined && args["runtime"] && args["runtime"] != "local") {
     const ciArray = buildContext.ciIntegrations.filter((c) => c.type == args["runtime"]);
     if (ciArray === undefined || ciArray.length == 0) {
       throw new Error(`Unknown runtime '${args["runtime"]}'.`);
     }
 
     runtime = await ciArray[0].createRuntime({
-      graph: graph!,
+      graph,
     });
 
     return [runtime, ciArray[0], graph];
@@ -81,7 +81,7 @@ function createCommand(
   },
 ): Command {
   return rawCommand.cmd.action(async () => {
-    let file = buildContext !== undefined ? getMainFilePath() : (parsedArgs["file"] as string) ?? defaultBuildFile;
+    const file = buildContext !== undefined ? getMainFilePath() : (parsedArgs["file"] as string) ?? defaultBuildFile;
     if (rawCommand.buildContextRequired && buildContext === undefined) {
       return await runCLIFromFile(file);
     }
@@ -95,7 +95,7 @@ function createCommand(
   });
 }
 
-export async function createCLI(buildContext?: BuildContext) {
+export async function createCLI(buildContext?: BuildContext): Promise<void> {
   const version = getCLIVersion();
   await new Command()
     .name("denogent")

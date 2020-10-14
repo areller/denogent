@@ -43,8 +43,11 @@ export async function emptyTempDir(fn: (tempPath: string) => Promise<void>): Pro
 export function mockDebugLogger(onLog?: (log: string) => void): Logger {
   return {
     debug: (log) => (onLog !== undefined ? onLog(log) : {}),
-    info: (_) => {},
-    warn: (_) => {},
-    error: (_: string | Error) => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    info: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    warn: () => {},
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    error: () => {},
   };
 }

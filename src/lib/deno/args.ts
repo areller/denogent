@@ -53,4 +53,9 @@ export interface DenoTestArgs extends DenoCommandArgs {
    * Determines whether an exception should be thrown upon a failed test. (Default: true)
    */
   throwOnFailure?: boolean;
+
+  /**
+   * Run tests in these files.
+   */
+  files?: string;
 }

@@ -38,7 +38,7 @@ export class DockerClient {
    * @param args docker build arguments
    */
   public async build(args: DockerClientBuildArgs): Promise<void> {
-    let runArgs = ["build"];
+    const runArgs = ["build"];
     if (args.dockerFile) {
       runArgs.push("-f", args.dockerFile);
     }
@@ -64,7 +64,7 @@ export class DockerClient {
    */
   public async push(args: DockerClientPushArgs): Promise<void> {
     if (args.credentials !== undefined) {
-      let cmd = ["login", "-u", args.credentials.username, "-p", args.credentials.password];
+      const cmd = ["login", "-u", args.credentials.username, "-p", args.credentials.password];
       if (args.credentials.registry !== undefined) {
         cmd.push(args.credentials.registry);
       }
@@ -81,7 +81,7 @@ export class DockerClient {
    * @param args sub command arguments
    */
   public async subcmd(args: DockerClientSubCommandArgs): Promise<string> {
-    let [_, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
+    const [, output] = await this.runDocker(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }
 

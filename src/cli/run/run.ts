@@ -5,12 +5,16 @@ import type { CLIContext } from "../context.ts";
 
 function createContextCreator(context: CLIContext): ContextCreator {
   return (taskObj, eventSink) => {
+    if (context.buildContext === undefined) {
+      throw new Error("Expected a build context");
+    }
+
     return {
       logger: createLoggerFromFn(
         (level, message, task, meta) =>
           eventSink({
             type: "log",
-            task: task!,
+            task: task ?? "",
             level,
             meta,
             message: message instanceof Error ? message.message : message,
@@ -18,7 +22,7 @@ function createContextCreator(context: CLIContext): ContextCreator {
           }),
         taskObj.name,
       ),
-      build: context.buildContext!,
+      build: context.buildContext,
       ci: context.ciIntegration?.type,
     };
   };
@@ -94,13 +98,17 @@ export function getRunCommand(): {
 
       if (context.runtime.beforeTaskExecution !== undefined) {
         execution.beforeTask(async (task) => {
-          await context.runtime.beforeTaskExecution!(task);
+          if (context.runtime.beforeTaskExecution !== undefined) {
+            await context.runtime.beforeTaskExecution(task);
+          }
         });
       }
 
       if (context.runtime.afterTaskExecution !== undefined) {
         execution.afterTask(async (task, error) => {
-          await context.runtime.afterTaskExecution!(task, error);
+          if (context.runtime.afterTaskExecution !== undefined) {
+            await context.runtime.afterTaskExecution(task, error);
+          }
         });
       }
 

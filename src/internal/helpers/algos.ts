@@ -4,14 +4,14 @@
  * @param neighborsFn a function that defines how neighbor vertices are retrieved from a given vertex
  * @param fn the function that gets executed for every vertex of the graph
  */
-// deno-lint-ignore ban-types
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function breadthFirst<TVertex extends object>(
   roots: TVertex[],
   neighborsFn: (vertex: TVertex) => TVertex[],
   fn: (vertex: TVertex) => void,
-) {
-  let visited = new WeakSet();
-  let queue: TVertex[] = [...roots];
+): void {
+  const visited = new WeakSet();
+  const queue: TVertex[] = [...roots];
 
   while (queue.length > 0) {
     const top = queue.splice(0, 1)[0];
@@ -50,16 +50,16 @@ export function breadthFirst<TVertex extends object>(
  * @param parentsFn a function that defines how parent vertices are retrieved from a given vertex (a child is one level deeper than a parent)
  * @param fn the function that gets executed for every vertex of the graph
  */
-// deno-lint-ignore ban-types
+// eslint-disable-next-line @typescript-eslint/ban-types
 export function breadthFirstWithDepth<TVertex extends object>(
   roots: TVertex[],
   childrenFn: (vertex: TVertex) => TVertex[],
   parentsFn: (vertex: TVertex) => TVertex[],
   fn: (vertex: TVertex, depth: number) => void,
-) {
-  let visited = new WeakSet();
-  let refs = new WeakMap();
-  let queue: [TVertex, number][] = [...roots.map((r) => [r, 0] as [TVertex, number])];
+): void {
+  const visited = new WeakSet();
+  const refs = new WeakMap();
+  const queue: [TVertex, number][] = [...roots.map((r) => [r, 0] as [TVertex, number])];
 
   while (queue.length > 0) {
     const [top, depth] = queue.splice(0, 1)[0];
@@ -77,8 +77,8 @@ export function breadthFirstWithDepth<TVertex extends object>(
 
     levelSet.push(depth);
 
-    let parents = parentsFn(top);
-    let children = childrenFn(top);
+    const parents = parentsFn(top);
+    const children = childrenFn(top);
 
     if (levelSet.length >= parents.length) {
       fn(top, Math.max(...levelSet));

@@ -13,7 +13,7 @@ describe("runtime.test.ts", (t) => {
       await runtime.command({ path: temp, cmd: ["touch", "a"], logger: false });
       await runtime.command({ path: temp, cmd: ["touch", "b"], logger: false });
 
-      let lines: string[] = [];
+      const lines: string[] = [];
       const [success, output] = await runtime.command({
         path: temp,
         cmd: "ls",
@@ -34,7 +34,7 @@ describe("runtime.test.ts", (t) => {
       async () => {
         await copyDirToTemp(assetsPath, async (temp) => {
           try {
-            const [status, _] = await runtime.command({
+            const [status] = await runtime.command({
               path: temp,
               cmd: ["deno", "run", "--no-check", "-A", "fail.ts"],
               logger: false,
@@ -65,7 +65,7 @@ describe("runtime.test.ts", (t) => {
   });
 
   t.test("secret injects secret into secrets property", () => {
-    let taskA = task("taskA");
+    const taskA = task("taskA");
     taskA.dependsOn([runtime.secret("secretA"), runtime.secret("secretB")]);
     const secrets = taskA.properties["secrets"] as string[];
 

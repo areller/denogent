@@ -8,8 +8,10 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "check-format": "prettier --config .prettierrc --check \"**/*.ts\"",
-    "format": "prettier --config .prettierrc --write \"**/*.ts\""
+    "check-format": "prettier --config .prettierrc --check \"(src|e2e|build)/**/*.ts\"",
+    "format": "prettier --config .prettierrc --write \"(src|e2e|build)/**/*.ts\"",
+    "lint": "eslint src/ e2e/ build/",
+    "lint-fix": "eslint src/ e2e/ build/ --fix"
   },
   "repository": {
     "type": "git",
@@ -22,6 +24,17 @@
   },
   "homepage": "https://github.com/areller/denogent#readme",
   "devDependencies": {
-    "prettier": "^2.1.2"
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
+    "eslint": "^7.11.0",
+    "eslint-config-prettier": "^6.12.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^2.1.2",
+    "typescript": "^4.0.3"
   }
 }

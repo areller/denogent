@@ -144,15 +144,15 @@ describe("gh-actions.test.ts", (t) => {
 });
 
 function createSimpleGraph(): Graph {
-  let a = task("a");
-  let b = task("b").dependsOn(a);
+  const a = task("a");
+  const b = task("b").dependsOn(a);
 
   return createGraph([b]);
 }
 
 function createGraphWithSecrets(): Graph {
-  let a = task("a").property("secrets", ["username", "password"]);
-  let b = task("b").dependsOn(a).property("secrets", ["username", "token"]);
+  const a = task("a").property("secrets", ["username", "password"]);
+  const b = task("b").dependsOn(a).property("secrets", ["username", "token"]);
 
   return createGraph([b]);
 }
@@ -173,10 +173,10 @@ function createGraphWithUses(): Graph {
     },
   };
 
-  let a = task("a").property("gh-actions-uses", {
+  const a = task("a").property("gh-actions-uses", {
     ["nodejs"]: nodeJsUse,
   });
-  let b = task("b")
+  const b = task("b")
     .dependsOn(a)
     .property("gh-actions-uses", {
       ["nodejs"]: nodeJsUse,
@@ -198,10 +198,10 @@ function createGraphWithServices(): Graph {
     ports: [8081, 8082],
   };
 
-  let a = task("a").property("docker-services", {
+  const a = task("a").property("docker-services", {
     ["serviceA"]: serviceA,
   });
-  let b = task("b")
+  const b = task("b")
     .dependsOn(a)
     .property("docker-services", {
       ["serviceA"]: serviceA,
@@ -232,7 +232,7 @@ async function workflowAssertTest(
     const workflowFile = stdPath.join(temp, ".github", "workflows", "build.yml");
     assertEquals(await stdFs.exists(workflowFile), true);
 
-    let runStep = {
+    const runStep = {
       name: "run build",
       run: "deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions",
       env,
@@ -242,7 +242,7 @@ async function workflowAssertTest(
       delete runStep["env"];
     }
 
-    let workflow = {
+    const workflow = {
       name: "build",
       on: triggers,
       jobs: {
@@ -273,7 +273,7 @@ async function workflowAssertTest(
       delete workflow["jobs"][image]["services"];
     }
 
-    let workflowFromFile = (await readWorkflowFile(workflowFile)) as typeof workflow;
+    const workflowFromFile = (await readWorkflowFile(workflowFile)) as typeof workflow;
 
     assertEquals(workflowFromFile, workflow);
   });
