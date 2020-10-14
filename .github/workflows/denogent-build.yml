@@ -9,9 +9,9 @@ name: denogent-build
     branches:
       - master
 jobs:
-  windows-latest:
-    name: windows-latest
-    runs-on: windows-latest
+  ubuntu-latest:
+    name: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -23,5 +23,5 @@ jobs:
         uses: actions/setup-node@v1
       - name: run build
         run: >-
-          deno run -A -q --unstable build\build.ts run --serial --runtime
+          deno run -A -q --unstable build/build.ts run --serial --runtime
           gh-actions
