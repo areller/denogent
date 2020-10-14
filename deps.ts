@@ -4,7 +4,7 @@ import * as Colors from "https://deno.land/std@0.74.0/fmt/colors.ts";
 import EventEmitter from "https://deno.land/x/events@v1.0.0/mod.ts";
 
 export { path as stdPath, fs as stdFs };
-export { platform as osPlatform } from "https://deno.land/std/node/os.ts";
+export { platform as osPlatform } from "https://deno.land/std@0.74.0/node/os.ts";
 export { v4 as uuidv4 } from "https://deno.land/std@0.74.0/uuid/mod.ts";
 export type { Args } from "https://deno.land/std@0.74.0/flags/mod.ts";
 export { parse as parseArgs } from "https://deno.land/std@0.74.0/flags/mod.ts";
