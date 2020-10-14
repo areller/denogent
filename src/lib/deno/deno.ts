@@ -26,6 +26,10 @@ class DenoTools {
       cmd.push("--filter", `${args.filter}`);
     }
 
+    if (args.files !== undefined) {
+      cmd.push(args.files);
+    }
+
     const path = this.getCwd(args.path);
 
     const [status, _] = await runCommand(

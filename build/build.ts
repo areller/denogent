@@ -27,7 +27,7 @@ const unitTests = task("unit tests").does(async (ctx) => {
     logger: ctx?.logger,
     permissions: DenoPermissions.All,
     flags: ["--unstable"],
-    filter: "[unit]",
+    files: "src",
   });
 });
 
@@ -38,7 +38,7 @@ const e2eTests = task("e2e tests")
       logger: ctx?.logger,
       permissions: DenoPermissions.All,
       flags: ["--unstable"],
-      filter: "[e2e]",
+      files: "e2e",
     });
   });
 
