@@ -36,7 +36,7 @@ denogent create --file path/to/buid/file.ts
 Once you open the newly created build file, you'll see  
 
 ```typescript
-import { createBuilder, task } from "https://deno.land/x/denogent/lib/mod.ts";
+import { createBuilder, task } from "https://deno.land/x/denogent/mod.ts";
 
 const someTask = task('some task')
     .does(async ctx => {
@@ -91,7 +91,7 @@ In this scenario, task `compile` will run at the beginning and then will trigger
 Tasks can define conditions for their run. For example,  
 
 ```typescript
-import { git } from "https://deno.land/x/denogent/lib/mod.ts";
+import { git } from "https://deno.land/x/denogent/mod.ts";
 
 ...
 
@@ -133,7 +133,7 @@ Here's an example of integrating with GitHub Actions.
 In `build.ts`  
 
 ```typescript
-import { createGitHubActions } from "https://deno.land/x/denogent/lib/ci/gh-actions/mod.ts";
+import { createGitHubActions } from "https://deno.land/x/denogent/mod.ts";
 
 ...
 
@@ -164,7 +164,7 @@ You can use the `docker.service` extension to declare dependency on a service th
 For example, if you have a task that runs integration tests which depend on Redis, you can use `docker.service` do declare a dependency on Redis.
 
 ```typescript
-import { docker } from "https://deno.land/x/denogent/lib/mod.ts";
+import { docker } from "https://deno.land/x/denogent/mod.ts";
 
 ...
 
