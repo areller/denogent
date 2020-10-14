@@ -57,7 +57,7 @@ export class LocalRuntime implements Runtime {
   }
 
   public async launchDockerServices(): Promise<void> {
-    let services: { [name: string]: Service } = {};
+    const services: { [name: string]: Service } = {};
     for (const taskName of this.graph!.taskNames) {
       const task = this.graph!.getTask(taskName)!;
       const dockerServices = task.properties["docker-services"] as { [name: string]: Service } | undefined;
@@ -79,7 +79,7 @@ export class LocalRuntime implements Runtime {
 
     for (const service of Object.values(services)) {
       const id = uuidv4.generate().replaceAll("-", "");
-      let cmd = ["docker", "run", "--rm", "--name", id, "-idt"];
+      const cmd = ["docker", "run", "--rm", "--name", id, "-idt"];
       for (const port of service.ports) {
         cmd.push("-p", `${port}:${port}`);
       }

@@ -81,7 +81,7 @@ export class Execution {
 
     this._runningTasksCount++;
     for (const name of tasks) {
-      let task = this._graph.getTask(name)!;
+      const task = this._graph.getTask(name)!;
       let condRes = true;
 
       if (conditionFn !== undefined) {
@@ -190,7 +190,7 @@ export class Execution {
 
     // trying to fire dependents
     this.spawnCollectionOfTasks(task.dependents, (t) => {
-      let tracker = this._tasksTracker[t.name];
+      const tracker = this._tasksTracker[t.name];
       tracker.dependenciesFinished++;
 
       return tracker.dependenciesFinished == t.dependencies.length;
@@ -215,7 +215,7 @@ export class Execution {
     if (this._runningTasksCount == 0 && !this._alreadyFinished) {
       this._alreadyFinished = true;
       if (this._resolve !== undefined) {
-        let tasks: { [name: string]: TaskExecutionResult } = {};
+        const tasks: { [name: string]: TaskExecutionResult } = {};
         for (const [name, taskTracker] of Object.entries(this._tasksTracker)) {
           tasks[name] = {
             task: name,

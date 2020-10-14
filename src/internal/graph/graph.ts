@@ -47,15 +47,15 @@ export class Graph {
     }
 
     let lastTask: Task | undefined = undefined;
-    let newTasks: { [name: string]: Task } = {};
+    const newTasks: { [name: string]: Task } = {};
 
     for (const name of taskNames) {
-      let task = this._tasks[name];
+      const task = this._tasks[name];
       if (task === undefined) {
         throw new Error(`task '${name}' is not defined.`);
       }
 
-      let detachedTask: Task = {
+      const detachedTask: Task = {
         name: task.name,
         exec: task.exec,
         conditions: task.conditions,
@@ -87,15 +87,15 @@ export class Graph {
       return new Graph({}, []);
     }
 
-    let newTasks: { [name: string]: Task } = {};
+    const newTasks: { [name: string]: Task } = {};
 
     for (const name of taskNames) {
-      let task = this._tasks[name];
+      const task = this._tasks[name];
       if (task === undefined) {
         throw new Error(`task '${name}' is not defined.`);
       }
 
-      let detachedTask: Task = {
+      const detachedTask: Task = {
         name: task.name,
         exec: task.exec,
         conditions: task.conditions,
@@ -132,7 +132,7 @@ export class Graph {
    * The tasks in the first level (level = 0) are the tasks without dependencies and are the first to run in the graph, while the tasks in the last level are the last to run in the graph.
    */
   public getTasksByLevel(): { [level: number]: Task[] } {
-    let map: { [level: number]: Task[] } = {};
+    const map: { [level: number]: Task[] } = {};
 
     breadthFirstWithDepth(
       this.taskObjects(this.startTasks),
@@ -174,7 +174,7 @@ export class Graph {
   }
 
   private findStartTasks(endTasks: string[]): string[] {
-    let startTasks: string[] = [];
+    const startTasks: string[] = [];
 
     breadthFirst(
       this.taskObjects(endTasks),
@@ -190,7 +190,7 @@ export class Graph {
   }
 
   private findEndTasks(startTasks: string[]): string[] {
-    let endTasks: string[] = [];
+    const endTasks: string[] = [];
 
     breadthFirst(
       this.taskObjects(startTasks),
@@ -210,7 +210,7 @@ export class Graph {
   }
 
   private getAllTasksInOrder(): string[] {
-    let tasks: string[] = [];
+    const tasks: string[] = [];
     for (const level of Object.values(this.getTasksByLevel())) {
       for (const task of level) {
         tasks.push(task.name);

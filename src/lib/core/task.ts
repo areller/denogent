@@ -57,7 +57,7 @@ export class Task {
    */
   public triggers(tasks: Task | Task[]): Task {
     if (tasks instanceof Array) {
-      for (let task of tasks) {
+      for (const task of tasks) {
         task._dependencies.push(this);
         this._dependents.push(task);
       }

@@ -5,13 +5,13 @@ import { breadthFirst, breadthFirstWithDepth } from "./algos.ts";
 
 describe("algos.test.ts", (t) => {
   t.test("breadthFirst should do breadth first traversal", () => {
-    let a = task("a");
-    let a1 = task("a1");
-    let b = task("b").dependsOn(a);
-    let c = task("c").dependsOn([a, a1]);
-    let d = task("d").dependsOn(b);
-    let e = task("e").dependsOn(b);
-    let log: string[] = [];
+    const a = task("a");
+    const a1 = task("a1");
+    const b = task("b").dependsOn(a);
+    const c = task("c").dependsOn([a, a1]);
+    const d = task("d").dependsOn(b);
+    const e = task("e").dependsOn(b);
+    const log: string[] = [];
 
     breadthFirst(
       [a],
@@ -25,12 +25,12 @@ describe("algos.test.ts", (t) => {
   });
 
   t.test("breadthFirstWithDepth should do breadth first traversal and record depth", () => {
-    let a = task("a");
-    let b = task("b").dependsOn(a);
-    let c = task("c").dependsOn(a);
-    let d = task("d").dependsOn(b);
-    let e = task("e").dependsOn([d, c]);
-    let log: [string, number][] = [];
+    const a = task("a");
+    const b = task("b").dependsOn(a);
+    const c = task("c").dependsOn(a);
+    const d = task("d").dependsOn(b);
+    const e = task("e").dependsOn([d, c]);
+    const log: [string, number][] = [];
 
     breadthFirstWithDepth(
       [a],

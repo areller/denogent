@@ -29,7 +29,7 @@ describe("executor.test.ts", (t) => {
   });
 
   t.test("single task (hooks)", async () => {
-    let log: string[] = [];
+    const log: string[] = [];
 
     const graph = createGraph([
       task("taskA").does((_) => {
@@ -74,7 +74,7 @@ describe("executor.test.ts", (t) => {
     ]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
-    let eventLog: TaskEvent[] = [];
+    const eventLog: TaskEvent[] = [];
 
     execution.subscribe((ev) => {
       eventLog.push(ev);
@@ -135,7 +135,7 @@ describe("executor.test.ts", (t) => {
     ]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
-    let eventLog: TaskEvent[] = [];
+    const eventLog: TaskEvent[] = [];
 
     execution.subscribe((ev) => {
       eventLog.push(ev);
@@ -190,7 +190,7 @@ describe("executor.test.ts", (t) => {
       ]);
       const execution = createExecutor().fromGraph(graph, createContext);
 
-      let eventLog: TaskEvent[] = [];
+      const eventLog: TaskEvent[] = [];
 
       execution.subscribe((ev) => {
         eventLog.push(ev);
@@ -258,7 +258,7 @@ describe("executor.test.ts", (t) => {
     t.test(
       `single task (afterTask is called) (failed and propagateExceptions = ${propagateExceptions ? "true" : "false"})`,
       async () => {
-        let log: string[] = [];
+        const log: string[] = [];
 
         const graph = createGraph([
           task("taskA")
@@ -297,7 +297,7 @@ describe("executor.test.ts", (t) => {
     const graph = createGraph([taskB]);
     const execution = createExecutor().fromGraph(graph, createContext);
 
-    let eventLog: TaskEvent[] = [];
+    const eventLog: TaskEvent[] = [];
 
     execution.subscribe((ev) => {
       eventLog.push(ev);
@@ -361,7 +361,7 @@ describe("executor.test.ts", (t) => {
       const graph = createGraph([taskB]);
       const execution = createExecutor().fromGraph(graph, createContext);
 
-      let eventLog: TaskEvent[] = [];
+      const eventLog: TaskEvent[] = [];
 
       execution.subscribe((ev) => {
         eventLog.push(ev);

@@ -10,7 +10,7 @@ const denogent = ["deno", "run", "-A", "--no-check", "--unstable", stdPath.join(
 describeE2E("tasks.test.ts", (t) => {
   t.test(`'denogent tasks' should return list of tasks (no json)`, async () => {
     await createBuildInTempDir(async (temp) => {
-      let lines: string[] = [];
+      const lines: string[] = [];
       const [success, _] = await runCommand(
         [...denogent, "tasks", "--file", "build.ts"],
         (line) => {
@@ -30,7 +30,7 @@ describeE2E("tasks.test.ts", (t) => {
 
   t.test(`'denogent tasks' should return list of tasks (json)`, async () => {
     await createBuildInTempDir(async (temp) => {
-      let lines: { task: Task }[] = [];
+      const lines: { task: Task }[] = [];
       const [success, _] = await runCommand(
         [...denogent, "tasks", "--file", "build.ts", "--json"],
         (line) => {

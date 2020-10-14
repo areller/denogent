@@ -16,7 +16,7 @@ class DenoTools {
   constructor() {}
 
   public async test(args: DenoTestArgs): Promise<boolean> {
-    let cmd = ["deno", "test"];
+    const cmd = ["deno", "test"];
     this.insertPermissions(cmd, args.permissions);
     if (args.flags !== undefined) {
       cmd.push(...args.flags);

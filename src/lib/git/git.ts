@@ -7,7 +7,7 @@ class Git {
 
   constructor() {
     this._detectGitTask = new Promise((resolve, reject) => {
-      let process = Deno.run({
+      const process = Deno.run({
         cmd: ["git", "--version"],
         stdout: "null",
         stderr: "null",
@@ -28,7 +28,7 @@ class Git {
    * @param args command arguments
    */
   public async isGitRepository(args: GitCommandArgs): Promise<boolean> {
-    let [success, _] = await this.runGit(args, ["status"], false);
+    const [success, _] = await this.runGit(args, ["status"], false);
     return success;
   }
 
@@ -37,7 +37,7 @@ class Git {
    * @param args command arguments
    */
   public async isTagged(args: GitCommandArgs): Promise<boolean> {
-    let [success, _] = await this.runGit(args, ["describe", "--exact-match", "--tags", "HEAD"], false);
+    const [success, _] = await this.runGit(args, ["describe", "--exact-match", "--tags", "HEAD"], false);
     return success;
   }
 
@@ -46,7 +46,7 @@ class Git {
    * @param args command arguments
    */
   public async getHeadCommit(args: GitCommandArgs): Promise<string> {
-    let [_, output] = await this.runGit(args, ["rev-parse", "HEAD"]);
+    const [_, output] = await this.runGit(args, ["rev-parse", "HEAD"]);
     return output.trim();
   }
 
@@ -55,7 +55,7 @@ class Git {
    * @param args command arguments
    */
   public async getBranch(args: GitCommandArgs): Promise<string> {
-    let [_, output] = await this.runGit(args, ["rev-parse", "--abbrev-ref", "HEAD"]);
+    const [_, output] = await this.runGit(args, ["rev-parse", "--abbrev-ref", "HEAD"]);
     return output.trim();
   }
 
@@ -64,7 +64,7 @@ class Git {
    * @param args command arguments
    */
   public async describe(args: GitCommandArgs): Promise<string | undefined> {
-    let [success, output] = await this.runGit(args, ["describe", "--tags"], false);
+    const [success, output] = await this.runGit(args, ["describe", "--tags"], false);
     if (!success) {
       return undefined;
     }
@@ -77,7 +77,7 @@ class Git {
    * @param args sub command arguments
    */
   public async subcmd(args: GitSubCommandArgs): Promise<string> {
-    let [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
+    const [_, output] = await this.runGit(args, args.cmd instanceof Array ? args.cmd : args.cmd.split(" "), true);
     return output.trim();
   }
 

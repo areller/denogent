@@ -4,8 +4,8 @@ import { assertEquals } from "../../../tests_deps.ts";
 
 describe("task.test.ts", (t) => {
   t.test("dependsOn should create dependency", () => {
-    let taskA = task("taskA");
-    let taskB = task("taskB");
+    const taskA = task("taskA");
+    const taskB = task("taskB");
 
     taskA.dependsOn(taskB);
 
@@ -16,8 +16,8 @@ describe("task.test.ts", (t) => {
   });
 
   t.test("triggers should create dependency", () => {
-    let taskA = task("taskA");
-    let taskB = task("taskB");
+    const taskA = task("taskA");
+    const taskB = task("taskB");
 
     taskA.triggers(taskB);
 
@@ -28,7 +28,7 @@ describe("task.test.ts", (t) => {
   });
 
   t.test("tag should add a tag", () => {
-    let taskA = task("taskA");
+    const taskA = task("taskA");
     taskA.tag("tagA", "valueA").tag("tagB", "valueB").tag("tagB", "valueC");
 
     assertEquals(taskA.tags, {
@@ -38,7 +38,7 @@ describe("task.test.ts", (t) => {
   });
 
   t.test("property should add a property", () => {
-    let taskA = task("taskA");
+    const taskA = task("taskA");
     taskA.property("propA", {
       valA: "valueA",
       valB: "valueB",
@@ -53,7 +53,7 @@ describe("task.test.ts", (t) => {
   });
 
   t.test("dependsOn extension should call enrich and add extension", () => {
-    let taskA = task("taskA");
+    const taskA = task("taskA");
     const ext = {
       name: "ext1",
       key: "ext1_1",
@@ -70,14 +70,14 @@ describe("task.test.ts", (t) => {
   });
 
   t.test("propagateExceptions should be true by default", () => {
-    let taskA = task("taskA");
+    const taskA = task("taskA");
     assertEquals(taskA.propagateExceptions, true);
   });
 
   [false, true, undefined].forEach((breakCircuit) => {
     const breakCircuitStr = breakCircuit === undefined ? "default" : breakCircuit ? "true" : "false";
     t.test(`breakCircuit = ${breakCircuitStr} should set propagateExceptions accordingly`, () => {
-      let taskA = task("A");
+      const taskA = task("A");
       if (breakCircuit === undefined) {
         taskA.breakCircuit();
         assertEquals(taskA.propagateExceptions, false);
