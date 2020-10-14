@@ -8,7 +8,7 @@ const npmInstall = task("npm install")
   .dependsOn(nodejsSetup)
   .does(async (ctx) => {
     await runtime.command({
-      cmd: ["npm", "install"],
+      cmd: ["npm.cmd", "install"],
       logger: ctx?.logger,
     });
   });
