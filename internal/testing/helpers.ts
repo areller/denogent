@@ -1,7 +1,11 @@
 import { stdFs, stdPath } from "../../deps.ts";
 import type { Logger } from "../../lib/core/logger.ts";
 
-export async function copyDirToTemp(path: string, fn: (tempPath: string) => Promise<void>, subTempDir?: string): Promise<void> {
+export async function copyDirToTemp(
+  path: string,
+  fn: (tempPath: string) => Promise<void>,
+  subTempDir?: string,
+): Promise<void> {
   const dir = await Deno.makeTempDir();
   const targetDir = subTempDir === undefined ? dir : stdPath.join(dir, subTempDir);
 
