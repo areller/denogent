@@ -234,7 +234,7 @@ async function workflowAssertTest(
 
     let runStep = {
       name: "run build",
-      run: "deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions",
+      run: `deno run -A -q --unstable ${stdPath.join("build", "some-build.ts")} run --serial --runtime gh-actions`,
       env,
     };
 
