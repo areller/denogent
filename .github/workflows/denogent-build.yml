@@ -9,19 +9,19 @@ name: denogent-build
     branches:
       - master
 jobs:
-  ubuntu-latest:
-    name: ubuntu-latest
-    runs-on: ubuntu-latest
+  windows-latest:
+    name: windows-latest
+    runs-on: windows-latest
     steps:
       - name: checkout
         uses: actions/checkout@v2
       - name: setup deno
         uses: denolib/setup-deno@v2
         with:
-          deno-version: v1.4.1
+          deno-version: v1.4.6
       - name: Install NodeJS latest
         uses: actions/setup-node@v1
       - name: run build
         run: >-
-          deno run -A -q --unstable build/build.ts run --serial --runtime
+          deno run -A -q --unstable build\build.ts run --serial --runtime
           gh-actions

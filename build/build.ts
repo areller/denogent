@@ -49,7 +49,7 @@ createBuilder({
   targetTasks: [lint, test],
   ciIntegrations: [
     createGitHubActions({
-      image: "ubuntu-latest",
+      image: "windows-latest",
       onPRBranches: ["master"],
     }),
   ],
