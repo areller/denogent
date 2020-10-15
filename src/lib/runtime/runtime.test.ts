@@ -31,15 +31,19 @@ describe("runtime.test.ts", (t) => {
     () => isUnix(),
   );
 
-  t.test("command should run a command (windows)", async () => {
-    await emptyTempDir(async (temp) => {
-      await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "a", "1000"], logger: false });
-      await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "b", "1000"], logger: false });
+  t.test(
+    "command should run a command (windows)",
+    async () => {
+      await emptyTempDir(async (temp) => {
+        await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "a", "1000"], logger: false });
+        await runtime.command({ path: temp, cmd: ["fsutil", "file", "createnew", "b", "1000"], logger: false });
 
-      assertEquals(await stdFs.exists(stdPath.join(temp, "a")), true);
-      assertEquals(await stdFs.exists(stdPath.join(temp, "b")), true);
-    });
-  });
+        assertEquals(await stdFs.exists(stdPath.join(temp, "a")), true);
+        assertEquals(await stdFs.exists(stdPath.join(temp, "b")), true);
+      });
+    },
+    () => isWindows(),
+  );
 
   t.test(
     "command should run shell command (windows)",
