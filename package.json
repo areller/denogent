@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "check-format": "prettier --config .prettierrc --check \"(src|e2e|build)/**/*.ts\"",
     "format": "prettier --config .prettierrc --write \"(src|e2e|build)/**/*.ts\"",
-    "lint": "eslint src/ e2e/ build/",
+    "lint": "eslint src/ e2e/ build/ --max-warnings=0",
     "lint-fix": "eslint src/ e2e/ build/ --fix"
   },
   "repository": {
