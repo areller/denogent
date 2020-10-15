@@ -10,7 +10,7 @@ name: denogent-build
       - master
 jobs:
   lint:
-    name: ubuntu-latest
+    name: lint
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -25,7 +25,7 @@ jobs:
         run:
           deno run -A -q --unstable build/build.ts run --only "npm install" --only "lint" --runtime gh-actions
   build:
-    name: ubuntu-latest
+    name: build
     runs-on: ubuntu-latest
     steps:
       - name: checkout
