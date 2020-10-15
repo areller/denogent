@@ -23,7 +23,7 @@ export async function runCommand(
   let output = "";
 
   await readLines([process.stdout, process.stderr], true, (token) => {
-    if (onLine && token != "\n") {
+    if (onLine && token !== "\n") {
       onLine(token);
     }
 

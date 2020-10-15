@@ -26,6 +26,7 @@
             }
         ],
         "no-loop-func": "error",
-        "object-shorthand": "warn"
+        "object-shorthand": "warn",
+        "eqeqeq": "error"
     }
 }

@@ -44,7 +44,7 @@ describeE2E("tasks.test.ts", (t) => {
       assertEquals(lines.length, 2);
 
       assertEquals(
-        lines.filter((x) => x.task.name == "taskA").map((x) => x.task),
+        lines.filter((x) => x.task.name === "taskA").map((x) => x.task),
         [
           {
             name: "taskA",
@@ -59,7 +59,7 @@ describeE2E("tasks.test.ts", (t) => {
       );
 
       assertEquals(
-        lines.filter((x) => x.task.name == "taskB").map((x) => x.task),
+        lines.filter((x) => x.task.name === "taskB").map((x) => x.task),
         [
           {
             name: "taskB",

@@ -99,7 +99,7 @@ export class Folder {
       includeFiles: false,
       includeDirs: true,
     })) {
-      if (entry.isDirectory && stdPath.normalize(entry.path) != stdPath.normalize(this._path)) {
+      if (entry.isDirectory && stdPath.normalize(entry.path) !== stdPath.normalize(this._path)) {
         folders.push(new Folder(stdPath.join(this._path, entry.name)));
       }
     }

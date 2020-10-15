@@ -73,7 +73,7 @@ export class LocalRuntime implements Runtime {
       }
     }
 
-    if (Object.keys(services).length == 0) {
+    if (Object.keys(services).length === 0) {
       return;
     }
 
@@ -105,7 +105,7 @@ export class LocalRuntime implements Runtime {
   }
 
   public async removeDockerServices(): Promise<void> {
-    if (this.containerNames.length == 0) {
+    if (this.containerNames.length === 0) {
       return;
     }
 

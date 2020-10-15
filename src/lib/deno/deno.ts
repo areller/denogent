@@ -48,7 +48,7 @@ class DenoTools {
   }
 
   private insertPermissions(cmd: string[], permissions: DenoPermissions) {
-    if (permissions == DenoPermissions.All) {
+    if (permissions === DenoPermissions.All) {
       cmd.push(this._permFlagMap[DenoPermissions.All]);
     } else {
       for (const perm of [
@@ -59,7 +59,7 @@ class DenoTools {
         DenoPermissions.Read,
         DenoPermissions.Write,
       ]) {
-        if ((permissions & perm) == perm) {
+        if ((permissions & perm) === perm) {
           cmd.push(this._permFlagMap[perm]);
         }
       }

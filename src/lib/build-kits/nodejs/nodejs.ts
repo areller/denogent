@@ -11,7 +11,7 @@ class NodeJS {
    * @param version NodeJS version
    */
   public setup(version?: NodeJSVersion): Extension {
-    const dockerTag = !version || version == "latest" ? "alpine" : version + "-alpine";
+    const dockerTag = !version || version === "latest" ? "alpine" : version + "-alpine";
     return {
       name: "build-kits-nodejs",
       key: `build-kits-nodejs_${version}`,

@@ -21,7 +21,7 @@ export async function readLines(
       let readStr = new TextDecoder().decode(buf.subarray(0, n));
       let lineBreak = readStr.indexOf("\n", 0);
 
-      while (lineBreak != -1) {
+      while (lineBreak !== -1) {
         lineBuffer += readStr.substr(0, lineBreak);
         if (lineBuffer.length > 0) {
           fn(lineBuffer);

@@ -27,9 +27,9 @@ export function getGenerateCommand(): {
       }
 
       const ciName = context.args["ci"].toString();
-      const ciArray = context.buildContext.ciIntegrations.filter((c) => c.type == ciName);
+      const ciArray = context.buildContext.ciIntegrations.filter((c) => c.type === ciName);
 
-      if (ciArray === undefined || ciArray.length == 0) {
+      if (ciArray === undefined || ciArray.length === 0) {
         throw new Error(`Unknown CI integration '${ciName}'.`);
       }
 

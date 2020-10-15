@@ -3,15 +3,15 @@ import { osPlatform, stdPath } from "../../../deps.ts";
 export type Platform = "win" | "unix";
 
 export function isWindows(): boolean {
-  return osPlatform() == "win32";
+  return osPlatform() === "win32";
 }
 
 export function isUnix(): boolean {
-  return osPlatform() != "win32";
+  return osPlatform() !== "win32";
 }
 
 export function getPlatform(): Platform {
-  return osPlatform() != "win32" ? "unix" : "win";
+  return osPlatform() !== "win32" ? "unix" : "win";
 }
 
 export function getCurrentImportPath(metaUrl: string): string {
