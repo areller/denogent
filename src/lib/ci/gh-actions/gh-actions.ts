@@ -5,6 +5,7 @@ import { stdFs, stdPath, stringifyYaml } from "../../../../deps.ts";
 import type { Runtime } from "../../../internal/runtime.ts";
 import type { LoggerFn, LogLevel } from "../../core/logger.ts";
 import type { Graph } from "../../../internal/graph/graph.ts";
+import type { Task } from "../../core/task.ts";
 
 type Triggers = {
   push?: { branches?: string[]; tags?: string[] };
@@ -70,6 +71,7 @@ export class GitHubActions implements CIIntegration {
     private onPRBranches?: string[],
     private onPushTags?: string[],
     private customLabel?: string,
+    private onlyTasks?: Task[],
   ) {}
 
   public get type(): string {
@@ -116,6 +118,24 @@ export class GitHubActions implements CIIntegration {
     const runEnv: { [name: string]: string } = {};
 
     const runtimeName = this.customLabel === undefined ? "gh-actions" : `gh-actions:${this.customLabel}`;
+    const runCommand = [
+      "deno",
+      "run",
+      "-A",
+      "-q",
+      "--unstable",
+      args.buildFile,
+      "run",
+      "--serial",
+      "--runtime",
+      runtimeName,
+    ]; // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
+
+    if (this.onlyTasks !== undefined) {
+      for (const task of this.onlyTasks) {
+        runCommand.push("--only", task.name);
+      }
+    }
 
     const workflow = {
       name: workflowName,
@@ -141,7 +161,7 @@ export class GitHubActions implements CIIntegration {
             ...this.buildUses(args),
             {
               name: "run build",
-              run: `deno run -A -q --unstable ${args.buildFile} run --serial --runtime ${runtimeName}`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
+              run: runCommand.join(" "),
               env: {
                 ...runEnv,
                 ...this.buildSecrets(args),
@@ -291,10 +311,13 @@ export class GitHubActions implements CIIntegration {
 
 export interface CreateGitHubActionsArgs {
   /**
-   * An optional label
+   * an optional label
    */
   label?: string;
-
+  /**
+   * run only these tasks
+   */
+  onlyTasks?: Task[];
   /**
    * the image name of the CI virtual machine (e.g. 'windows-latest')
    */
@@ -318,5 +341,13 @@ export interface CreateGitHubActionsArgs {
  * @param args arguments for GitHub Actions
  */
 export function createGitHubActions(args: CreateGitHubActionsArgs): GitHubActions {
-  return new GitHubActions(args.image, undefined, args.onPushBranches, args.onPRBranches, args.onPushTags, args.label);
+  return new GitHubActions(
+    args.image,
+    undefined,
+    args.onPushBranches,
+    args.onPRBranches,
+    args.onPushTags,
+    args.label,
+    args.onlyTasks,
+  );
 }

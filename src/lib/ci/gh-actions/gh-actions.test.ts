@@ -144,6 +144,27 @@ describe("gh-actions.test.ts", (t) => {
       },
     );
   });
+
+  t.test("generate should generate a workflow file (onlyTasks)", async () => {
+    await workflowAssertTest(
+      new GitHubActions("ubuntu-latest", undefined, undefined, undefined, undefined, undefined, [
+        task("taskA"),
+        task("taskB"),
+      ]),
+      createSimpleGraph(),
+      "ubuntu-latest",
+      {
+        push: {
+          branches: ["master"],
+        },
+      },
+      [],
+      undefined,
+      undefined,
+      undefined,
+      ["taskA", "taskB"],
+    );
+  });
 });
 
 function createSimpleGraph(): Graph {
@@ -223,6 +244,7 @@ async function workflowAssertTest(
   services: unknown,
   env: unknown,
   customLabel?: string,
+  onlyTasks?: string[],
 ) {
   const workflowName = customLabel ?? "build";
   await emptyTempDir(async (temp) => {
@@ -238,10 +260,28 @@ async function workflowAssertTest(
     assertEquals(await stdFs.exists(workflowFile), true);
 
     const runtimeName = customLabel === undefined ? "gh-actions" : `gh-actions:${customLabel}`;
+    const runCommand = [
+      "deno",
+      "run",
+      "-A",
+      "-q",
+      "--unstable",
+      "build/some-build.ts",
+      "run",
+      "--serial",
+      "--runtime",
+      runtimeName,
+    ];
+
+    if (onlyTasks !== undefined) {
+      for (const task of onlyTasks) {
+        runCommand.push("--only", task);
+      }
+    }
 
     const runStep = {
       name: "run build",
-      run: `deno run -A -q --unstable build/some-build.ts run --serial --runtime ${runtimeName}`,
+      run: runCommand.join(" "),
       env,
     };
 

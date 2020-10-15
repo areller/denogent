@@ -37,10 +37,10 @@ export function getRunCommand(): {
     cmd: new Command()
       .description("Run the pipeline that is defined in the build file.")
       .option("--serial", "Run the pipeline in serial order.", {
-        conflicts: ["only"],
+        default: false,
       })
       .option("--only [task:string]", "Run only a single task.", {
-        conflicts: ["serial"],
+        collect: true,
       }),
     buildContextRequired: true,
     action: async (context: CLIContext) => {
@@ -54,10 +54,17 @@ export function getRunCommand(): {
       const executor = createExecutor();
       let graph = context.graph;
 
+      if (context.args["only"]) {
+        const only = context.args["only"];
+        if (only instanceof Array) {
+          graph = graph.createSerialGraphFrom(only);
+        } else {
+          graph = graph.createSerialGraphFrom([only]);
+        }
+      }
+
       if (context.args["serial"]) {
         graph = graph.createSerialGraph();
-      } else if (context.args["only"]) {
-        graph = graph.createSerialGraphFrom([context.args["only"].toString()]);
       }
 
       const execution = executor.fromGraph(graph, createContextCreator(context));
