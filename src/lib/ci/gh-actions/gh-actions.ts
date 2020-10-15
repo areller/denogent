@@ -106,6 +106,8 @@ export class GitHubActions implements CIIntegration {
 
     const runEnv: { [name: string]: string } = {};
 
+    const buildFileForPlatform = this.adjustBuildFilePathToPlatform(args.buildFile);
+
     const workflow = {
       name: args.name,
       on: this.buildTriggers(),
@@ -130,7 +132,7 @@ export class GitHubActions implements CIIntegration {
             ...this.buildUses(args),
             {
               name: "run build",
-              run: `deno run -A -q --unstable ${args.buildFile} run --serial --runtime gh-actions`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
+              run: `deno run -A -q --unstable ${buildFileForPlatform} run --serial --runtime gh-actions`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
               env: {
                 ...runEnv,
                 ...this.buildSecrets(args),
@@ -244,6 +246,14 @@ export class GitHubActions implements CIIntegration {
     }
 
     return env;
+  }
+
+  private adjustBuildFilePathToPlatform(path: string): string {
+    if (this.image.startsWith("windows")) {
+      return path.replaceAll("/", "\\");
+    } else {
+      return path.replaceAll("\\", "/");
+    }
   }
 
   private createYaml(obj: unknown): string {
