@@ -9,7 +9,7 @@ name: denogent-build
     branches:
       - master
 jobs:
-  ubuntu-latest:
+  lint:
     name: ubuntu-latest
     runs-on: ubuntu-latest
     steps:
@@ -22,6 +22,20 @@ jobs:
       - name: Install NodeJS latest
         uses: actions/setup-node@v1
       - name: run build
-        run: >-
-          deno run -A -q --unstable build/build.ts run --serial --runtime
-          gh-actions
+        run:
+          deno run -A -q --unstable build/build.ts run --only "npm install" --only "lint" --runtime gh-actions
+  build:
+    name: ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup deno
+        uses: denolib/setup-deno@v2
+        with:
+          deno-version: v1.4.1
+      - name: Install NodeJS latest
+        uses: actions/setup-node@v1
+      - name: run build
+        run:
+          deno run -A -q --unstable build/build.ts run --only "unit tests" --only "e2e tests" --runtime gh-actions
