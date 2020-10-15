@@ -31,8 +31,8 @@ function createJSON(level: LogLevel, message: string | Error, task?: string, met
   return {
     log: {
       level,
-      message: typeof message == "string" ? message : message.message,
-      stack: typeof message == "string" ? undefined : message.stack,
+      message: typeof message === "string" ? message : message.message,
+      stack: typeof message === "string" ? undefined : message.stack,
     },
     task,
     ...((meta || {}) as { [key: string]: unknown }),

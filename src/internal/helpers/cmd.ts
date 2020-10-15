@@ -14,7 +14,7 @@ export async function runCommand(
   throwOnFailure?: boolean,
 ): Promise<[boolean, string]> {
   const process = Deno.run({
-    cmd: cmd,
+    cmd,
     cwd: path ?? Deno.cwd(),
     stdout: "piped",
     stderr: "piped",
@@ -23,7 +23,7 @@ export async function runCommand(
   let output = "";
 
   await readLines([process.stdout, process.stderr], true, (token) => {
-    if (onLine && token != "\n") {
+    if (onLine && token !== "\n") {
       onLine(token);
     }
 

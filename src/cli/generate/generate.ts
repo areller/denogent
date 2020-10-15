@@ -10,7 +10,7 @@ export function getGenerateCommand(): {
   return {
     cmd: new Command()
       .description("Generate files for a CI integration.")
-      .option("--ci <type:string>", `The name of the CI integration (e.g. 'gh-actions').`, { required: true })
+      .option("--ci <type:string>", "The name of the CI integration (e.g. 'gh-actions').", { required: true })
       .option("--clean [:boolean]", "Only perform a clean.", {
         default: false,
       }),
@@ -27,9 +27,9 @@ export function getGenerateCommand(): {
       }
 
       const ciName = context.args["ci"].toString();
-      const ciArray = context.buildContext.ciIntegrations.filter((c) => c.type == ciName);
+      const ciArray = context.buildContext.ciIntegrations.filter((c) => c.type === ciName);
 
-      if (ciArray === undefined || ciArray.length == 0) {
+      if (ciArray === undefined || ciArray.length === 0) {
         throw new Error(`Unknown CI integration '${ciName}'.`);
       }
 

@@ -199,7 +199,7 @@ describe("executor.test.ts", (t) => {
         res = await execution.execute();
       } catch (err) {
         if (!propagateExceptions) {
-          return fail(`propagated exception`);
+          return fail("propagated exception");
         }
 
         assertEquals(eventLog, [
@@ -220,7 +220,7 @@ describe("executor.test.ts", (t) => {
 
       if (res !== undefined) {
         if (propagateExceptions) {
-          return fail(`didn't propagate exception`);
+          return fail("didn't propagate exception");
         }
 
         assertEquals(res, {
@@ -370,7 +370,7 @@ describe("executor.test.ts", (t) => {
         res = await execution.execute();
       } catch (err) {
         if (!propagateExceptions) {
-          return fail(`propagated exception`);
+          return fail("propagated exception");
         }
 
         assertEquals(eventLog, [
@@ -391,7 +391,7 @@ describe("executor.test.ts", (t) => {
 
       if (res !== undefined) {
         if (propagateExceptions) {
-          return fail(`didn't propagate exception`);
+          return fail("didn't propagate exception");
         }
 
         assertEquals(res, {

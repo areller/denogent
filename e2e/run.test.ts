@@ -22,7 +22,7 @@ describeE2E("run.test.ts", (t) => {
     });
   });
 
-  t.test(`'denogent run' should run prepared build file (no json)`, async () => {
+  t.test("'denogent run' should run prepared build file (no json)", async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: string[] = [];
       const [success] = await runCommand(
@@ -40,7 +40,7 @@ describeE2E("run.test.ts", (t) => {
     });
   });
 
-  t.test(`'denogent run' should run prepared build file (json)`, async () => {
+  t.test("'denogent run' should run prepared build file (json)", async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: { log: { level: string; message: string }; task: string; type: string }[] = [];
       const [success] = await runCommand(

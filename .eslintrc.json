@@ -24,6 +24,10 @@
             {
                 "endOfLine": "auto"
             }
-        ]
+        ],
+        "no-loop-func": "error",
+        "object-shorthand": "warn",
+        "eqeqeq": "error",
+        "quotes": "warn"
     }
 }

@@ -31,11 +31,11 @@ class GitHubActionsRuntime implements Runtime {
 
       if (meta !== undefined) {
         const attrs = meta as { type: string };
-        if (attrs.type == "started") {
+        if (attrs.type === "started") {
           issue("group", task);
           return;
-        } else if (["finishedSuccessfully", "failedCondition", "failed"].indexOf(attrs.type) != -1) {
-          if (attrs.type == "failedCondition" || attrs.type == "failed") {
+        } else if (["finishedSuccessfully", "failedCondition", "failed"].indexOf(attrs.type) !== -1) {
+          if (attrs.type === "failedCondition" || attrs.type === "failed") {
             console.error(message);
           }
 
@@ -98,7 +98,7 @@ export class GitHubActions implements CIIntegration {
     const workflowsPath =
       args.path === undefined ? stdPath.join(".github", "workflows") : stdPath.join(args.path, ".github", "workflows");
     if (await stdFs.exists(workflowsPath)) {
-      throw new Error(`Folder '.github/workflows' already exists.`);
+      throw new Error("Folder '.github/workflows' already exists.");
     }
 
     await stdFs.ensureDir(workflowsPath);
@@ -264,13 +264,13 @@ export class GitHubActions implements CIIntegration {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private sanitizeEmptyFields(obj: unknown): any {
     if (obj instanceof Array) {
-      if (obj.length == 0) {
+      if (obj.length === 0) {
         return undefined;
       }
 
       return obj.map((elem) => this.sanitizeEmptyFields(elem));
     } else if (obj instanceof Object) {
-      if (Object.keys(obj).length == 0) {
+      if (Object.keys(obj).length === 0) {
         return undefined;
       }
 

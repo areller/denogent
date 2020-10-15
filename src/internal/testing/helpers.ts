@@ -71,7 +71,7 @@ export async function tryRemoveDir(path: string): Promise<void> {
 
 async function removeRecursive(path: string): Promise<void> {
   for await (const entry of stdFs.walk(path, { maxDepth: 1 })) {
-    if (entry.isDirectory && stdPath.normalize(path) == stdPath.normalize(entry.path)) {
+    if (entry.isDirectory && stdPath.normalize(path) === stdPath.normalize(entry.path)) {
       continue;
     }
 

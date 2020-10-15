@@ -183,7 +183,7 @@ export class Execution {
         this.fireEvent({
           type: "failed",
           task: task.name,
-          error: error,
+          error,
         });
       }
     }
@@ -193,7 +193,7 @@ export class Execution {
       const tracker = this._tasksTracker[t.name];
       tracker.dependenciesFinished++;
 
-      return tracker.dependenciesFinished == t.dependencies.length;
+      return tracker.dependenciesFinished === t.dependencies.length;
     });
 
     // setting task status in the tracker
@@ -212,7 +212,7 @@ export class Execution {
   }
 
   private checkIfFinished(): void {
-    if (this._runningTasksCount == 0 && !this._alreadyFinished) {
+    if (this._runningTasksCount === 0 && !this._alreadyFinished) {
       this._alreadyFinished = true;
       if (this._resolve !== undefined) {
         const tasks: { [name: string]: TaskExecutionResult } = {};
@@ -247,7 +247,7 @@ export class Execution {
 
   private fireEvent(ev: TaskEvent) {
     const tracker = this._tasksTracker[ev.task];
-    if (ev.type == "log") {
+    if (ev.type === "log") {
       tracker.logs.push(ev);
     } else {
       tracker.lastEvent = ev;

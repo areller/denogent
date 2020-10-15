@@ -227,7 +227,7 @@ async function workflowAssertTest(
     await ghActions.generate({
       name: "build",
       buildFile: stdPath.join("build", "some-build.ts"),
-      graph: graph,
+      graph,
       logger: mockDebugLogger(),
       path: temp,
     });

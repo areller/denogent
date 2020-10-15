@@ -54,7 +54,7 @@ export class Graph {
    * @param taskNames the names of the tasks
    */
   public createSerialGraphFrom(taskNames: string[]): Graph {
-    if (taskNames.length == 0) {
+    if (taskNames.length === 0) {
       return new Graph({}, []);
     }
 
@@ -95,7 +95,7 @@ export class Graph {
    * @param taskNames the names of the tasks
    */
   public createParallelGraphFrom(taskNames: string[]): Graph {
-    if (taskNames.length == 0) {
+    if (taskNames.length === 0) {
       return new Graph({}, []);
     }
 
@@ -192,7 +192,7 @@ export class Graph {
       this.taskObjects(endTasks),
       (t) => this.taskObjects(t.dependencies),
       (t) => {
-        if (t.dependencies.length == 0) {
+        if (t.dependencies.length === 0) {
           startTasks.push(t.name);
         }
       },
@@ -208,7 +208,7 @@ export class Graph {
       this.taskObjects(startTasks),
       (t) => this.taskObjects(t.dependents),
       (t) => {
-        if (t.dependents.length == 0) {
+        if (t.dependents.length === 0) {
           endTasks.push(t.name);
         }
       },

@@ -73,12 +73,12 @@ export class LocalRuntime implements Runtime {
       }
     }
 
-    if (Object.keys(services).length == 0) {
+    if (Object.keys(services).length === 0) {
       return;
     }
 
     if (!(await runCommand(["docker", "--version"], undefined, undefined, false))[0]) {
-      throw new Error(`Docker is not installed.`);
+      throw new Error("Docker is not installed.");
     }
 
     for (const service of Object.values(services)) {
@@ -105,7 +105,7 @@ export class LocalRuntime implements Runtime {
   }
 
   public async removeDockerServices(): Promise<void> {
-    if (this.containerNames.length == 0) {
+    if (this.containerNames.length === 0) {
       return;
     }
 

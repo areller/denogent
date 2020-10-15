@@ -46,9 +46,9 @@ async function getRuntime(
 ): Promise<[Runtime, CIIntegration | undefined, Graph | undefined]> {
   const graph = buildContext !== undefined ? createGraph(buildContext.targetTasks) : undefined;
   let runtime: Runtime;
-  if (buildContext !== undefined && graph !== undefined && args["runtime"] && args["runtime"] != "local") {
-    const ciArray = buildContext.ciIntegrations.filter((c) => c.type == args["runtime"]);
-    if (ciArray === undefined || ciArray.length == 0) {
+  if (buildContext !== undefined && graph !== undefined && args["runtime"] && args["runtime"] !== "local") {
+    const ciArray = buildContext.ciIntegrations.filter((c) => c.type === args["runtime"]);
+    if (ciArray === undefined || ciArray.length === 0) {
       throw new Error(`Unknown runtime '${args["runtime"]}'.`);
     }
 
@@ -105,7 +105,7 @@ export async function createCLI(buildContext?: BuildContext): Promise<void> {
   const version = getCLIVersion();
   await new Command()
     .name("denogent")
-    .version(version == "{{VERSION}}" ? "" : version)
+    .version(version === "{{VERSION}}" ? "" : version)
     .description("A TypeScript build system")
     .option("--file [path:string]", "The path to the build file.", {
       global: true,

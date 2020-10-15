@@ -74,7 +74,7 @@ class Runtime {
    */
   public argValueOrDefault(name: string): string | undefined {
     const values = this.argValues(name);
-    if (values.length == 0) {
+    if (values.length === 0) {
       return undefined;
     }
 

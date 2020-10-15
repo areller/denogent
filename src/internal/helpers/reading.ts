@@ -15,15 +15,13 @@ export async function readLines(
   const buf = new Uint8Array(32 * 1024);
 
   while (readers.length > 0) {
-    const [n, reader] = await Promise.race(
-      readers.map((r) => r.read(buf).then((n) => [n, r] as [number, Deno.Reader & Deno.Closer])),
-    );
+    const [n, reader] = await Promise.race(readers.map((r) => readIntoBuffer(r, buf)));
 
     if (n !== null && n > 0) {
       let readStr = new TextDecoder().decode(buf.subarray(0, n));
       let lineBreak = readStr.indexOf("\n", 0);
 
-      while (lineBreak != -1) {
+      while (lineBreak !== -1) {
         lineBuffer += readStr.substr(0, lineBreak);
         if (lineBuffer.length > 0) {
           fn(lineBuffer);
@@ -48,4 +46,9 @@ export async function readLines(
       }
     }
   }
+}
+
+async function readIntoBuffer<T extends Deno.Reader>(reader: T, buffer: Uint8Array): Promise<[number | null, T]> {
+  const n = await reader.read(buffer);
+  return [n, reader];
 }

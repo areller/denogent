@@ -8,7 +8,7 @@ import { createBuildInTempDir, isJson } from "./common.ts";
 const denogent = ["deno", "run", "-A", "--no-check", "--unstable", stdPath.join(Deno.cwd(), "denogent.ts")];
 
 describeE2E("tasks.test.ts", (t) => {
-  t.test(`'denogent tasks' should return list of tasks (no json)`, async () => {
+  t.test("'denogent tasks' should return list of tasks (no json)", async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: string[] = [];
       const [success] = await runCommand(
@@ -28,7 +28,7 @@ describeE2E("tasks.test.ts", (t) => {
     });
   });
 
-  t.test(`'denogent tasks' should return list of tasks (json)`, async () => {
+  t.test("'denogent tasks' should return list of tasks (json)", async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: { task: Task }[] = [];
       const [success] = await runCommand(
@@ -44,7 +44,7 @@ describeE2E("tasks.test.ts", (t) => {
       assertEquals(lines.length, 2);
 
       assertEquals(
-        lines.filter((x) => x.task.name == "taskA").map((x) => x.task),
+        lines.filter((x) => x.task.name === "taskA").map((x) => x.task),
         [
           {
             name: "taskA",
@@ -59,7 +59,7 @@ describeE2E("tasks.test.ts", (t) => {
       );
 
       assertEquals(
-        lines.filter((x) => x.task.name == "taskB").map((x) => x.task),
+        lines.filter((x) => x.task.name === "taskB").map((x) => x.task),
         [
           {
             name: "taskB",
