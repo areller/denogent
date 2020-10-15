@@ -12,3 +12,4 @@ export { Colors };
 export { EventEmitter };
 export { config as dotenv } from "https://deno.land/x/dotenv@v0.5.0/mod.ts";
 export { Command } from "https://deno.land/x/cliffy@v0.14.2/command/mod.ts";
+export { platform as osPlatform } from "https://deno.land/std@0.74.0/node/os.ts";

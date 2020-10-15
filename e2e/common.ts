@@ -1,7 +1,8 @@
 import { stdFs, stdPath } from "../deps.ts";
+import { getCurrentImportPath } from "../src/internal/helpers/env.ts";
 import { copyDirToTemp } from "../src/internal/testing/helpers.ts";
 
-const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), "testassets").substr("file:".length);
+const assetsPath = stdPath.join(getCurrentImportPath(import.meta.url), "testassets");
 
 export async function createBuildInTempDir(fn: (tempPath: string) => Promise<void>): Promise<void> {
   await copyDirToTemp(

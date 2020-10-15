@@ -2,6 +2,7 @@ import { runCommand as runCommandInternal } from "../../internal/helpers/cmd.ts"
 import type { CommandArgs } from "./args.ts";
 import type { Extension } from "../core/extension.ts";
 import { Args, dotenv, parseArgs } from "../../../deps.ts";
+import { isWindows } from "../../internal/helpers/env.ts";
 
 class Runtime {
   private _args: Args;
@@ -16,16 +17,26 @@ class Runtime {
    * @param args command arguments
    */
   public async command(args: CommandArgs): Promise<[boolean, string]> {
+    const originalCmd = args.cmd instanceof Array ? args.cmd : args.cmd.split(" ");
+    let cmd = originalCmd;
+    if (isWindows()) {
+      cmd = ["cmd", "/c", ...cmd];
+    }
+
     const res = (await runCommandInternal(
-      args.cmd instanceof Array ? args.cmd : args.cmd.split(" "),
+      cmd,
       (line) => {
         if (args.logger) {
           args.logger.debug(line);
         }
       },
       args.path,
-      args.throwOnFailure ?? true,
+      false,
     )) as [boolean, string];
+
+    if (!res[0] && (args.throwOnFailure ?? true)) {
+      throw new Error(`Command '${originalCmd.join(" ")}' has failed.`);
+    }
 
     return res;
   }

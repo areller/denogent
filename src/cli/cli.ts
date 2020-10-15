@@ -13,13 +13,19 @@ import { getCreateCommand } from "./create/create.ts";
 import { getGenerateCommand } from "./generate/generate.ts";
 import type { BuildContext } from "../lib/core/context.ts";
 import type { CIIntegration } from "../lib/ci/ci_integration.ts";
+import { isWindows } from "../internal/helpers/env.ts";
 
 const defaultBuildFile = stdPath.join("build", "build.ts");
 const parsedArgs = parseArgs(Deno.args);
 
 function getMainFilePath() {
   const cwd = Deno.cwd();
-  return Deno.mainModule.substr(Deno.mainModule.indexOf(cwd) + cwd.length + 1);
+  let mainModule = Deno.mainModule;
+  if (isWindows()) {
+    mainModule = mainModule.replaceAll("/", "\\");
+  }
+
+  return mainModule.substr(mainModule.indexOf(cwd) + cwd.length + 1);
 }
 
 // run denogent via `deno run {buildFile}`

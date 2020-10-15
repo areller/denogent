@@ -5,6 +5,7 @@ import { createGraph, Graph } from "../../../internal/graph/graph.ts";
 import { task } from "../../core/task.ts";
 import { parseYaml, stdFs, stdPath } from "../../../../deps.ts";
 import { assertEquals } from "../../../../tests_deps.ts";
+import { pathJoin } from "../../../internal/helpers/env.ts";
 
 describe("gh-actions.test.ts", (t) => {
   t.test("clean should clean workflow file", async () => {
@@ -23,20 +24,22 @@ describe("gh-actions.test.ts", (t) => {
     });
   });
 
-  t.test("generate should generate a workflow file", async () => {
-    await workflowAssertTest(
-      new GitHubActions("ubuntu-latest"),
-      createSimpleGraph(),
-      "ubuntu-latest",
-      {
-        push: {
-          branches: ["master"],
+  ["unknown-image", "ubuntu-latest", "windows-latest"].forEach((image) => {
+    t.test("generate should generate a workflow file", async () => {
+      await workflowAssertTest(
+        new GitHubActions(image),
+        createSimpleGraph(),
+        image,
+        {
+          push: {
+            branches: ["master"],
+          },
         },
-      },
-      [],
-      undefined,
-      undefined,
-    );
+        [],
+        undefined,
+        undefined,
+      );
+    });
   });
 
   t.test("generate should generate workflow file (branches)", async () => {
@@ -232,9 +235,13 @@ async function workflowAssertTest(
     const workflowFile = stdPath.join(temp, ".github", "workflows", "build.yml");
     assertEquals(await stdFs.exists(workflowFile), true);
 
+    const buildFilePath = image.startsWith("windows")
+      ? pathJoin(["build", "some-build.ts"], "win")
+      : pathJoin(["build", "some-build.ts"], "unix");
+
     const runStep = {
       name: "run build",
-      run: "deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions",
+      run: `deno run -A -q --unstable ${buildFilePath} run --serial --runtime gh-actions`,
       env,
     };
 

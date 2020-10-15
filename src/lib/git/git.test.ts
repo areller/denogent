@@ -4,8 +4,9 @@ import git from "./git.ts";
 import { runCommand } from "../../internal/helpers/cmd.ts";
 import { stdPath } from "../../../deps.ts";
 import { assertEquals } from "../../../tests_deps.ts";
+import { getCurrentImportPath } from "../../internal/helpers/env.ts";
 
-const assetsPath = stdPath.join(stdPath.dirname(import.meta.url), "testassets").substr("file:".length);
+const assetsPath = stdPath.join(getCurrentImportPath(import.meta.url), "testassets");
 
 describe("git.test.ts", (t) => {
   [[false, "non-repo"] as [boolean, string], [true, "simple-repo"] as [boolean, string]].forEach(
