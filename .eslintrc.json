@@ -25,6 +25,7 @@
                 "endOfLine": "auto"
             }
         ],
-        "no-loop-func": "error"
+        "no-loop-func": "error",
+        "object-shorthand": "warn"
     }
 }

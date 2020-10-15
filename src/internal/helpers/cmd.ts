@@ -14,7 +14,7 @@ export async function runCommand(
   throwOnFailure?: boolean,
 ): Promise<[boolean, string]> {
   const process = Deno.run({
-    cmd: cmd,
+    cmd,
     cwd: path ?? Deno.cwd(),
     stdout: "piped",
     stderr: "piped",

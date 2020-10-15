@@ -183,7 +183,7 @@ export class Execution {
         this.fireEvent({
           type: "failed",
           task: task.name,
-          error: error,
+          error,
         });
       }
     }
