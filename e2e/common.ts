@@ -10,7 +10,11 @@ export async function createBuildInTempDir(fn: (tempPath: string) => Promise<voi
       const targetDir = stdPath.join(temp, "testassets");
       await stdFs.ensureDir(targetDir);
       await stdFs.copy(assetsPath, targetDir, { overwrite: true });
-      await stdFs.move(stdPath.join(targetDir, "build._ts"), stdPath.join(targetDir, "build.ts"));
+      for await (const file of stdFs.walk(targetDir)) {
+        if (file.isFile && stdPath.parse(file.path).ext == "._ts") {
+          await stdFs.move(file.path, stdPath.join(stdPath.dirname(file.path), stdPath.parse(file.path).name + ".ts"));
+        }
+      }
       await fn(targetDir);
     },
     "denogent",

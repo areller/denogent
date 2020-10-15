@@ -41,7 +41,11 @@ async function getRuntime(
   const graph = buildContext !== undefined ? createGraph(buildContext.targetTasks) : undefined;
   let runtime: Runtime;
   if (buildContext !== undefined && graph !== undefined && args["runtime"] && args["runtime"] != "local") {
-    const ciArray = buildContext.ciIntegrations.filter((c) => c.type == args["runtime"]);
+    const ciArray = buildContext.ciIntegrations.filter(
+      (c) =>
+        (c.label === undefined && c.type == args["runtime"]) ||
+        (c.label !== undefined && c.type + ":" + c.label == args["runtime"]),
+    );
     if (ciArray === undefined || ciArray.length == 0) {
       throw new Error(`Unknown runtime '${args["runtime"]}'.`);
     }

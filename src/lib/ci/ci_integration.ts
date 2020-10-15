@@ -4,6 +4,10 @@ import type { Runtime } from "../../internal/runtime.ts";
 
 export interface CleanArgs {
   /**
+   * the name of the build
+   */
+  name: string;
+  /**
    * an instance of a logger
    */
   logger: Logger;
@@ -46,6 +50,14 @@ export interface CreateRuntimeArgs {
 }
 
 export interface CIIntegration {
+  /**
+   * An optional custom label for this instance of the CI integration.
+   */
+  label?: string;
+
+  /**
+   * The type of the CI integration. (e.g. gh-actions)
+   */
   type: string;
 
   /**

@@ -22,11 +22,23 @@ describeE2E("run.test.ts", (t) => {
     });
   });
 
+  t.test(`'denogent run' should run for runtime of certain label`, async () => {
+    await createBuildInTempDir(async (temp) => {
+      const [success] = await runCommand(
+        [...denogent, "run", "--file", "build2.ts", "--runtime", "gh-actions:buildA"],
+        undefined,
+        temp,
+        false,
+      );
+      assertEquals(success, true);
+    });
+  });
+
   t.test(`'denogent run' should run prepared build file (no json)`, async () => {
     await createBuildInTempDir(async (temp) => {
       const lines: string[] = [];
       const [success] = await runCommand(
-        [...denogent, "run", "--file", "build.ts"],
+        [...denogent, "run", "--file", "build1.ts"],
         (line) => {
           assertEquals(isJson(line), false);
           lines.push(line);
@@ -44,7 +56,7 @@ describeE2E("run.test.ts", (t) => {
     await createBuildInTempDir(async (temp) => {
       const lines: { log: { level: string; message: string }; task: string; type: string }[] = [];
       const [success] = await runCommand(
-        [...denogent, "run", "--file", "build.ts", "--json"],
+        [...denogent, "run", "--file", "build1.ts", "--json"],
         (line) => {
           assertEquals(isJson(line), true);
           lines.push(JSON.parse(line));

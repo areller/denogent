@@ -1,6 +1,7 @@
 import { Command } from "../../../deps.ts";
 import { createLoggerFromFn } from "../../lib/core/logger.ts";
 import type { CLIContext } from "../context.ts";
+import { selectCIsFromFilter } from "./ci_selector.ts";
 
 export function getGenerateCommand(): {
   cmd: Command;
@@ -10,7 +11,19 @@ export function getGenerateCommand(): {
   return {
     cmd: new Command()
       .description("Generate files for a CI integration.")
-      .option("--ci <type:string>", `The name of the CI integration (e.g. 'gh-actions').`, { required: true })
+      .option("--ci <type:string>", `The name of the CI integration (e.g. 'gh-actions').`, {
+        required: false,
+        collect: true,
+        conflicts: ["all", "label"],
+      })
+      .option("--all [:boolean]", "Generate for all declared CI integrations.", {
+        required: false,
+        conflicts: ["ci", "label"],
+      })
+      .option("--label <label:string>", "The custom label that was given to the CI integration.", {
+        required: false,
+        conflicts: ["all", "ci"],
+      })
       .option("--clean [:boolean]", "Only perform a clean.", {
         default: false,
       }),
@@ -26,25 +39,35 @@ export function getGenerateCommand(): {
         throw new Error("Graph is unavailable.");
       }
 
-      const ciName = context.args["ci"].toString();
-      const ciArray = context.buildContext.ciIntegrations.filter((c) => c.type == ciName);
+      const cis = selectCIsFromFilter(context.buildContext.ciIntegrations, {
+        all: context.args["all"] !== undefined,
+        ci:
+          context.args["ci"] !== undefined
+            ? context.args["ci"] instanceof Array
+              ? context.args["ci"]
+              : [context.args["ci"]]
+            : undefined,
+        label:
+          context.args["label"] !== undefined
+            ? context.args["label"] instanceof Array
+              ? context.args["label"]
+              : [context.args["label"]]
+            : undefined,
+      });
 
-      if (ciArray === undefined || ciArray.length == 0) {
-        throw new Error(`Unknown CI integration '${ciName}'.`);
-      }
-
-      const ci = ciArray[0];
       const logger = createLoggerFromFn(context.runtime.loggerFn);
 
-      await ci.clean({ logger });
+      for (const ci of cis) {
+        await ci.clean({ logger, name: context.buildContext.name });
 
-      if (!context.args["clean"]) {
-        await ci.generate({
-          name: context.buildContext.name,
-          buildFile: context.buildFile,
-          graph: context.graph,
-          logger,
-        });
+        if (!context.args["clean"]) {
+          await ci.generate({
+            name: context.buildContext.name,
+            buildFile: context.buildFile,
+            graph: context.graph,
+            logger,
+          });
+        }
       }
     },
   };

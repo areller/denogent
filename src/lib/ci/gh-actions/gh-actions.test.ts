@@ -11,32 +11,35 @@ describe("gh-actions.test.ts", (t) => {
     await emptyTempDir(async (temp) => {
       const workflowsPath = stdPath.join(temp, ".github", "workflows");
       await stdFs.ensureDir(workflowsPath);
-      const workflowFile = stdPath.join(workflowsPath, "workflow.yaml");
+      const workflowFile = stdPath.join(workflowsPath, "workflow.yml");
       await stdFs.ensureFile(workflowFile);
 
       assertEquals(await stdFs.exists(workflowFile), true);
 
       const ghActions = new GitHubActions("some-image");
-      await ghActions.clean({ path: temp, logger: mockDebugLogger() });
+      await ghActions.clean({ path: temp, logger: mockDebugLogger(), name: "workflow" });
 
       assertEquals(await stdFs.exists(workflowFile), false);
     });
   });
 
-  t.test("generate should generate a workflow file", async () => {
-    await workflowAssertTest(
-      new GitHubActions("ubuntu-latest"),
-      createSimpleGraph(),
-      "ubuntu-latest",
-      {
-        push: {
-          branches: ["master"],
+  [undefined, "build-1"].forEach((label) => {
+    t.test(`generate should generate a workflow file (label = ${label})`, async () => {
+      await workflowAssertTest(
+        new GitHubActions("ubuntu-latest", undefined, undefined, undefined, undefined, label),
+        createSimpleGraph(),
+        "ubuntu-latest",
+        {
+          push: {
+            branches: ["master"],
+          },
         },
-      },
-      [],
-      undefined,
-      undefined,
-    );
+        [],
+        undefined,
+        undefined,
+        label,
+      );
+    });
   });
 
   t.test("generate should generate workflow file (branches)", async () => {
@@ -219,7 +222,9 @@ async function workflowAssertTest(
   extraSteps: unknown[],
   services: unknown,
   env: unknown,
+  customLabel?: string,
 ) {
+  const workflowName = customLabel ?? "build";
   await emptyTempDir(async (temp) => {
     await ghActions.generate({
       name: "build",
@@ -229,12 +234,14 @@ async function workflowAssertTest(
       path: temp,
     });
 
-    const workflowFile = stdPath.join(temp, ".github", "workflows", "build.yml");
+    const workflowFile = stdPath.join(temp, ".github", "workflows", `${workflowName}.yml`);
     assertEquals(await stdFs.exists(workflowFile), true);
+
+    const runtimeName = customLabel === undefined ? "gh-actions" : `gh-actions:${customLabel}`;
 
     const runStep = {
       name: "run build",
-      run: "deno run -A -q --unstable build/some-build.ts run --serial --runtime gh-actions",
+      run: `deno run -A -q --unstable build/some-build.ts run --serial --runtime ${runtimeName}`,
       env,
     };
 
@@ -243,7 +250,7 @@ async function workflowAssertTest(
     }
 
     const workflow = {
-      name: "build",
+      name: workflowName,
       on: triggers,
       jobs: {
         [image]: {
