@@ -1,26 +1,5 @@
-import { createBuilder, task, deno, DenoPermissions, runtime, createGitHubActions, nodejs } from "../mod.ts";
-
-const nodejsSetup = nodejs.setup("latest");
-
-const npmInstall = task("npm install")
-  .dependsOn(nodejsSetup)
-  .does(async (ctx) => {
-    await runtime.command({
-      cmd: ["npm", "install"],
-      logger: ctx?.logger,
-    });
-  });
-
-const lint = task("lint")
-  .dependsOn(nodejsSetup)
-  .dependsOn(npmInstall)
-  .when((ctx) => ctx?.ci !== undefined)
-  .does(async (ctx) => {
-    await runtime.command({
-      cmd: ["npm", "run", "lint"],
-      logger: ctx?.logger,
-    });
-  });
+import { createBuilder, task, deno, DenoPermissions, createGitHubActions } from "../mod.ts";
+import { default as lintingTasks } from "./build.lint.ts";
 
 const unitTests = task("unit tests").does(async (ctx) => {
   await deno.test({
@@ -46,11 +25,19 @@ const test = task("test").dependsOn([unitTests, e2eTests]);
 
 createBuilder({
   name: "denogent-build",
-  targetTasks: [lint, test],
+  targetTasks: [...lintingTasks, test],
   ciIntegrations: [
     createGitHubActions({
       image: "ubuntu-latest",
       onPRBranches: ["master"],
+      label: "build-linux",
+      onlyTasks: [unitTests, e2eTests, test],
+    }),
+    createGitHubActions({
+      image: "ubuntu-latest",
+      onPushBranches: ["master"],
+      label: "format",
+      onlyTasks: lintingTasks,
     }),
   ],
 });
