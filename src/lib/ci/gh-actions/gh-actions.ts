@@ -133,7 +133,7 @@ export class GitHubActions implements CIIntegration {
 
     if (this.onlyTasks !== undefined) {
       for (const task of this.onlyTasks) {
-        runCommand.push("--only", task.name);
+        runCommand.push("--only", `"${task.name}"`);
       }
     }
 

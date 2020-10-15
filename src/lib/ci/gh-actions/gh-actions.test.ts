@@ -150,6 +150,7 @@ describe("gh-actions.test.ts", (t) => {
       new GitHubActions("ubuntu-latest", undefined, undefined, undefined, undefined, undefined, [
         task("taskA"),
         task("taskB"),
+        task("task with spaces"),
       ]),
       createSimpleGraph(),
       "ubuntu-latest",
@@ -162,7 +163,7 @@ describe("gh-actions.test.ts", (t) => {
       undefined,
       undefined,
       undefined,
-      ["taskA", "taskB"],
+      ["taskA", "taskB", "task with spaces"],
     );
   });
 });
@@ -275,7 +276,7 @@ async function workflowAssertTest(
 
     if (onlyTasks !== undefined) {
       for (const task of onlyTasks) {
-        runCommand.push("--only", task);
+        runCommand.push("--only", `"${task}"`);
       }
     }
 
