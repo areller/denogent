@@ -10,7 +10,7 @@ export function getGenerateCommand(): {
   return {
     cmd: new Command()
       .description("Generate files for a CI integration.")
-      .option("--ci <type:string>", `The name of the CI integration (e.g. 'gh-actions').`, { required: true })
+      .option("--ci <type:string>", "The name of the CI integration (e.g. 'gh-actions').", { required: true })
       .option("--clean [:boolean]", "Only perform a clean.", {
         default: false,
       }),

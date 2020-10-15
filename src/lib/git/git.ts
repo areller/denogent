@@ -15,7 +15,7 @@ class Git {
 
       process.status().then(async (status) => {
         if (!status.success) {
-          reject(`Git wasn't detected.`);
+          reject("Git wasn't detected.");
         } else {
           resolve();
         }

@@ -78,7 +78,7 @@ export class LocalRuntime implements Runtime {
     }
 
     if (!(await runCommand(["docker", "--version"], undefined, undefined, false))[0]) {
-      throw new Error(`Docker is not installed.`);
+      throw new Error("Docker is not installed.");
     }
 
     for (const service of Object.values(services)) {

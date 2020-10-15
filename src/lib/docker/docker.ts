@@ -25,7 +25,7 @@ export class DockerClient {
 
       process.status().then(async (status) => {
         if (!status.success) {
-          reject(`Docker wasn't detected.`);
+          reject("Docker wasn't detected.");
         } else {
           resolve();
         }

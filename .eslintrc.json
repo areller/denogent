@@ -27,6 +27,7 @@
         ],
         "no-loop-func": "error",
         "object-shorthand": "warn",
-        "eqeqeq": "error"
+        "eqeqeq": "error",
+        "quotes": "warn"
     }
 }

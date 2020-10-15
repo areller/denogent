@@ -98,7 +98,7 @@ export class GitHubActions implements CIIntegration {
     const workflowsPath =
       args.path === undefined ? stdPath.join(".github", "workflows") : stdPath.join(args.path, ".github", "workflows");
     if (await stdFs.exists(workflowsPath)) {
-      throw new Error(`Folder '.github/workflows' already exists.`);
+      throw new Error("Folder '.github/workflows' already exists.");
     }
 
     await stdFs.ensureDir(workflowsPath);

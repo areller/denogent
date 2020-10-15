@@ -57,7 +57,7 @@ describe("runtime.test.ts", (t) => {
   [false, true, undefined].forEach((throws) => {
     t.test(
       "command " +
-        (throws === true || throws === undefined ? "should" : `shouldn't`) +
+        (throws === true || throws === undefined ? "should" : "shouldn't") +
         " throw an exception when fails",
       async () => {
         await copyDirToTemp(assetsPath, async (temp) => {
@@ -75,7 +75,7 @@ describe("runtime.test.ts", (t) => {
             assertEquals(status, false);
           } catch (error) {
             if (throws === true || throws === undefined) {
-              assertEquals(error.message, `Command 'deno run --no-check -A fail.ts' has failed.`);
+              assertEquals(error.message, "Command 'deno run --no-check -A fail.ts' has failed.");
             } else {
               fail("exception was thrown");
             }
