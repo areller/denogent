@@ -133,7 +133,7 @@ export class GitHubActions implements CIIntegration {
 
       if (job.onlyTasks !== undefined) {
         for (const task of job.onlyTasks) {
-          runCommand.push("--only", task.name);
+          runCommand.push("--only", `"${task.name}"`);
         }
       }
 
@@ -366,7 +366,7 @@ export interface GitHubActionsJobArgs {
    */
   image: string;
   /**
-   * an optional array of tasks to run during the job (default: run all tasks)
+   * an optional array of tasks to run during the job (the tasks will run in order) (default: run all tasks)
    */
   onlyTasks?: Task[];
   /**

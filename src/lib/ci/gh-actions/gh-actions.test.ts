@@ -128,13 +128,13 @@ describe("gh-actions.test.ts", (t) => {
     await workflowAssertTest(
       createGHActions({
         jobs: [
-          { name: "jobA", image: "ubuntu-latest", onlyTasks: [task("taskA"), task("taskB")] },
+          { name: "jobA", image: "ubuntu-latest", onlyTasks: [task("taskA"), task("task B")] },
           { name: "jobB", image: "ubuntu-latest", onlyTasks: [task("taskC")] },
         ],
       }),
-      createGraph([task("taskA"), task("taskB"), task("taskC")]),
+      createGraph([task("taskA"), task("task B"), task("taskC")]),
       [
-        { name: "jobA", image: "ubuntu-latest", onlyTasks: ["taskA", "taskB"] },
+        { name: "jobA", image: "ubuntu-latest", onlyTasks: ["taskA", "task B"] },
         { name: "jobB", image: "ubuntu-latest", onlyTasks: ["taskC"] },
       ],
       simpleTrigger,
@@ -475,7 +475,7 @@ async function workflowAssertTest(
       ];
       if (job.onlyTasks !== undefined) {
         for (const task of job.onlyTasks) {
-          runCmd.push("--only", task);
+          runCmd.push("--only", `"${task}"`);
         }
       }
 

@@ -49,7 +49,23 @@ createBuilder({
   targetTasks: [lint, test],
   ciIntegrations: [
     createGitHubActions({
-      image: "ubuntu-latest",
+      jobs: [
+        {
+          name: "lint",
+          image: "ubuntu-latest",
+          onlyTasks: [npmInstall, lint],
+        },
+        {
+          name: "build-linux",
+          image: "ubuntu-latest",
+          onlyTasks: [unitTests, e2eTests],
+        },
+        {
+          name: "build-windows",
+          image: "windows-latest",
+          onlyTasks: [unitTests, e2eTests],
+        },
+      ],
       onPRBranches: ["master"],
     }),
   ],
