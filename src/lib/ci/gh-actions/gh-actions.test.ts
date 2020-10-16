@@ -1,11 +1,17 @@
+import { parseYaml, stdFs, stdPath } from "../../../../deps.ts";
 import { emptyTempDir, mockDebugLogger } from "../../../internal/testing/helpers.ts";
 import { describe } from "../../../internal/testing/test.ts";
-import { GitHubActions } from "./gh-actions.ts";
+import { assertEquals, assertNotEquals } from "../../../../tests_deps.ts";
+import { createGitHubActions, CreateGitHubActionsArgs, GitHubActions } from "./gh-actions.ts";
 import { createGraph, Graph } from "../../../internal/graph/graph.ts";
-import { task } from "../../core/task.ts";
-import { parseYaml, stdFs, stdPath } from "../../../../deps.ts";
-import { assertEquals } from "../../../../tests_deps.ts";
 import { pathJoin } from "../../../internal/helpers/env.ts";
+import { task } from "../../core/task.ts";
+
+const simpleTrigger = {
+  push: {
+    branches: ["master"],
+  },
+};
 
 describe("gh-actions.test.ts", (t) => {
   t.test("clean should clean workflow file", async () => {
@@ -17,131 +23,341 @@ describe("gh-actions.test.ts", (t) => {
 
       assertEquals(await stdFs.exists(workflowFile), true);
 
-      const ghActions = new GitHubActions("some-image");
+      const ghActions = createGitHubActions({ image: "some-image" });
       await ghActions.clean({ path: temp, logger: mockDebugLogger() });
 
       assertEquals(await stdFs.exists(workflowFile), false);
     });
   });
 
+  t.test("should fail to generate multiple jobs without names", async () => {
+    let error: Error | undefined = undefined;
+    try {
+      createGHActions({ jobs: [{ image: "windows-latest" }, { name: "job", image: "ubuntu-latest" }] });
+    } catch (err) {
+      error = err;
+    }
+
+    assertNotEquals(error, undefined);
+  });
+
+  t.test("should fail to generate multiple jobs with duplicate names", async () => {
+    let error: Error | undefined = undefined;
+    try {
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "windows-latest" },
+          { name: "jobA", image: "ubuntu-latest" },
+        ],
+      });
+    } catch (err) {
+      error = err;
+    }
+
+    assertNotEquals(error, undefined);
+  });
+
   ["unknown-image", "ubuntu-latest", "windows-latest"].forEach((image) => {
-    t.test("generate should generate a workflow file", async () => {
+    t.test(`should generate single job workflow of image = ${image}`, async () => {
       await workflowAssertTest(
-        new GitHubActions(image),
+        createGHActions({ image }),
         createSimpleGraph(),
-        image,
-        {
-          push: {
-            branches: ["master"],
-          },
-        },
-        [],
-        undefined,
-        undefined,
+        [{ name: "build", image }],
+        simpleTrigger,
       );
     });
   });
 
-  t.test("generate should generate workflow file (branches)", async () => {
+  t.test("should generate workflow file with multiple jobs", async () => {
     await workflowAssertTest(
-      new GitHubActions("ubuntu-latest", undefined, ["master", "dev"], ["master"], ["v*"]),
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "windows-latest" },
+          { name: "jobB", image: "ubuntu-latest" },
+        ],
+      }),
       createSimpleGraph(),
-      "ubuntu-latest",
+      [
+        { name: "jobA", image: "windows-latest" },
+        { name: "jobB", image: "ubuntu-latest" },
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with branches", async () => {
+    await workflowAssertTest(
+      createGHActions({
+        image: "ubuntu-latest",
+        onPushBranches: ["master", "release"],
+        onPRBranches: ["master", "release", "dev"],
+        onPushTags: ["v*"],
+      }),
+      createSimpleGraph(),
+      [{ name: "build", image: "ubuntu-latest" }],
       {
         push: {
-          branches: ["master", "dev"],
+          branches: ["master", "release"],
           tags: ["v*"],
         },
         pull_request: {
-          branches: ["master"],
+          branches: ["master", "release", "dev"],
         },
       },
-      [],
-      undefined,
-      undefined,
     );
   });
 
-  t.test("generate should generate a workflow file (secrets)", async () => {
+  t.test("should generate workflow file with environment variables", async () => {
     await workflowAssertTest(
-      new GitHubActions("ubuntu-latest"),
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "ubuntu-latest", env: { envA: "a", envB: "b" } },
+          { name: "jobB", image: "ubuntu-latest", env: { envC: "c", envD: "d" } },
+        ],
+      }),
+      createSimpleGraph(),
+      [
+        { name: "jobA", image: "ubuntu-latest", env: { envA: "a", envB: "b" } },
+        { name: "jobB", image: "ubuntu-latest", env: { envC: "c", envD: "d" } },
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with selective tasks", async () => {
+    await workflowAssertTest(
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "ubuntu-latest", onlyTasks: [task("taskA"), task("taskB")] },
+          { name: "jobB", image: "ubuntu-latest", onlyTasks: [task("taskC")] },
+        ],
+      }),
+      createGraph([task("taskA"), task("taskB"), task("taskC")]),
+      [
+        { name: "jobA", image: "ubuntu-latest", onlyTasks: ["taskA", "taskB"] },
+        { name: "jobB", image: "ubuntu-latest", onlyTasks: ["taskC"] },
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with secrets (single job)", async () => {
+    await workflowAssertTest(
+      createGHActions({ image: "ubuntu-latest" }),
       createGraphWithSecrets(),
-      "ubuntu-latest",
-      {
-        push: {
-          branches: ["master"],
-        },
-      },
-      [],
-      undefined,
-      {
-        token: "${{ secrets.token }}",
-        username: "${{ secrets.username }}",
-        password: "${{ secrets.password }}",
-      },
-    );
-  });
-
-  t.test("generate should generate a workflow file (uses)", async () => {
-    await workflowAssertTest(
-      new GitHubActions("ubuntu-latest"),
-      createGraphWithUses(),
-      "ubuntu-latest",
-      {
-        push: {
-          branches: ["master"],
-        },
-      },
       [
         {
-          name: "nodejs",
-          uses: "nodejs/nodejs",
-          with: {
-            "node-version": "12.18",
-          },
-        },
-        {
-          name: "dotnet",
-          uses: "dotnet/dotnet",
-          with: {
-            "dotnet-version": "5.0",
+          name: "build",
+          image: "ubuntu-latest",
+          env: {
+            token: "${{ secrets.token }}",
+            username: "${{ secrets.username }}",
+            password: "${{ secrets.password }}",
           },
         },
       ],
-      undefined,
-      undefined,
+      simpleTrigger,
     );
   });
 
-  t.test("generate should generate a workflow file (services)", async () => {
+  t.test("should generate workflow file with secrets (multiple jobs)", async () => {
     await workflowAssertTest(
-      new GitHubActions("ubuntu-latest"),
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "ubuntu-latest", onlyTasks: [task("a")], env: { customA: "a" } },
+          { name: "jobB", image: "ubuntu-latest", onlyTasks: [task("b")] },
+        ],
+      }),
+      createGraphWithSecrets(),
+      [
+        {
+          name: "jobA",
+          image: "ubuntu-latest",
+          onlyTasks: ["a"],
+          env: {
+            username: "${{ secrets.username }}",
+            password: "${{ secrets.password }}",
+            customA: "a",
+          },
+        },
+        {
+          name: "jobB",
+          image: "ubuntu-latest",
+          onlyTasks: ["b"],
+          env: {
+            username: "${{ secrets.username }}",
+            token: "${{ secrets.token }}",
+          },
+        },
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with uses (single job)", async () => {
+    await workflowAssertTest(
+      createGHActions({ image: "ubuntu-latest" }),
+      createGraphWithUses(),
+      [
+        {
+          name: "build",
+          image: "ubuntu-latest",
+          extraSteps: [
+            {
+              name: "nodejs",
+              uses: "nodejs/nodejs",
+              with: {
+                "node-version": "12.18",
+              },
+            },
+            {
+              name: "dotnet",
+              uses: "dotnet/dotnet",
+              with: {
+                "dotnet-version": "5.0",
+              },
+            },
+          ],
+        },
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with uses (multiple jobs)", async () => {
+    await workflowAssertTest(
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "ubuntu-latest", onlyTasks: [task("a")] },
+          { name: "jobB", image: "ubuntu-latest", onlyTasks: [task("b")] },
+        ],
+      }),
+      createGraphWithUses(),
+      [
+        {
+          name: "jobA",
+          image: "ubuntu-latest",
+          onlyTasks: ["a"],
+          extraSteps: [
+            {
+              name: "nodejs",
+              uses: "nodejs/nodejs",
+              with: {
+                "node-version": "12.18",
+              },
+            },
+          ],
+        },
+        {
+          name: "jobB",
+          image: "ubuntu-latest",
+          onlyTasks: ["b"],
+          extraSteps: [
+            {
+              name: "nodejs",
+              uses: "nodejs/nodejs",
+              with: {
+                "node-version": "12.18",
+              },
+            },
+            {
+              name: "dotnet",
+              uses: "dotnet/dotnet",
+              with: {
+                "dotnet-version": "5.0",
+              },
+            },
+          ],
+        },
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with services (single job)", async () => {
+    await workflowAssertTest(
+      createGHActions({ image: "ubuntu-latest" }),
       createGraphWithServices(),
-      "ubuntu-latest",
-      {
-        push: {
-          branches: ["master"],
+      [
+        {
+          name: "build",
+          image: "ubuntu-latest",
+          services: {
+            serviceA: {
+              image: "serviceA:0.1",
+              ports: ["8080:8080"],
+            },
+            serviceB: {
+              image: "serviceB:0.1",
+              ports: ["8081:8081", "8082:8082"],
+            },
+          },
+          env: {
+            SERVICEA_HOST: "localhost",
+            SERVICEA_PORT: "8080",
+            SERVICEA_PORTS: "8080",
+            SERVICEB_HOST: "localhost",
+            SERVICEB_PORT: "8081",
+            SERVICEB_PORTS: "8081;8082",
+          },
         },
-      },
-      [],
-      {
-        serviceA: {
-          image: "serviceA:0.1",
-          ports: ["8080:8080"],
+      ],
+      simpleTrigger,
+    );
+  });
+
+  t.test("should generate workflow file with services (multiple jobs)", async () => {
+    await workflowAssertTest(
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "ubuntu-latest", onlyTasks: [task("a")], env: { customA: "a" } },
+          { name: "jobB", image: "ubuntu-latest", onlyTasks: [task("b")] },
+        ],
+      }),
+      createGraphWithServices(),
+      [
+        {
+          name: "jobA",
+          image: "ubuntu-latest",
+          onlyTasks: ["a"],
+          services: {
+            serviceA: {
+              image: "serviceA:0.1",
+              ports: ["8080:8080"],
+            },
+          },
+          env: {
+            SERVICEA_HOST: "localhost",
+            SERVICEA_PORT: "8080",
+            SERVICEA_PORTS: "8080",
+            customA: "a",
+          },
         },
-        serviceB: {
-          image: "serviceB:0.1",
-          ports: ["8081:8081", "8082:8082"],
+        {
+          name: "jobB",
+          image: "ubuntu-latest",
+          onlyTasks: ["b"],
+          services: {
+            serviceA: {
+              image: "serviceA:0.1",
+              ports: ["8080:8080"],
+            },
+            serviceB: {
+              image: "serviceB:0.1",
+              ports: ["8081:8081", "8082:8082"],
+            },
+          },
+          env: {
+            SERVICEA_HOST: "localhost",
+            SERVICEA_PORT: "8080",
+            SERVICEA_PORTS: "8080",
+            SERVICEB_HOST: "localhost",
+            SERVICEB_PORT: "8081",
+            SERVICEB_PORTS: "8081;8082",
+          },
         },
-      },
-      {
-        SERVICEA_HOST: "localhost",
-        SERVICEA_PORT: "8080",
-        SERVICEA_PORTS: "8080",
-        SERVICEB_HOST: "localhost",
-        SERVICEB_PORT: "8081",
-        SERVICEB_PORTS: "8081;8082",
-      },
+      ],
+      simpleTrigger,
     );
   });
 });
@@ -217,11 +433,15 @@ function createGraphWithServices(): Graph {
 async function workflowAssertTest(
   ghActions: GitHubActions,
   graph: Graph,
-  image: string,
+  jobs: {
+    name: string;
+    image: string;
+    onlyTasks?: string[];
+    extraSteps?: unknown[];
+    services?: unknown;
+    env?: unknown;
+  }[],
   triggers: unknown,
-  extraSteps: unknown[],
-  services: unknown,
-  env: unknown,
 ) {
   await emptyTempDir(async (temp) => {
     await ghActions.generate({
@@ -235,55 +455,82 @@ async function workflowAssertTest(
     const workflowFile = stdPath.join(temp, ".github", "workflows", "build.yml");
     assertEquals(await stdFs.exists(workflowFile), true);
 
-    const buildFilePath = image.startsWith("windows")
-      ? pathJoin(["build", "some-build.ts"], "win")
-      : pathJoin(["build", "some-build.ts"], "unix");
+    const workflowJobs: { [name: string]: unknown } = {};
+    for (const job of jobs) {
+      const buildFilePath = job.image.startsWith("windows")
+        ? pathJoin(["build", "some-build.ts"], "win")
+        : pathJoin(["build", "some-build.ts"], "unix");
 
-    const runStep = {
-      name: "run build",
-      run: `deno run -A -q --unstable ${buildFilePath} run --serial --runtime gh-actions`,
-      env,
-    };
+      const runCmd = [
+        "deno",
+        "run",
+        "-A",
+        "-q",
+        "--unstable",
+        buildFilePath,
+        "run",
+        "--runtime",
+        "gh-actions",
+        "--serial",
+      ];
+      if (job.onlyTasks !== undefined) {
+        for (const task of job.onlyTasks) {
+          runCmd.push("--only", task);
+        }
+      }
 
-    if (env === undefined) {
-      delete runStep["env"];
+      const runStep = {
+        name: "run build",
+        run: runCmd.join(" "),
+        env: job.env,
+      };
+
+      if (job.env === undefined) {
+        delete runStep["env"];
+      }
+
+      const workflowJob = {
+        name: job.name,
+        "runs-on": job.image,
+        services: job.services,
+        steps: [
+          {
+            name: "checkout",
+            uses: "actions/checkout@v2",
+          },
+          {
+            name: "setup deno",
+            uses: "denolib/setup-deno@v2",
+            with: {
+              "deno-version": `v${Deno.version.deno}`,
+            },
+          },
+          ...(job.extraSteps ?? []),
+          runStep,
+        ],
+      };
+
+      if (job.services === undefined) {
+        delete workflowJob["services"];
+      }
+
+      workflowJobs[job.name] = workflowJob;
     }
 
     const workflow = {
       name: "build",
       on: triggers,
-      jobs: {
-        [image]: {
-          name: image,
-          "runs-on": image,
-          services,
-          steps: [
-            {
-              name: "checkout",
-              uses: "actions/checkout@v2",
-            },
-            {
-              name: "setup deno",
-              uses: "denolib/setup-deno@v2",
-              with: {
-                "deno-version": `v${Deno.version.deno}`,
-              },
-            },
-            ...extraSteps,
-            runStep,
-          ],
-        },
-      },
+      jobs: workflowJobs,
     };
-
-    if (services === undefined) {
-      delete workflow["jobs"][image]["services"];
-    }
 
     const workflowFromFile = (await readWorkflowFile(workflowFile)) as typeof workflow;
 
     assertEquals(workflowFromFile, workflow);
   });
+}
+
+function createGHActions(args: CreateGitHubActionsArgs) {
+  return createGitHubActions(args);
 }
 
 async function readWorkflowFile(file: string): Promise<unknown> {

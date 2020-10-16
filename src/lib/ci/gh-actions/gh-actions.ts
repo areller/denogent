@@ -5,6 +5,7 @@ import { stdFs, stdPath, stringifyYaml } from "../../../../deps.ts";
 import type { Runtime } from "../../../internal/runtime.ts";
 import type { LoggerFn, LogLevel } from "../../core/logger.ts";
 import type { Graph } from "../../../internal/graph/graph.ts";
+import type { Task } from "../../core/task.ts";
 
 type Triggers = {
   push?: { branches?: string[]; tags?: string[] };
@@ -63,13 +64,16 @@ class GitHubActionsRuntime implements Runtime {
 }
 
 export class GitHubActions implements CIIntegration {
+  private dockerImage?: string = undefined;
+
   constructor(
-    private image: string,
-    private dockerImage?: string,
+    private jobs: GitHubActionsJobArgs[],
     private onPushBranches?: string[],
     private onPRBranches?: string[],
     private onPushTags?: string[],
-  ) {}
+  ) {
+    this.validateJobs();
+  }
 
   public get type(): string {
     return "gh-actions";
@@ -104,43 +108,72 @@ export class GitHubActions implements CIIntegration {
     await stdFs.ensureDir(workflowsPath);
     args.logger.debug(`created directory '${workflowsPath}'.`);
 
-    const runEnv: { [name: string]: string } = {};
+    const workflowJobs: { [name: string]: unknown } = {};
 
-    const buildFileForPlatform = this.adjustBuildFilePathToPlatform(args.buildFile);
+    for (const job of this.jobs) {
+      const runEnv: { [name: string]: string } = {};
+
+      let jobGraph = args.graph;
+      if (job.onlyTasks !== undefined) {
+        jobGraph = jobGraph.createSerialGraphFrom(job.onlyTasks.map((t) => t.name));
+      }
+
+      const runCommand = [
+        "deno",
+        "run",
+        "-A",
+        "-q",
+        "--unstable",
+        this.adjustBuildFilePathToPlatform(job.image, args.buildFile),
+        "run",
+        "--runtime",
+        "gh-actions",
+        "--serial",
+      ];
+
+      if (job.onlyTasks !== undefined) {
+        for (const task of job.onlyTasks) {
+          runCommand.push("--only", task.name);
+        }
+      }
+
+      const workflowJobName = job.name ?? "build";
+      const workflowJob = {
+        name: workflowJobName,
+        "runs-on": job.image,
+        services: this.buildServices(jobGraph, runEnv),
+        steps: [
+          {
+            name: "checkout",
+            uses: "actions/checkout@v2",
+          },
+          {
+            name: "setup deno",
+            uses: "denolib/setup-deno@v2",
+            with: {
+              "deno-version": `v${Deno.version.deno}`,
+            },
+          },
+          ...this.buildUses(jobGraph),
+          {
+            name: "run build",
+            run: runCommand.join(" "),
+            env: {
+              ...job.env,
+              ...runEnv,
+              ...this.buildSecrets(jobGraph),
+            },
+          },
+        ],
+      };
+
+      workflowJobs[workflowJobName] = workflowJob;
+    }
 
     const workflow = {
       name: args.name,
       on: this.buildTriggers(),
-      jobs: {
-        [this.image]: {
-          name: this.image,
-          "runs-on": this.image,
-          container: this.dockerImage,
-          services: this.buildServices(args, runEnv),
-          steps: [
-            {
-              name: "checkout",
-              uses: "actions/checkout@v2",
-            },
-            {
-              name: "setup deno",
-              uses: "denolib/setup-deno@v2",
-              with: {
-                "deno-version": `v${Deno.version.deno}`,
-              },
-            },
-            ...this.buildUses(args),
-            {
-              name: "run build",
-              run: `deno run -A -q --unstable ${buildFileForPlatform} run --serial --runtime gh-actions`, // currently relies on unstable API + GitHub Actions only supports serial execution at the moment
-              env: {
-                ...runEnv,
-                ...this.buildSecrets(args),
-              },
-            },
-          ],
-        },
-      },
+      jobs: workflowJobs,
     };
 
     const workflowFilePath = stdPath.join(workflowsPath, `${args.name}.yml`);
@@ -154,11 +187,11 @@ export class GitHubActions implements CIIntegration {
     args.logger.debug(`created '${workflowFilePath}'.`);
   }
 
-  private buildUses(args: GenerateArgs): GHAUses[] {
+  private buildUses(graph: Graph): GHAUses[] {
     let uses: GHAUsesCollection = {};
 
-    for (const taskName of args.graph.taskNames) {
-      const task = args.graph.getExistingTask(taskName);
+    for (const taskName of graph.taskNames) {
+      const task = graph.getExistingTask(taskName);
       const ghaUses = task.properties["gh-actions-uses"] as GHAUsesCollection;
 
       if (ghaUses !== undefined) {
@@ -200,10 +233,10 @@ export class GitHubActions implements CIIntegration {
     return triggers;
   }
 
-  private buildServices(args: GenerateArgs, runEnv: { [name: string]: string }) {
+  private buildServices(graph: Graph, runEnv: { [name: string]: string }) {
     const services: { [name: string]: GHAService } = {};
-    for (const taskName of args.graph.taskNames) {
-      const task = args.graph.getExistingTask(taskName);
+    for (const taskName of graph.taskNames) {
+      const task = graph.getExistingTask(taskName);
       const dockerServices = task.properties["docker-services"] as { [name: string]: Service } | undefined;
 
       if (dockerServices !== undefined) {
@@ -226,12 +259,12 @@ export class GitHubActions implements CIIntegration {
     return services;
   }
 
-  private buildSecrets(args: GenerateArgs): { [name: string]: string } {
+  private buildSecrets(graph: Graph): { [name: string]: string } {
     const env: { [name: string]: string } = {};
 
     const allSecrets = [];
-    for (const taskName of args.graph.taskNames) {
-      const task = args.graph.getExistingTask(taskName);
+    for (const taskName of graph.taskNames) {
+      const task = graph.getExistingTask(taskName);
       const secrets = task.properties["secrets"] as string[];
 
       if (secrets !== undefined) {
@@ -248,8 +281,8 @@ export class GitHubActions implements CIIntegration {
     return env;
   }
 
-  private adjustBuildFilePathToPlatform(path: string): string {
-    if (this.image.startsWith("windows")) {
+  private adjustBuildFilePathToPlatform(image: string, path: string): string {
+    if (image.startsWith("windows")) {
       return path.replaceAll("/", "\\");
     } else {
       return path.replaceAll("\\", "/");
@@ -287,13 +320,28 @@ export class GitHubActions implements CIIntegration {
 
     return obj;
   }
+
+  private validateJobs(): void {
+    if (this.jobs.length === 1) {
+      return;
+    } else if (this.jobs.length === 0) {
+      throw new Error("[GitHub Actions] Must contain at least one job.");
+    } else {
+      const names = new Set<string>();
+      for (const job of this.jobs) {
+        if (job.name === undefined) {
+          throw new Error("[GitHub Actions] All jobs must be named when multiple jobs are provided.");
+        } else if (names.has(job.name)) {
+          throw new Error(`[GitHub Actions] Job '${job.name}' was defined more than once.`);
+        } else {
+          names.add(job.name);
+        }
+      }
+    }
+  }
 }
 
-export interface CreateGitHubActionsArgs {
-  /**
-   * the image name of the CI virtual machine (e.g. 'windows-latest')
-   */
-  image: string;
+export interface CreateGitHubActionsArgsBase {
   /**
    * defines which branches will trigger a build upon push
    */
@@ -308,10 +356,47 @@ export interface CreateGitHubActionsArgs {
   onPushTags?: string[];
 }
 
+export interface GitHubActionsJobArgs {
+  /**
+   * an optional name for the job (default: the name of the image)
+   */
+  name?: string;
+  /**
+   * the image name of the CI virtual machine (e.g. 'windows-latest')
+   */
+  image: string;
+  /**
+   * an optional array of tasks to run during the job (default: run all tasks)
+   */
+  onlyTasks?: Task[];
+  /**
+   * environment variables to inject during the runtime of the job
+   */
+  env?: { [name: string]: string };
+}
+
+type NonEmptyArray<T> = [T, ...T[]];
+
+export interface CreateGitHubActionsArgsMultiJob extends CreateGitHubActionsArgsBase {
+  /**
+   * an array of jobs to run as part of the workflow
+   */
+  jobs: NonEmptyArray<GitHubActionsJobArgs>;
+}
+
+export type CreateGitHubActionsArgs =
+  | (GitHubActionsJobArgs & CreateGitHubActionsArgsBase)
+  | CreateGitHubActionsArgsMultiJob;
+
 /**
  * Creates a GitHub Actions CI integration.
  * @param args arguments for GitHub Actions
  */
 export function createGitHubActions(args: CreateGitHubActionsArgs): GitHubActions {
-  return new GitHubActions(args.image, undefined, args.onPushBranches, args.onPRBranches, args.onPushTags);
+  return new GitHubActions(
+    "jobs" in args ? args.jobs : [args],
+    args.onPushBranches,
+    args.onPRBranches,
+    args.onPushTags,
+  );
 }
