@@ -29,5 +29,8 @@
         "object-shorthand": "warn",
         "eqeqeq": "error",
         "quotes": "warn"
-    }
+    },
+    "ignorePatterns": [
+        "*.bundle.ts"
+    ]
 }
