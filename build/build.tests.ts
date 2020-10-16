@@ -42,5 +42,5 @@ const e2eTests = task("e2e tests")
 
 const test = task("test").dependsOn([unitTests, e2eTests]);
 
-const tasks = [unitTests, e2eTests, test];
+const tasks = [unitTests, bundle, e2eTests, test];
 export { tasks };
