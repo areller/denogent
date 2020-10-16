@@ -233,7 +233,7 @@ export class GitHubActions implements CIIntegration {
     return triggers;
   }
 
-  private buildServices(graph: Graph, runEnv: { [name: string]: string }) {
+  private buildServices(graph: Graph, runEnv: { [name: string]: string }): { [name: string]: GHAService } {
     const services: { [name: string]: GHAService } = {};
     for (const taskName of graph.taskNames) {
       const task = graph.getExistingTask(taskName);

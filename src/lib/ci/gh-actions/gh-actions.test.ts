@@ -529,7 +529,7 @@ async function workflowAssertTest(
   });
 }
 
-function createGHActions(args: CreateGitHubActionsArgs) {
+function createGHActions(args: CreateGitHubActionsArgs): GitHubActions {
   return createGitHubActions(args);
 }
 
