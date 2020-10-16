@@ -11,7 +11,7 @@ describeE2E("create.test.ts", (t) => {
     t.test(`'denogent create' should create build file (--file = ${filePath})`, async () => {
       await emptyTempDir(async (temp) => {
         const [success] = await runCommand(
-          [...denogent, "create", ...(filePath !== undefined ? ["--file", filePath] : [])],
+          [...denogent, "create", "--nc", ...(filePath !== undefined ? ["--file", filePath] : [])],
           undefined,
           temp,
           false,

@@ -30,8 +30,13 @@ function getMainFilePath() {
 
 // run denogent via `deno run {buildFile}`
 async function runCLIFromFile(file: string) {
+  const cmd = ["deno", "run", "-q", "-A", "--unstable"];
+  if (parsedArgs["nc"]) {
+    cmd.push("--no-check");
+  }
+
   const process = await Deno.run({
-    cmd: ["deno", "run", "-q", "-A", "--unstable", file, ...Deno.args],
+    cmd: [...cmd, file, ...Deno.args],
     stdout: "inherit",
     stderr: "inherit",
   });
@@ -119,6 +124,7 @@ export async function createCLI(buildContext?: BuildContext): Promise<void> {
       default: "local",
       global: true,
     })
+    .option("--nc [:boolean]", "Run the build file with --no-check", { global: true, hidden: true })
     .command("create", createCommand(buildContext, getCreateCommand()))
     .command("generate", createCommand(buildContext, getGenerateCommand()))
     .command("run", createCommand(buildContext, getRunCommand()))
