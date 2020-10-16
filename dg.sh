@@ -1,2 +1,2 @@
 #!/bin/bash
-deno run -A --unstable denogent.ts "$@"
+deno run --no-check -A --unstable denogent.ts "$@"

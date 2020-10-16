@@ -26,7 +26,7 @@ describeE2E("run.test.ts", (t) => {
     await createBuildInTempDir(async (temp) => {
       const lines: string[] = [];
       const [success] = await runCommand(
-        [...denogent, "run", "--file", "build.ts"],
+        [...denogent, "run", "--nc", "--file", "build.bundle.ts"],
         (line) => {
           assertEquals(isJson(line), false);
           lines.push(line);
@@ -44,7 +44,7 @@ describeE2E("run.test.ts", (t) => {
     await createBuildInTempDir(async (temp) => {
       const lines: { log: { level: string; message: string }; task: string; type: string }[] = [];
       const [success] = await runCommand(
-        [...denogent, "run", "--file", "build.ts", "--json"],
+        [...denogent, "run", "--nc", "--file", "build.bundle.ts", "--json"],
         (line) => {
           assertEquals(isJson(line), true);
           lines.push(JSON.parse(line));

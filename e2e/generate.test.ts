@@ -10,7 +10,7 @@ describeE2E("generate.test.ts", (t) => {
   t.test("'denogent generate' should generate workflow for GitHub Actions", async () => {
     await createBuildInTempDir(async (temp) => {
       const [success] = await runCommand(
-        [...denogent, "generate", "--ci", "gh-actions", "--file", "build.ts"],
+        [...denogent, "generate", "--nc", "--ci", "gh-actions", "--file", "build.bundle.ts"],
         undefined,
         temp,
         false,
