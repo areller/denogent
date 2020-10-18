@@ -108,7 +108,7 @@ class SetOfObjectsOrHash<TObject extends object, THash> {
     }
   }
 
-  add(member: TObject): void {
+  public add(member: TObject): void {
     if (this.hashFunction === undefined) {
       this._weakSet?.add(member);
     } else {
@@ -116,7 +116,7 @@ class SetOfObjectsOrHash<TObject extends object, THash> {
     }
   }
 
-  delete(member: TObject): boolean {
+  public delete(member: TObject): boolean {
     if (this.hashFunction === undefined) {
       return this._weakSet?.delete(member) ?? false;
     } else {
@@ -124,7 +124,7 @@ class SetOfObjectsOrHash<TObject extends object, THash> {
     }
   }
 
-  has(member: TObject): boolean {
+  public has(member: TObject): boolean {
     if (this.hashFunction === undefined) {
       return this._weakSet?.has(member) ?? false;
     } else {
@@ -146,7 +146,7 @@ class MapOfObjectsOrHash<TObject extends object, THash, TValue> {
     }
   }
 
-  set(key: TObject, value: TValue) {
+  public set(key: TObject, value: TValue) {
     if (this.hashFunction === undefined) {
       this._weakMap?.set(key, value);
     } else {
@@ -154,7 +154,7 @@ class MapOfObjectsOrHash<TObject extends object, THash, TValue> {
     }
   }
 
-  get(key: TObject): TValue | undefined {
+  public get(key: TObject): TValue | undefined {
     if (this.hashFunction === undefined) {
       return this._weakMap?.get(key);
     } else {
@@ -162,7 +162,7 @@ class MapOfObjectsOrHash<TObject extends object, THash, TValue> {
     }
   }
 
-  delete(key: TObject): boolean {
+  public delete(key: TObject): boolean {
     if (this.hashFunction === undefined) {
       return this._weakMap?.delete(key) ?? false;
     } else {
@@ -170,7 +170,7 @@ class MapOfObjectsOrHash<TObject extends object, THash, TValue> {
     }
   }
 
-  has(key: TObject): boolean {
+  public has(key: TObject): boolean {
     if (this.hashFunction === undefined) {
       return this._weakMap?.has(key) ?? false;
     } else {
