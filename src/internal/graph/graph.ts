@@ -125,10 +125,59 @@ export class Graph {
   }
 
   /**
+   * Creates a graph from the current graph with a new target task.
+   * @param targetName the target task of the new graph.
+   */
+  public createGraphFromTarget(targetName: string): Graph {
+    const tasks: { [name: string]: Task } = {};
+
+    const target = { ...this.getExistingTask(targetName) };
+    target.dependents = [];
+
+    breadthFirst(
+      [target],
+      (t) => t.dependencies.concat(t.dependents).map(this.getExistingTask.bind(this)),
+      (t) => {
+        const task = { ...t };
+        tasks[task.name] = task;
+      },
+      (t) => t.name,
+    );
+
+    return new Graph(tasks, [targetName]);
+  }
+
+  /**
+   * Creates a  graph from the current graph that doesn't contain a given set of tasks.
+   * @param taskNames tasks to exclude from the name graph.
+   */
+  public createGraphExcept(taskNames: string[]): Graph {
+    const removeNameSet = new Set(taskNames);
+    const newTargetTasks: string[] = [];
+    const tasks: { [name: string]: Task } = {};
+
+    for (const taskName of this.taskNames) {
+      const task = this.getExistingTask(taskName);
+      if (!removeNameSet.has(task.name)) {
+        const newTask = { ...task };
+        newTask.dependencies = newTask.dependencies.filter((d) => !removeNameSet.has(d));
+        newTask.dependents = newTask.dependents.filter((d) => !removeNameSet.has(d));
+
+        tasks[task.name] = newTask;
+        if (newTask.dependents.length === 0) {
+          newTargetTasks.push(newTask.name);
+        }
+      }
+    }
+
+    return new Graph(tasks, newTargetTasks);
+  }
+
+  /**
    * Creates a new graph from the current graph by applying a transformation on all the tasks.
    * @param transformer a function that transforms a given task.
    */
-  public async createTransformed(transformer: (task: Task) => Promise<Task> | Task): Promise<Graph> {
+  public async createTransformedGraph(transformer: (task: Task) => Promise<Task> | Task): Promise<Graph> {
     const newTasks: { [name: string]: Task } = {};
     for (const taskName of this.taskNames) {
       const task = this.getExistingTask(taskName);

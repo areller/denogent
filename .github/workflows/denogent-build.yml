@@ -24,7 +24,7 @@ jobs:
       - name: run build
         run: >-
           deno run -A -q --unstable build/build.ts run --runtime gh-actions
-          --serial --only "npm install" --only "lint"
+          --serial --target "lint"
   build-linux:
     name: build-linux
     runs-on: ubuntu-latest
@@ -38,8 +38,7 @@ jobs:
       - name: run build
         run: >-
           deno run -A -q --unstable build/build.ts run --runtime gh-actions
-          --serial --only "unit tests" --only "bundle test assets" --only "e2e
-          tests" --only "test"
+          --serial --target "test"
   build-windows:
     name: build-windows
     runs-on: windows-latest
@@ -53,5 +52,4 @@ jobs:
       - name: run build
         run: >-
           deno run -A -q --unstable build\build.ts run --runtime gh-actions
-          --serial --only "unit tests" --only "bundle test assets" --only "e2e
-          tests" --only "test"
+          --serial --target "test"

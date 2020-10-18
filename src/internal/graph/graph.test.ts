@@ -46,7 +46,7 @@ describe("graph.test.ts", (t) => {
 
   t.test("createTransformed should return a new graph where all the tasks are transformed", async () => {
     const graph = createGraph(createTaskStructure());
-    const transformed = await graph.createTransformed((task) => {
+    const transformed = await graph.createTransformedGraph((task) => {
       const newTask = { ...task };
       newTask.properties = { foo: newTask.name };
       return newTask;
@@ -54,6 +54,44 @@ describe("graph.test.ts", (t) => {
 
     assertEquals(graph.getExistingTask("b1").properties["foo"], undefined);
     assertEquals(transformed.getExistingTask("b1").properties["foo"], "b1");
+  });
+
+  t.test("createGraphFromTarget should return a new graph with new target task", () => {
+    const graph = createGraph([
+      task("finish")
+        .dependsOn(task("branch1").dependsOn(task("branch1_1").dependsOn(task("branch1_2"))))
+        .dependsOn(task("branch2").dependsOn(task("branch2_1"))),
+    ]);
+
+    const branch1 = graph.createGraphFromTarget("branch1");
+    assertEquals(branch1.taskNames.length, 3);
+    assertArrayContains(branch1.taskNames, ["branch1", "branch1_1", "branch1_2"]);
+
+    const branch2 = graph.createGraphFromTarget("branch2");
+    assertEquals(branch2.taskNames.length, 2);
+    assertArrayContains(branch2.taskNames, ["branch2", "branch2_1"]);
+  });
+
+  t.test("createGraphExcept should exclude tasks from graph", () => {
+    const graph = createGraph(createTaskStructure());
+    const graphExcept = graph.createGraphExcept(["a1", "b1"]);
+
+    assertEquals(graphExcept.taskNames.length, 5);
+    assertArrayContains(graphExcept.taskNames, ["a", "b", "c", "d", "e"]);
+
+    assertEquals(graphExcept.getTask("b")?.dependents, []);
+    assertEquals(graphExcept.getTask("c")?.dependencies, ["a"]);
+  });
+
+  t.test("createGraphExcept should exclude tasks from graph and create new targets", () => {
+    const graph = createGraph(createTaskStructure());
+    const graphExcept = graph.createGraphExcept(["a1", "b1", "e"]);
+
+    assertEquals(graphExcept.taskNames.length, 4);
+    assertArrayContains(graphExcept.taskNames, ["a", "b", "c", "d"]);
+
+    assertEquals(graphExcept.targetTasks, ["b", "d"]);
+    assertEquals(graphExcept.getTask("d")?.dependents, []);
   });
 });
 

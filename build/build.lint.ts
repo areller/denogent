@@ -22,5 +22,5 @@ const lint = task("lint")
     });
   });
 
-const tasks = [npmInstall, lint];
-export { tasks };
+const target = lint;
+export { target };

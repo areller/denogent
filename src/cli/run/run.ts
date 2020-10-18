@@ -40,6 +40,14 @@ export function getRunCommand(): {
       .option("--serial", "Run the pipeline in serial order.", { default: false })
       .option("--only [task:string]", "Run only a single task.", {
         collect: true,
+        conflicts: ["except", "target"],
+      })
+      .option("--except [task:string]", "Run the graph except a single task.", {
+        collect: true,
+        conflicts: ["only"],
+      })
+      .option("--target [task:string]", "Run the graph with a given target.", {
+        conflicts: ["only"],
       }),
     buildContextRequired: true,
     action: async (context: CLIContext) => {
@@ -54,8 +62,18 @@ export function getRunCommand(): {
       let graph = context.graph;
 
       const only = context.args["only"];
+      const except = context.args["except"];
+      const target = context.args["target"];
       if (only) {
         graph = graph.createSerialGraphFrom(only instanceof Array ? only : [only]);
+      } else {
+        if (target) {
+          graph = graph.createGraphFromTarget(target);
+        }
+
+        if (except) {
+          graph = graph.createGraphExcept(except instanceof Array ? except : [except]);
+        }
       }
 
       if (context.args["serial"]) {
@@ -63,7 +81,7 @@ export function getRunCommand(): {
       }
 
       if (context.args["skip-conditions"]) {
-        graph = await graph.createTransformed((task) => {
+        graph = await graph.createTransformedGraph((task) => {
           const newTask = { ...task };
           newTask.conditions = [];
           return newTask;

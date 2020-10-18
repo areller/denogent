@@ -3,14 +3,17 @@
  * @param roots the root vertices of the graph
  * @param neighborsFn a function that defines how neighbor vertices are retrieved from a given vertex
  * @param fn the function that gets executed for every vertex of the graph
+ * @param hashFunction an optional hash function for a vertex, used to detect duplications
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function breadthFirst<TVertex extends object>(
+export function breadthFirst<TVertex extends object, THash extends string | number>(
   roots: TVertex[],
   neighborsFn: (vertex: TVertex) => TVertex[],
   fn: (vertex: TVertex) => void,
+  hashFunction?: (vertex: TVertex) => THash,
 ): void {
-  const visited = new WeakSet();
+  //const visited = hashFunction === undefined ? new WeakSet() : new Set<unknown>();
+  const visited = new SetOfObjectsOrHash(hashFunction);
   const queue: TVertex[] = [...roots];
 
   while (queue.length > 0) {
@@ -51,14 +54,15 @@ export function breadthFirst<TVertex extends object>(
  * @param fn the function that gets executed for every vertex of the graph
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function breadthFirstWithDepth<TVertex extends object>(
+export function breadthFirstWithDepth<TVertex extends object, THash extends object>(
   roots: TVertex[],
   childrenFn: (vertex: TVertex) => TVertex[],
   parentsFn: (vertex: TVertex) => TVertex[],
   fn: (vertex: TVertex, depth: number) => void,
+  hashFunction?: (vertex: TVertex) => THash,
 ): void {
-  const visited = new WeakSet();
-  const refs = new WeakMap();
+  const visited = new SetOfObjectsOrHash(hashFunction);
+  const refs = new MapOfObjectsOrHash(hashFunction);
   const queue: [TVertex, number][] = [...roots.map((r) => [r, 0] as [TVertex, number])];
 
   while (queue.length > 0) {
@@ -87,6 +91,90 @@ export function breadthFirstWithDepth<TVertex extends object>(
       for (const child of children) {
         queue.push([child, depth + 1]);
       }
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+class SetOfObjectsOrHash<TObject extends object, THash> {
+  private _set?: Set<THash>;
+  private _weakSet?: WeakSet<TObject>;
+
+  constructor(private hashFunction?: (obj: TObject) => THash) {
+    if (this.hashFunction === undefined) {
+      this._weakSet = new WeakSet();
+    } else {
+      this._set = new Set();
+    }
+  }
+
+  public add(member: TObject): void {
+    if (this.hashFunction === undefined) {
+      this._weakSet?.add(member);
+    } else {
+      this._set?.add(this.hashFunction(member));
+    }
+  }
+
+  public delete(member: TObject): boolean {
+    if (this.hashFunction === undefined) {
+      return this._weakSet?.delete(member) ?? false;
+    } else {
+      return this._set?.delete(this.hashFunction(member)) ?? false;
+    }
+  }
+
+  public has(member: TObject): boolean {
+    if (this.hashFunction === undefined) {
+      return this._weakSet?.has(member) ?? false;
+    } else {
+      return this._set?.has(this.hashFunction(member)) ?? false;
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+class MapOfObjectsOrHash<TObject extends object, THash, TValue> {
+  private _map?: Map<THash, TValue>;
+  private _weakMap?: WeakMap<TObject, TValue>;
+
+  constructor(private hashFunction?: (obj: TObject) => THash) {
+    if (this.hashFunction === undefined) {
+      this._weakMap = new WeakMap();
+    } else {
+      this._map = new Map();
+    }
+  }
+
+  public set(key: TObject, value: TValue): void {
+    if (this.hashFunction === undefined) {
+      this._weakMap?.set(key, value);
+    } else {
+      this._map?.set(this.hashFunction(key), value);
+    }
+  }
+
+  public get(key: TObject): TValue | undefined {
+    if (this.hashFunction === undefined) {
+      return this._weakMap?.get(key);
+    } else {
+      return this._map?.get(this.hashFunction(key));
+    }
+  }
+
+  public delete(key: TObject): boolean {
+    if (this.hashFunction === undefined) {
+      return this._weakMap?.delete(key) ?? false;
+    } else {
+      return this._map?.delete(this.hashFunction(key)) ?? false;
+    }
+  }
+
+  public has(key: TObject): boolean {
+    if (this.hashFunction === undefined) {
+      return this._weakMap?.has(key) ?? false;
+    } else {
+      return this._map?.has(this.hashFunction(key)) ?? false;
     }
   }
 }
