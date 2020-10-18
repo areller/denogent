@@ -9,5 +9,6 @@ export async function bundleFile(path: string, bundlePath: string): Promise<void
     await Deno.copy(bundleProcess.stdout, file);
   } finally {
     Deno.close(file.rid);
+    Deno.close(bundleProcess.rid);
   }
 }

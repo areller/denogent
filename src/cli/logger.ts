@@ -1,6 +1,14 @@
 import { Colors } from "../../deps.ts";
 import type { LogLevel } from "../lib/core/logger.ts";
 
+export function rawLog(level: LogLevel, message: string | Error): void {
+  if (message instanceof Error) {
+    console.error(message);
+  } else {
+    console.log(message);
+  }
+}
+
 export function simpleLog(level: LogLevel, message: string | Error, task?: string, meta?: unknown): void {
   const prefix = task !== undefined ? `[${task}] ` : "";
   const suffix =

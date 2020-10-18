@@ -23,9 +23,9 @@ export class Graph {
   private _startTasks: string[];
   private _endTasks: string[];
 
-  constructor(private _tasks: { [name: string]: Task }, targetTasks: string[]) {
+  constructor(private _tasks: { [name: string]: Task }, private _targetTasks: string[]) {
     this._names = Object.keys(this._tasks);
-    this._startTasks = this.findStartTasks(targetTasks);
+    this._startTasks = this.findStartTasks(this._targetTasks);
     this._endTasks = this.findEndTasks(this._startTasks);
   }
 
@@ -122,6 +122,22 @@ export class Graph {
     }
 
     return new Graph(newTasks, taskNames);
+  }
+
+  /**
+   * Creates a new graph from the current graph by applying a transformation on all the tasks.
+   * @param transformer a function that transforms a given task.
+   */
+  public async createTransformed(transformer: (task: Task) => Promise<Task> | Task): Promise<Graph> {
+    const newTasks: { [name: string]: Task } = {};
+    for (const taskName of this.taskNames) {
+      const task = this.getExistingTask(taskName);
+      const transformedPromise = transformer(task);
+      const transformed = transformedPromise instanceof Promise ? await transformedPromise : transformedPromise;
+      newTasks[transformed.name] = transformed;
+    }
+
+    return new Graph(newTasks, this._targetTasks);
   }
 
   /**

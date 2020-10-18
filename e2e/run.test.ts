@@ -64,4 +64,43 @@ describeE2E("run.test.ts", (t) => {
       assertEquals([lines[5].type, lines[5].task], ["finishedSuccessfully", "taskB"]);
     });
   });
+
+  t.test("'denogent run' should run prepared build file with env vars (json)", async () => {
+    await createBuildInTempDir(async (temp) => {
+      const lines: { log: { level: string; message: string }; task: string; type: string }[] = [];
+      const [success] = await runCommand(
+        [
+          ...denogent,
+          "run",
+          "--nc",
+          "--file",
+          "build.bundle.ts",
+          "--json",
+          "--env",
+          "ARG1=value1",
+          "--env",
+          "ARG2=value2",
+        ],
+        (line) => {
+          assertEquals(isJson(line), true);
+          lines.push(JSON.parse(line));
+        },
+        temp,
+        false,
+      );
+
+      assertEquals(success, true);
+      assertEquals(lines.length, 8);
+
+      assertEquals([lines[0].type, lines[0].task], ["started", "taskA"]);
+      assertEquals([lines[1].type, lines[1].task, lines[1].log.message], ["log", "taskA", "hello A"]);
+      assertEquals([lines[2].type, lines[2].task], ["finishedSuccessfully", "taskA"]);
+
+      assertEquals([lines[3].type, lines[3].task], ["started", "taskB"]);
+      assertEquals([lines[4].type, lines[4].task, lines[4].log.message], ["log", "taskB", "hello B"]);
+      assertEquals([lines[5].type, lines[5].task, lines[5].log.message], ["log", "taskB", "value1"]);
+      assertEquals([lines[6].type, lines[6].task, lines[6].log.message], ["log", "taskB", "value2"]);
+      assertEquals([lines[7].type, lines[7].task], ["finishedSuccessfully", "taskB"]);
+    });
+  });
 });
