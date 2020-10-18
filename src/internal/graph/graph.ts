@@ -128,7 +128,7 @@ export class Graph {
    * Creates a new graph from the current graph by applying a transformation on all the tasks.
    * @param transformer a function that transforms a given task.
    */
-  public async createTransformed(transformer: (task: Task) => Promise<Task> | Task): Promise<Graph> {
+  public async createTransformedGraph(transformer: (task: Task) => Promise<Task> | Task): Promise<Graph> {
     const newTasks: { [name: string]: Task } = {};
     for (const taskName of this.taskNames) {
       const task = this.getExistingTask(taskName);

@@ -46,7 +46,7 @@ describe("graph.test.ts", (t) => {
 
   t.test("createTransformed should return a new graph where all the tasks are transformed", async () => {
     const graph = createGraph(createTaskStructure());
-    const transformed = await graph.createTransformed((task) => {
+    const transformed = await graph.createTransformedGraph((task) => {
       const newTask = { ...task };
       newTask.properties = { foo: newTask.name };
       return newTask;

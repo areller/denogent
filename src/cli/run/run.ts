@@ -63,7 +63,7 @@ export function getRunCommand(): {
       }
 
       if (context.args["skip-conditions"]) {
-        graph = await graph.createTransformed((task) => {
+        graph = await graph.createTransformedGraph((task) => {
           const newTask = { ...task };
           newTask.conditions = [];
           return newTask;
