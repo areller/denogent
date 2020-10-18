@@ -146,7 +146,7 @@ class MapOfObjectsOrHash<TObject extends object, THash, TValue> {
     }
   }
 
-  public set(key: TObject, value: TValue) {
+  public set(key: TObject, value: TValue): void {
     if (this.hashFunction === undefined) {
       this._weakMap?.set(key, value);
     } else {
