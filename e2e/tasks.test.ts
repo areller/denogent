@@ -43,35 +43,32 @@ describeE2E("tasks.test.ts", (t) => {
       assertEquals(success, true);
       assertEquals(lines.length, 2);
 
-      assertEquals(
-        lines.filter((x) => x.task.name === "taskA").map((x) => x.task),
-        [
-          {
-            name: "taskA",
-            conditions: [],
-            dependencies: [],
-            dependents: ["taskB"],
-            tags: {},
-            properties: {},
-            propagateExceptions: true,
-          },
-        ],
-      );
+      const taskA = lines.filter((x) => x.task.name === "taskA").map((x) => x.task);
+      assertEquals(taskA, [
+        {
+          name: "taskA",
+          conditions: [],
+          dependencies: [],
+          dependents: ["taskB"],
+          tags: {},
+          properties: {},
+          propagateExceptions: true,
+        },
+      ]);
 
-      assertEquals(
-        lines.filter((x) => x.task.name === "taskB").map((x) => x.task),
-        [
-          {
-            name: "taskB",
-            conditions: [],
-            dependencies: ["taskA"],
-            dependents: [],
-            tags: {},
-            properties: {},
-            propagateExceptions: true,
-          },
-        ],
-      );
+      const taskB = lines.filter((x) => x.task.name === "taskB").map((x) => x.task);
+      assertEquals(taskB[0].conditions.length, 1);
+      assertEquals(taskB, [
+        {
+          name: "taskB",
+          conditions: taskB[0].conditions,
+          dependencies: ["taskA"],
+          dependents: [],
+          tags: {},
+          properties: {},
+          propagateExceptions: true,
+        },
+      ]);
     });
   });
 });

@@ -36,6 +36,7 @@ export function getRunCommand(): {
   return {
     cmd: new Command()
       .description("Run the pipeline that is defined in the build file.")
+      .option("--skip-conditions [:boolean]", "Skip condition checking for tasks.", { default: false })
       .option("--serial", "Run the pipeline in serial order.", { default: false })
       .option("--only [task:string]", "Run only a single task.", {
         collect: true,
@@ -59,6 +60,14 @@ export function getRunCommand(): {
 
       if (context.args["serial"]) {
         graph = graph.createSerialGraph();
+      }
+
+      if (context.args["skip-conditions"]) {
+        graph = await graph.createTransformed((task) => {
+          const newTask = { ...task };
+          newTask.conditions = [];
+          return newTask;
+        });
       }
 
       const execution = executor.fromGraph(graph, createContextCreator(context));

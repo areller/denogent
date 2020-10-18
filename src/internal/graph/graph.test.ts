@@ -43,6 +43,18 @@ describe("graph.test.ts", (t) => {
       ["e"],
     );
   });
+
+  t.test("createTransformed should return a new graph where all the tasks are transformed", async () => {
+    const graph = createGraph(createTaskStructure());
+    const transformed = await graph.createTransformed((task) => {
+      const newTask = { ...task };
+      newTask.properties = { foo: newTask.name };
+      return newTask;
+    });
+
+    assertEquals(graph.getExistingTask("b1").properties["foo"], undefined);
+    assertEquals(transformed.getExistingTask("b1").properties["foo"], "b1");
+  });
 });
 
 function createTaskStructure(): Task[] {

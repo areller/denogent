@@ -4,16 +4,18 @@ import { Command } from "../../deps.ts";
 import type { Runtime } from "../internal/runtime.ts";
 import { LocalRuntime } from "../internal/local_runtime.ts";
 import { createGraph, Graph } from "../internal/graph/graph.ts";
-import { jsonStreamLog, simpleLog } from "./logger.ts";
+import { jsonStreamLog, rawLog, simpleLog } from "./logger.ts";
 import { getRunCommand } from "./run/run.ts";
 import { getCLIVersion } from "./version.ts";
 import { getTasksCommand } from "./tasks/tasks.ts";
 import { stdPath } from "../../deps.ts";
 import { getCreateCommand } from "./create/create.ts";
 import { getGenerateCommand } from "./generate/generate.ts";
+import { getCheckConditionsCommand } from "./check-conditions/check-conditions.ts";
 import type { BuildContext } from "../lib/core/context.ts";
 import type { CIIntegration } from "../lib/ci/ci_integration.ts";
 import { isWindows } from "../internal/helpers/env.ts";
+import type { LoggerFn } from "../lib/core/logger.ts";
 
 const defaultBuildFile = stdPath.join("build", "build.ts");
 const parsedArgs = parseArgs(Deno.args);
@@ -26,6 +28,26 @@ function getMainFilePath() {
   }
 
   return mainModule.substr(mainModule.indexOf(cwd) + cwd.length + 1);
+}
+
+function buildEnvironmentVariables() {
+  if (!parsedArgs["env"]) {
+    return;
+  }
+
+  const envVars =
+    parsedArgs["env"] instanceof Array ? parsedArgs["env"].map((x) => x as string) : [parsedArgs["env"] as string];
+  for (const envVar of envVars) {
+    const eqIdx = envVar.indexOf("=");
+    if (eqIdx === -1) {
+      throw new Error("Expected --env option to contain an environment variable of the format KEY=VALUE.");
+    }
+
+    const key = envVar.substr(0, eqIdx);
+    const value = envVar.substr(eqIdx + 1);
+
+    Deno.env.set(key, value);
+  }
 }
 
 // run denogent via `deno run {buildFile}`
@@ -63,7 +85,14 @@ async function getRuntime(
 
     return [runtime, ciArray[0], graph];
   } else {
-    const logger = args["json"] ? jsonStreamLog : simpleLog;
+    let logger: LoggerFn | undefined = undefined;
+    if (args["json"]) {
+      logger = jsonStreamLog;
+    } else if (args["raw"]) {
+      logger = rawLog;
+    } else {
+      logger = simpleLog;
+    }
     runtime = new LocalRuntime(graph, args, logger);
 
     return [runtime, undefined, graph];
@@ -97,6 +126,8 @@ function createCommand(
       return await runCLIFromFile(file);
     }
 
+    buildEnvironmentVariables();
+
     const context = await createContext(parsedArgs, file, buildContext);
 
     const actionRes = rawCommand.action(context);
@@ -120,8 +151,16 @@ export async function createCLI(buildContext?: BuildContext): Promise<void> {
       default: false,
       global: true,
     })
+    .option("--raw [:boolean]", "Emit logs in raw form", {
+      default: false,
+      global: true,
+    })
     .option("--runtime [type:string]", "The runtime/CI type.", {
       default: "local",
+      global: true,
+    })
+    .option("--env [env:string]", "Collection of environment variables.", {
+      collect: true,
       global: true,
     })
     .option("--nc [:boolean]", "Run the build file with --no-check", { global: true, hidden: true })
@@ -129,5 +168,6 @@ export async function createCLI(buildContext?: BuildContext): Promise<void> {
     .command("generate", createCommand(buildContext, getGenerateCommand()))
     .command("run", createCommand(buildContext, getRunCommand()))
     .command("tasks", createCommand(buildContext, getTasksCommand()))
+    .command("check-conditions", createCommand(buildContext, getCheckConditionsCommand()))
     .parse(Deno.args);
 }
