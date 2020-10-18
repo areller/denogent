@@ -40,7 +40,5 @@ const e2eTests = task("e2e tests")
     });
   });
 
-const test = task("test").dependsOn([unitTests, e2eTests]);
-
-const tasks = [unitTests, bundle, e2eTests, test];
-export { tasks };
+const target = task("test").dependsOn([unitTests, e2eTests]);
+export { target };

@@ -1,27 +1,27 @@
 import { createBuilder, createGitHubActions } from "../mod.ts";
-import { tasks as lintTasks } from "./build.lint.ts";
-import { tasks as testTasks } from "./build.tests.ts";
+import { target as lint } from "./build.lint.ts";
+import { target as test } from "./build.tests.ts";
 
 createBuilder({
   name: "denogent-build",
-  targetTasks: [...lintTasks, ...testTasks],
+  targetTasks: [lint, test],
   ciIntegrations: [
     createGitHubActions({
       jobs: [
         {
           name: "lint",
           image: "ubuntu-latest",
-          onlyTasks: [...lintTasks],
+          targetTask: lint,
         },
         {
           name: "build-linux",
           image: "ubuntu-latest",
-          onlyTasks: [...testTasks],
+          targetTask: test,
         },
         {
           name: "build-windows",
           image: "windows-latest",
-          onlyTasks: [...testTasks],
+          targetTask: test,
         },
       ],
       onPRBranches: ["master"],

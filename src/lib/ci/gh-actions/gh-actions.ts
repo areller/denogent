@@ -113,11 +113,6 @@ export class GitHubActions implements CIIntegration {
     for (const job of this.jobs) {
       const runEnv: { [name: string]: string } = {};
 
-      let jobGraph = args.graph;
-      if (job.onlyTasks !== undefined) {
-        jobGraph = jobGraph.createSerialGraphFrom(job.onlyTasks.map((t) => t.name));
-      }
-
       const runCommand = [
         "deno",
         "run",
@@ -131,9 +126,24 @@ export class GitHubActions implements CIIntegration {
         "--serial",
       ];
 
-      if (job.onlyTasks !== undefined) {
+      let jobGraph = args.graph;
+
+      if ("onlyTasks" in job && job.onlyTasks !== undefined) {
+        jobGraph = jobGraph.createSerialGraphFrom(job.onlyTasks.map((t) => t.name));
         for (const task of job.onlyTasks) {
           runCommand.push("--only", `"${task.name}"`);
+        }
+      } else if ("targetTask" in job) {
+        if (job.targetTask !== undefined) {
+          jobGraph = jobGraph.createGraphFromTarget(job.targetTask.name);
+          runCommand.push("--target", `"${job.targetTask.name}"`);
+        }
+
+        if (job.exceptTasks !== undefined) {
+          jobGraph = jobGraph.createGraphExcept(job.exceptTasks.map((t) => t.name));
+          for (const task of job.exceptTasks) {
+            runCommand.push("--except", `"${task.name}"`);
+          }
         }
       }
 
@@ -356,7 +366,25 @@ export interface CreateGitHubActionsArgsBase {
   onPushTags?: string[];
 }
 
-export interface GitHubActionsJobArgs {
+export interface GitHubActionsJobTargetTaskArgs {
+  /**
+   * an optional new target task for the job
+   */
+  targetTask?: Task;
+  /**
+   * an optional array of tasks to exclude from running during the job (default: run all tasks)
+   */
+  exceptTasks?: Task[];
+}
+
+export interface GitHubActionsJobOnlyTasksArgs {
+  /**
+   * an optional array of tasks to run during the job (the tasks will run in order) (default: run all tasks)
+   */
+  onlyTasks?: Task[];
+}
+
+export interface GitHubActionsJobArgsBase {
   /**
    * an optional name for the job (default: the name of the image)
    */
@@ -366,14 +394,13 @@ export interface GitHubActionsJobArgs {
    */
   image: string;
   /**
-   * an optional array of tasks to run during the job (the tasks will run in order) (default: run all tasks)
-   */
-  onlyTasks?: Task[];
-  /**
    * environment variables to inject during the runtime of the job
    */
   env?: { [name: string]: string };
 }
+
+export type GitHubActionsJobArgs = GitHubActionsJobArgsBase &
+  (GitHubActionsJobOnlyTasksArgs | GitHubActionsJobTargetTaskArgs);
 
 type NonEmptyArray<T> = [T, ...T[]];
 

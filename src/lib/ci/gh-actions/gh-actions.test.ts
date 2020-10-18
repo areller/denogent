@@ -141,6 +141,27 @@ describe("gh-actions.test.ts", (t) => {
     );
   });
 
+  t.test("should generate workflow file with target task", async () => {
+    await workflowAssertTest(
+      createGHActions({
+        jobs: [
+          { name: "jobA", image: "ubuntu-latest", targetTask: task("branch1"), exceptTasks: [task("branch1_1")] },
+          { name: "jobB", image: "ubuntu-latest", targetTask: task("branch2") },
+        ],
+      }),
+      createGraph([
+        task("finish")
+          .dependsOn(task("branch1").dependsOn(task("branch1_1").dependsOn(task("branch1_2"))))
+          .dependsOn(task("branch2").dependsOn(task("branch2_1"))),
+      ]),
+      [
+        { name: "jobA", image: "ubuntu-latest", targetTask: "branch1", exceptTasks: ["branch1_1"] },
+        { name: "jobB", image: "ubuntu-latest", targetTask: "branch2" },
+      ],
+      simpleTrigger,
+    );
+  });
+
   t.test("should generate workflow file with secrets (single job)", async () => {
     await workflowAssertTest(
       createGHActions({ image: "ubuntu-latest" }),
@@ -437,6 +458,8 @@ async function workflowAssertTest(
     name: string;
     image: string;
     onlyTasks?: string[];
+    targetTask?: string;
+    exceptTasks?: string[];
     extraSteps?: unknown[];
     services?: unknown;
     env?: unknown;
@@ -476,6 +499,14 @@ async function workflowAssertTest(
       if (job.onlyTasks !== undefined) {
         for (const task of job.onlyTasks) {
           runCmd.push("--only", `"${task}"`);
+        }
+      }
+      if (job.targetTask !== undefined) {
+        runCmd.push("--target", `"${job.targetTask}"`);
+      }
+      if (job.exceptTasks !== undefined) {
+        for (const task of job.exceptTasks) {
+          runCmd.push("--except", `"${task}"`);
         }
       }
 
