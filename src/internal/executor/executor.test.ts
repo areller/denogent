@@ -162,17 +162,13 @@ describe("executor.test.ts", (t) => {
 
     assertEquals(eventLog, [
       {
-        type: "started",
-        task: "taskA",
-      },
-      {
         type: "failedCondition",
         task: "taskA",
         conditionId: 0,
-        condition: (eventLog[1] as TaskFailedConditionEvent).condition,
+        condition: (eventLog[0] as TaskFailedConditionEvent).condition,
       },
     ]);
-    assertEquals((eventLog[1] as TaskFailedConditionEvent).condition.replaceAll(" ", ""), "()=>false");
+    assertEquals((eventLog[0] as TaskFailedConditionEvent).condition.replaceAll(" ", ""), "()=>false");
   });
 
   [false, true].forEach((propagateExceptions) => {

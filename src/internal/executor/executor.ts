@@ -106,12 +106,6 @@ export class Execution {
 
   private async runTask(task: Task): Promise<void> {
     try {
-      // firing task started event
-      this.fireEvent({
-        type: "started",
-        task: task.name,
-      });
-
       const taskContext = this.createContext(task);
 
       // checking task conditions
@@ -134,6 +128,12 @@ export class Execution {
       if (this._beforeTaskFn !== undefined) {
         await this._beforeTaskFn(task);
       }
+
+      // firing task started event
+      this.fireEvent({
+        type: "started",
+        task: task.name,
+      });
 
       let error: Error | undefined;
 
