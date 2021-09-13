@@ -1,7 +1,7 @@
 import { stdPath, stdFs } from "../../../deps.ts";
 import { emptyTempDir } from "../../internal/testing/helpers.ts";
 import { describe } from "../../internal/testing/test.ts";
-import { assertArrayContains, assertEquals, assertNotEquals } from "../../../tests_deps.ts";
+import { assertArrayIncludes, assertEquals, assertNotEquals } from "../../../tests_deps.ts";
 import { Folder } from "./fs.ts";
 
 describe("fs.test.ts", (t) => {
@@ -36,7 +36,7 @@ describe("fs.test.ts", (t) => {
       const list = await rootFolder.listFolders();
 
       assertEquals(list.length, 2);
-      assertArrayContains(
+      assertArrayIncludes(
         list.map((f) => f.name),
         ["folder1", "folder2"],
       );
@@ -52,7 +52,7 @@ describe("fs.test.ts", (t) => {
       const list = await rootFolder.listFiles();
 
       assertEquals(list.length, 2);
-      assertArrayContains(
+      assertArrayIncludes(
         list.map((f) => f.name),
         ["file1", "file2"],
       );

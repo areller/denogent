@@ -1,5 +1,5 @@
 import { task, Task } from "../../lib/core/task.ts";
-import { assertArrayContains, assertEquals } from "../../../tests_deps.ts";
+import { assertArrayIncludes, assertEquals } from "../../../tests_deps.ts";
 import { describe } from "../testing/test.ts";
 import { createGraph } from "./graph.ts";
 
@@ -7,7 +7,7 @@ describe("graph.test.ts", (t) => {
   t.test("taskNames should return all tasks", () => {
     const graph = createGraph(createTaskStructure());
     assertEquals(graph.taskNames.length, 7);
-    assertArrayContains(graph.taskNames, ["a", "a1", "b", "b1", "c", "d", "e"]);
+    assertArrayIncludes(graph.taskNames, ["a", "a1", "b", "b1", "c", "d", "e"]);
   });
 
   t.test("startTasks should return tasks that should run at the beginning", () => {
@@ -24,7 +24,7 @@ describe("graph.test.ts", (t) => {
     const graph = createGraph(createTaskStructure());
     const levels = graph.getTasksByLevel();
     assertEquals(Object.keys(levels).length, 4);
-    assertArrayContains(Object.keys(levels), ["0", "1", "2", "3"]);
+    assertArrayIncludes(Object.keys(levels), ["0", "1", "2", "3"]);
 
     assertEquals(
       levels[0].map((t) => t.name),
@@ -65,11 +65,11 @@ describe("graph.test.ts", (t) => {
 
     const branch1 = graph.createGraphFromTarget("branch1");
     assertEquals(branch1.taskNames.length, 3);
-    assertArrayContains(branch1.taskNames, ["branch1", "branch1_1", "branch1_2"]);
+    assertArrayIncludes(branch1.taskNames, ["branch1", "branch1_1", "branch1_2"]);
 
     const branch2 = graph.createGraphFromTarget("branch2");
     assertEquals(branch2.taskNames.length, 2);
-    assertArrayContains(branch2.taskNames, ["branch2", "branch2_1"]);
+    assertArrayIncludes(branch2.taskNames, ["branch2", "branch2_1"]);
   });
 
   t.test("createGraphExcept should exclude tasks from graph", () => {
@@ -77,7 +77,7 @@ describe("graph.test.ts", (t) => {
     const graphExcept = graph.createGraphExcept(["a1", "b1"]);
 
     assertEquals(graphExcept.taskNames.length, 5);
-    assertArrayContains(graphExcept.taskNames, ["a", "b", "c", "d", "e"]);
+    assertArrayIncludes(graphExcept.taskNames, ["a", "b", "c", "d", "e"]);
 
     assertEquals(graphExcept.getTask("b")?.dependents, []);
     assertEquals(graphExcept.getTask("c")?.dependencies, ["a"]);
@@ -88,7 +88,7 @@ describe("graph.test.ts", (t) => {
     const graphExcept = graph.createGraphExcept(["a1", "b1", "e"]);
 
     assertEquals(graphExcept.taskNames.length, 4);
-    assertArrayContains(graphExcept.taskNames, ["a", "b", "c", "d"]);
+    assertArrayIncludes(graphExcept.taskNames, ["a", "b", "c", "d"]);
 
     assertEquals(graphExcept.targetTasks, ["b", "d"]);
     assertEquals(graphExcept.getTask("d")?.dependents, []);
